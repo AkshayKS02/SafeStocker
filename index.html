@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Tracking App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <header class="top-bar">
+            <h1 class="page-title">SafeStocker</h1>
+            <div class="user-area">
+                <button class="icon-button white-bg-icon">bell</button>
+                <button class="icon-button black-bg-icon">user</button>
+            </div>
+        </header>
+
+        <nav class="main-nav">
+            <button class="nav-button active-nav-button" id="home-button">home</button> 
+            <button class="nav-button" id="track-button">track product</button>
+            <button class="nav-button">billing</button>
+            <button class="nav-button" id="add-new-button">add new</button>
+        </nav>
+
+        <section class="page-view" id="dashboard-view">
+            <div class="filter-controls">
+                <button class="filter-pill blue-bg-pill">name</button>
+                <button class="filter-pill blue-bg-pill">quantity</button>
+                <button class="filter-pill blue-bg-pill">date</button>
+                <button class="filter-pill blue-bg-pill">product type v</button>
+            </div>
+
+            <div class="product-list">
+                <div class="list-item black-bar"><div class="status-dot red-dot"></div></div>
+                <div class="list-item black-bar"><div class="status-dot yellow-dot"></div></div>
+                <div class="list-item black-bar"><div class="status-dot lightgreen-dot"></div></div>
+                <div class="list-item black-bar"><div class="status-dot darkgreen-dot"></div></div>
+            </div>
+        </section>
+
+        <section class="page-view" id="entry-view" style="display: none;">
+            <div class="entry-toggles">
+                <button class="toggle-button active-toggle">Standard</button>
+                <button class="toggle-button">Custom</button>
+            </div>
+
+            <div class="detail-separator">
+                <hr><span class="separator-text">product details</span>
+            </div>
+
+            <div class="input-row black-bg-row">
+                <label>expiry date :</label>
+                <input type="text" placeholder="e.g., DD/MM/YYYY" class="dark-input">
+            </div>
+
+            <button class="action-button large-black-button">scan barcode</button>
+        </section>
+        
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
