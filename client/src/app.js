@@ -1,39 +1,105 @@
-// 1. Get all the elements we need from the HTML
-const dashboardView = document.getElementById('dashboard-view');
-const entryView = document.getElementById('entry-view');
-const allNavButtons = document.querySelectorAll('.nav-button');
+// app.js (Full code with all interactivity, including login)
 
-const homeButton = document.getElementById('home-button');
-const addNewButton = document.getElementById('add-new-button');
+document.addEventListener('DOMContentLoaded', function() {
 
-
-// 2. Reusable function to switch the view AND the active button style
-function switchAppView(viewToShow, buttonToActivate) {
+    // --- 1. Get Elements ---
     
-    // --- VIEW SWITCHING: Hide all, then show one ---
-    dashboardView.style.display = 'none';
-    entryView.style.display = 'none';
-    viewToShow.style.display = 'block';
+    // Main View Sections
+    const allViews = [
+        document.getElementById('home-view'),
+        document.getElementById('track-view'),
+        document.getElementById('billing-view'),
+        document.getElementById('entry-view')
+    ];
+
+    // Navigation Buttons
+    const allNavButtons = document.querySelectorAll('.nav-button');
+    const homeButton = document.getElementById('home-button');
+    const trackButton = document.getElementById('track-button');
+    const billingButton = document.getElementById('billing-button');
+    const addNewButton = document.getElementById('add-new-button');
     
-    // --- BUTTON STYLING: Make all inactive, then make one active ---
-    allNavButtons.forEach(btn => {
-        btn.classList.remove('active-nav-button');
+    // Form Toggles and Content
+    const standardToggle = document.getElementById('standard-toggle');
+    const customToggle = document.getElementById('custom-toggle');
+    const formStandard = document.getElementById('form-standard');
+    const formCustom = document.getElementById('form-custom');
+
+    // NEW: Login Modal Elements
+    const userButton = document.getElementById('user-button');
+    const loginModal = document.getElementById('login-modal');
+    const closeModalButton = document.getElementById('modal-close-button');
+    const loginForm = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username');
+
+
+    // --- 2. Main Navigation Logic (Switches pages) ---
+    
+    function switchAppView(viewToShow, buttonToActivate) {
+        allViews.forEach(view => view.style.display = 'none');
+        viewToShow.style.display = 'block';
+        
+        allNavButtons.forEach(btn => btn.classList.remove('active-nav-button'));
+        buttonToActivate.classList.add('active-nav-button');
+    }
+
+    homeButton.addEventListener('click', () => switchAppView(allViews[0], homeButton));
+    trackButton.addEventListener('click', () => switchAppView(allViews[1], trackButton));
+    billingButton.addEventListener('click', () => switchAppView(allViews[2], billingButton));
+    addNewButton.addEventListener('click', () => switchAppView(allViews[3], addNewButton));
+
+    // Initial setup: Show Home view
+    switchAppView(allViews[0], homeButton);
+
+
+    // --- 3. Form Toggle Logic (Switches Standard/Custom forms) ---
+
+    function switchFormToggle(formToShow, toggleToActivate, toggleToDeactivate) {
+        formStandard.style.display = 'none';
+        formCustom.style.display = 'none';
+        formToShow.style.display = 'block';
+
+        toggleToActivate.classList.add('active-toggle');
+        toggleToDeactivate.classList.remove('active-toggle');
+    }
+
+    if (standardToggle && customToggle) {
+        standardToggle.addEventListener('click', () => {
+            switchFormToggle(formStandard, standardToggle, customToggle);
+        });
+        customToggle.addEventListener('click', () => {
+            switchFormToggle(formCustom, customToggle, standardToggle);
+        });
+    }
+
+
+    // --- 4. NEW: Login Modal Logic ---
+
+    // Open the modal when 'user' button is clicked
+    userButton.addEventListener('click', () => {
+        loginModal.style.display = 'flex'; // Use flex to center it
     });
 
-    buttonToActivate.classList.add('active-nav-button');
-}
+    // Close the modal when 'X' is clicked
+    closeModalButton.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
 
+    // Handle the (simulated) login
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Stop the form from reloading the page
+        
+        const username = usernameInput.value;
+        
+        // Check if the user actually typed something
+        if (username.trim() !== "") {
+            // Update the user button text
+            userButton.textContent = `Hi, ${username}`;
+            // Close the modal
+            loginModal.style.display = 'none';
+            // Clear the form for next time
+            loginForm.reset();
+        }
+    });
 
-// 3. Attach click actions (Event Listeners)
-// Click on 'home' button
-homeButton.addEventListener('click', function() {
-    switchAppView(dashboardView, homeButton);
 });
-
-// Click on 'add new' button
-addNewButton.addEventListener('click', function() {
-    switchAppView(entryView, addNewButton);
-});
-
-// Initial setup: Show the Dashboard when the page first loads
-switchAppView(dashboardView, homeButton);
