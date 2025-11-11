@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeStocker App</title>
+    <link rel="stylesheet" href="../src/style.css">
+</head>
+
+<body>
+    <header class="top-bar">
+        <h1 class="page-title">SafeStocker</h1>
+        <nav class="main-nav">
+            <button class="nav-button active-nav-button" id="home-button">Home</button>
+            <button class="nav-button" id="track-button">Track Product</button>
+            <button class="nav-button" id="billing-button">Billing</button>
+            <button class="nav-button" id="add-new-button">Add New</button>
+        </nav>
+        <div class="user-area">
+            <button class="icon-button white-bg-icon">
+                <img src="images/bell.png" alt="Notifications" class="icon-img">
+            </button>
+            <button class="icon-button black-bg-icon" id="user-button">
+                <img src="images/user.png" alt="User" class="icon-img">
+            </button>
+        </div>
+    </header>
+
+    <section class="page-view" id="home-view">
+        <div class="welcome-message">
+            <h2>Welcome to SafeStocker</h2>
+            <p>Use 'Track Product' to view inventory or 'Add New' to enter an item.</p>
+        </div>
+    </section>
+
+    <section class="page-view" id="track-view" style="display: none;">
+        <div class="filter-controls">
+            <button class="filter-pill blue-bg-pill">Name</button>
+            <button class="filter-pill blue-bg-pill">Quantity</button>
+            <button class="filter-pill blue-bg-pill">Date</button>
+        </div>
+    
+        <div class="product-table-container">
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Milk</td>
+                        <td>10 litre</td>
+                        <td>25/11/2025</td>
+                        <td><span class="status-dot red-dot"></span> Expired Soon</td>
+                    </tr>
+                    <tr>
+                        <td>Apples</td>
+                        <td>Bag</td>
+                        <td>29/11/2025</td>
+                        <td><span class="status-dot yellow-dot"></span> Near Expiry</td>
+                    </tr>
+                    <tr>
+                        <td>Canned Beans</td>
+                        <td>—</td>
+                        <td>01/12/2026</td>
+                        <td><span class="status-dot darkgreen-dot"></span> Fresh</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <section class="page-view" id="billing-view" style="display: none;">
+        <div class="welcome-message">
+            <h2>Billing Information</h2>
+            <p>Billing features are coming soon!</p>
+        </div>
+    </section>
+    
+    <section class="page-view" id="entry-view" style="display: none;">
+        <div class="entry-toggles">
+            <button class="toggle-button active-toggle" id="standard-toggle">Standard</button>
+            <button class="toggle-button" id="custom-toggle">Custom</button>
+        </div>
+        <div class="detail-separator">
+            <hr><span class="separator-text">product details</span>
+        </div>
+    
+        <form class="form-content-container" id="form-standard">
+    
+            <div class="input-row">
+                <label for="expiry-date">Expiry Date:</label>
+                <input type="text" id="expiry-date" name="expiry-date" placeholder="e.g., DD/MM/YYYY" class="dark-input"
+                    required>
+            </div>
+    
+            <button type="button" class="action-button large-black-button">
+                Scan Barcode
+            </button>
+    
+            <button type="submit" class="action-button submit-button">
+                Save Item
+            </button>
+    
+        </form>
+
+
+        <div class="form-content-container" id="form-custom" style="display: none;">
+
+            <form class="add-item-form">
+            
+                <h4 class="section-title">Add New Category / Custom Item</h4>
+            
+                <label for="category">Category : </label>
+                <input list="category-list" id="category" name="category" class="styled-input"
+                    placeholder="Type or select category">
+            
+                <datalist id="category-list">
+                    <option value="Food">
+                    <option value="Medicine">
+                    <option value="Cosmetics">
+                    <option value="Beverages">
+                    <option value="Other">
+                </datalist>
+            
+            
+                <div class="input-row">
+                    <label for="purchase-date">Purchase Date:</label>
+                    <input type="text" id="purchase-date" name="purchase-date" placeholder="DD/MM/YYYY" class="styled-input">
+                </div>
+
+                <div class="input-row">
+                    <label for="shelf-life">Shelf Life (Estimate):</label>
+                    <input type="text" id="shelf-life" name="shelf-life" placeholder="e.g., 6 months"
+                        class="styled-input">
+                </div>
+
+                <div class="input-row">
+                    <label for="expiry-date">Expiry Date:</label>
+                    <input type="text" id="expiry-date" name="expiry-date" placeholder="DD/MM/YYYY"
+                        class="styled-input">
+                </div>
+
+                <button type="button" class="action-button scan-button">
+                    Scan Barcode
+                </button>
+
+                <button type="submit" class="action-button submit-button">
+                    Save Item
+                </button>
+
+            </form>
+
+        </div>
+    </section>
+
+
+
+    <div class="modal-overlay" id="login-modal" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="modal-close-button">&times;</button>
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" class="modal-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" class="modal-input" required>
+                </div>
+                <button type="submit" class="modal-login-button">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../src/app.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,252 @@
+/* --- Setup and Variables --- */
+:root {
+    --color-black: #000;
+    --color-white: #fff;
+    --color-blue: #4f6eeb;
+    --color-light-gray-bg: #f5f5f5;
+    --round-pill: 30px;
+    --round-item: 8px;
+}
+
+body { font-family: Arial, sans-serif; background-color: var(--color-light-gray-bg); }
+
+/* --- Top Bar and Navigation --- */
+.top-bar { display: flex; justify-content: space-between; align-items: center; padding: 0 10px 20px 0; border-bottom: 1px solid #eee; }
+.page-title { 
+    font-family: "Times New Roman", Times, serif;
+    font-size: 3rem; 
+    font-weight: 300;
+    background: linear-gradient(45deg, var(--color-black) 0%, var(--color-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+.icon-button { 
+    width: 45px;
+    height: 45px; 
+    border-radius: 50%; 
+    border: 1px solid var(--color-black); 
+    cursor: pointer; 
+}
+.white-bg-icon { background-color: var(--color-white); color: var(--color-black); }
+.black-bg-icon { background-color: var(--color-black); color: var(--color-white); }
+
+.main-nav { display: flex; gap: 15px; padding: 20px 0; }
+.nav-button { padding: 10px 25px; border-radius: var(--round-pill); border: 1px solid var(--color-black); cursor: pointer; font-weight: bold; flex-shrink: 0; background-color: var(--color-black); color: var(--color-white); transition: all 0.2s; }
+.active-nav-button { background-color: var(--color-white); color: var(--color-black); border: 2px solid var(--color-black); }
+
+/* --- General Page Views --- */
+.welcome-message { text-align: center; padding: 80px 20px; }
+.welcome-message h2 { margin-bottom: 15px; color: #555; }
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 20px 0;
+}
+
+.filter-pill {
+  border: 1px solid var(--color-blue, #1e3a8a);
+  color: var(--color-blue, #1e3a8a);
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background-color: var(--color-blue, #1e3a8a);
+  color: white;
+}
+
+.filter-pill.active {
+  background-color: var(--color-blue, #1e3a8a);
+  color: white;
+}
+
+.product-table-container {
+  margin-top: 25px;
+  overflow-x: auto; /* keeps it scrollable on mobile */
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.product-table thead {
+  background-color: var(--color-blue, #1e3a8a);
+  color: white;
+}
+
+.product-table th,
+.product-table td {
+  text-align: left;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+}
+
+.product-table th:first-child,
+.product-table td:first-child {
+  border-left: none;
+}
+
+.product-table tbody tr:hover {
+  background-color: #f8f8f8;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Color states */
+.red-dot { background-color: #e53935; }
+.yellow-dot { background-color: #fbc02d; }
+.darkgreen-dot { background-color: #388e3c; }
+
+
+/* --- ENTRY VIEW (Form Styles) --- */
+.entry-toggles { margin-left : 10px; margin-bottom: 30px; }
+.toggle-button { padding: 10px 30px; border-radius: var(--round-pill); font-weight: bold; cursor: pointer; margin-right: 15px; border: 1px solid var(--color-black); background-color: var(--color-white); color: var(--color-black); }
+.active-toggle { background-color: var(--color-black); color: var(--color-white); } 
+
+.detail-separator { position: relative; text-align: center; margin: 30px 0; }
+.detail-separator hr { border: 0; border-top: 1px solid var(--color-black); }
+.separator-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--color-white); padding: 0 10px; text-transform: lowercase; font-size: 0.9rem; }
+
+.form-content-container {
+  max-width: 500px;
+  margin: 30px 0;
+  padding: 25px;
+  background: var(--color-light-gray-bg, #f9f9f9);
+  border-color: #000;
+  border : 1px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.input-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.dark-input,
+.styled-input,
+.styled-select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  outline: none;
+  background: white;
+}
+
+.dark-input:focus,
+.styled-input:focus,
+.styled-select:focus {
+  border-color: var(--color-blue, #1e3a8a);
+}
+
+.action-button {
+  padding: 10px 25px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.large-black-button,
+.scan-button {
+  background-color: #000;
+  color: #fff;
+}
+
+.large-black-button:hover,
+.scan-button:hover {
+  background-color: #333;
+}
+
+.submit-button {
+  background-color: var(--color-blue, #1e3a8a);
+  color: #fff;
+}
+
+.submit-button:hover {
+  background-color: #274bb5;
+}
+
+
+
+/* --- NEW: Login Modal Styles --- */
+.modal-overlay {
+    position: fixed; /* Sit on top of the page */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal-content {
+    background: var(--color-white);
+    padding: 30px;
+    border-radius: var(--round-item);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+}
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: #aaa;
+    cursor: pointer;
+}
+.modal-content h2 { text-align: center; margin-bottom: 20px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.modal-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+.modal-login-button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--color-black);
+    color: var(--color-white);
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+}
