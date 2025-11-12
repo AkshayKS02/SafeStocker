@@ -15,7 +15,7 @@ body { font-family: Arial, sans-serif; background-color: var(--color-light-gray-
 .page-title { 
     font-family: "Times New Roman", Times, serif;
     font-size: 3rem; 
-    font-weight: 300;
+    font-weight: 700;
     background: linear-gradient(45deg, var(--color-black) 0%, var(--color-blue) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -36,9 +36,92 @@ body { font-family: Arial, sans-serif; background-color: var(--color-light-gray-
 .nav-button { padding: 10px 25px; border-radius: var(--round-pill); border: 1px solid var(--color-black); cursor: pointer; font-weight: bold; flex-shrink: 0; background-color: var(--color-black); color: var(--color-white); transition: all 0.2s; }
 .active-nav-button { background-color: var(--color-white); color: var(--color-black); border: 2px solid var(--color-black); }
 
-/* --- General Page Views --- */
-.welcome-message { text-align: center; padding: 80px 20px; }
-.welcome-message h2 { margin-bottom: 15px; color: #555; }
+/* --- HERO SECTION (with image in background) --- */
+
+#home-view {
+  padding: 0;
+  margin: 0;
+}
+
+.hero-section {
+  position: relative;
+  width: 100%;
+  height: 85vh; /* fills most of the viewport */
+  display: flex;
+  flex-direction: column;
+  justify-content:left;
+  align-items: center;
+  text-align: center;
+  color: var(--color-white);
+  overflow: hidden;
+}
+
+/* Make the image fill the section */
+.hero-section .hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  object-fit: cover; /* crops perfectly like background-size: cover */
+  z-index: 0; /* keep behind the text */
+  filter: brightness(0.5); /* darken image slightly for better text contrast */
+}
+
+/* Place text above the image */
+.hero-section h1,
+.hero-section p,
+.hero-section .hero-buttons {
+  position: relative;
+  z-index: 1; /* keeps them above the image */
+}
+
+/* Headline styling */
+.hero-section h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+}
+
+/* Subtitle styling */
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: #f0f0f0;
+}
+
+/* Buttons */
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.hero-buttons .nav-button {
+  padding: 12px 25px;
+  font-size: 1rem;
+  border-radius: var(--round-pill);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-buttons .nav-button:first-child {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border: none;
+}
+
+.hero-buttons .nav-button:last-child {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border: 2px solid var(--color-black);
+}
+
+.hero-buttons .nav-button:hover {
+  transform: translateY(-3px);
+}
+
 
 .filter-controls {
   display: flex;
@@ -123,9 +206,22 @@ body { font-family: Arial, sans-serif; background-color: var(--color-light-gray-
 .toggle-button { padding: 10px 30px; border-radius: var(--round-pill); font-weight: bold; cursor: pointer; margin-right: 15px; border: 1px solid var(--color-black); background-color: var(--color-white); color: var(--color-black); }
 .active-toggle { background-color: var(--color-black); color: var(--color-white); } 
 
-.detail-separator { position: relative; text-align: center; margin: 30px 0; }
-.detail-separator hr { border: 0; border-top: 1px solid var(--color-black); }
-.separator-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--color-white); padding: 0 10px; text-transform: lowercase; font-size: 0.9rem; }
+.detail-separator { position: relative; text-align: center; margin: 30px 0;  }
+.detail-separator hr { border: 1px; border-top: 1px solid var(--color-black);  }
+.separator-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-white);
+  border-width: 1px;
+  border-radius:10px;
+  border-color: #000;
+  padding: 0 10px;
+  font-size: 1rem;
+  color:white;
+  background-color: #1e3a8a;
+}
 
 .form-content-container {
   max-width: 500px;
