@@ -1,58 +1,38 @@
 import cv2
 from pyzbar import pyzbar
-import tkinter as tk
-from tkinter import simpledialog
 import requests
 
 # ---------------- Settings ----------------
 NODE_SERVER_URL = "http://localhost:5000/barcode"
 
-# Tkinter root (for quantity popup)
-root = tk.Tk()
-root.withdraw()
-
-# Track scanned barcodes to avoid repeated popups
-scanned_history = {}
+# Track scanned barcodes to avoid repeated sending
+scanned_history = set()
 
 # ---------------- Send barcode to Node server ----------------
-def send_to_node(barcode_value, quantity):
+def send_to_node(barcode_value):
     try:
-        res = requests.post(NODE_SERVER_URL, json={
-            "barcode": barcode_value,
-            "quantity": quantity
-        })
+        res = requests.post(NODE_SERVER_URL, json={"barcode": barcode_value})
         print("[Scanner] Node Response:", res.json())
     except:
         print("[Scanner Error] Could not send barcode to Node.js server")
 
-# ---------------- Ask user for quantity ----------------
-def get_quantity(barcode):
-    q = simpledialog.askinteger(
-        "Quantity", 
-        f"Enter quantity for {barcode}:", 
-        minvalue=1, maxvalue=100
-    )
-    return q if q else 1
-
 # ---------------- Scan barcodes from webcam ----------------
 def scan_barcodes(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
     barcodes = pyzbar.decode(gray)
 
     for barcode in barcodes:
         data = barcode.data.decode("utf-8")
 
-        # Ask only once for each barcode
         if data not in scanned_history:
-            qty = get_quantity(data)
-            scanned_history[data] = qty
-            send_to_node(data, qty)
+            scanned_history.add(data)
+            send_to_node(data)
 
-        # Draw bounding box
+        # Draw bounding box and text
         x, y, w, h = barcode.rect
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 3)
-        cv2.putText(frame, f"{data} x{scanned_history[data]}",
-                    (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.putText(frame, f"{data}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX,
                     0.7, (0, 255, 0), 2)
 
     return frame
@@ -69,6 +49,17 @@ def webcam_scanner():
             break
 
         frame = scan_barcodes(frame)
+
+        # Draw center rectangle for guidance
+        height, width, _ = frame.shape
+        box_width = 400
+        box_height = 300
+        x1 = (width - box_width) // 2
+        y1 = (height - box_height) // 2
+        x2 = x1 + box_width
+        y2 = y1 + box_height
+        cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
+
         cv2.imshow("Scanner - Press 'q' to Quit", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -77,5 +68,27 @@ def webcam_scanner():
     cap.release()
     cv2.destroyAllWindows()
 
-# ---------------- Main ----------------
-webcam_scanner()
+# ---------------- Barcode Scanner Device Mode ----------------
+def scanner_device_mode():
+    print("Scanner device mode: Scan items (type 'quit' to stop)")
+
+    while True:
+        barcode_data = input("Scan barcode: ").strip()
+        if barcode_data.lower() == 'quit':
+            break
+
+        if barcode_data not in scanned_history:
+            scanned_history.add(barcode_data)
+            send_to_node(barcode_data)
+            print(f"Scanned: {barcode_data}")
+        else:
+            print("Already scanned.")
+
+# ---------------- Run Scanner ----------------
+mode = input("Select mode: 1 = Webcam, 2 = Scanner Device: ").strip()
+if mode == "1":
+    webcam_scanner()
+elif mode == "2":
+    scanner_device_mode()
+else:
+    print("Invalid mode selected.")
