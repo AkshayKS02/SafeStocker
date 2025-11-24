@@ -85,10 +85,5 @@ def scanner_device_mode():
             print("Already scanned.")
 
 # ---------------- Run Scanner ----------------
-mode = input("Select mode: 1 = Webcam, 2 = Scanner Device: ").strip()
-if mode == "1":
-    webcam_scanner()
-elif mode == "2":
-    scanner_device_mode()
-else:
-    print("Invalid mode selected.")
+webcam_scanner()
+

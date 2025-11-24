@@ -146,22 +146,29 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const scanBtn = document.querySelector(".large-black-button");
+  addNewButton.addEventListener("click", () => {
+    switchAppView(allViews[3], addNewButton);
 
-scanBtn.addEventListener("click", () => {
-    fetch("http://localhost:5000/run-scanner")
-        .then(res => res.text())
+    // Now the entry view is visible — attach event safely
+    const scanBtn = document.getElementById("scan-btn");
+
+    scanBtn.addEventListener("click", () => {
+      console.log("Scan button clicked!");
+      fetch("http://localhost:5000/run-scanner")
+        .then((res) => res.text())
         .then(console.log)
-});
+        .catch(console.error);
+    });
+  });
 
-setInterval(() => {
+  setInterval(() => {
     fetch("http://localhost:5000/barcode/latest")
-        .then(res => res.json())
-        .then(data => {
-            if (!data || !data.product) return;
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data || !data.product) return;
 
-            // TODO: display product in a card
-            console.log("New Product:", data.product);
-        });
-}, 1500);
+        // TODO: display product in a card
+        console.log("New Product:", data.product);
+      });
+  }, 1500);
 });
