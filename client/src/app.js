@@ -145,4 +145,23 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
+
+  const scanBtn = document.querySelector(".large-black-button");
+
+scanBtn.addEventListener("click", () => {
+    fetch("http://localhost:5000/run-scanner")
+        .then(res => res.text())
+        .then(console.log)
+});
+
+setInterval(() => {
+    fetch("http://localhost:5000/barcode/latest")
+        .then(res => res.json())
+        .then(data => {
+            if (!data || !data.product) return;
+
+            // TODO: display product in a card
+            console.log("New Product:", data.product);
+        });
+}, 1500);
 });
