@@ -396,3 +396,57 @@ label {
 .card-button.primary { background:#000; color:#fff; border-color:transparent; }
 
 .small-muted { font-size:0.85rem; color:#666; }
+
+.entry-layout {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Standard form takes more width */
+#form-standard {
+    flex: 2;
+}
+
+/* Scan preview box */
+.scan-preview-box {
+    flex: 1;
+    background: #ffffff;
+    border: black;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    position: relative;
+}
+
+/* Title inside scan preview */
+.scan-preview-box h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: #000;
+}
+
+/* Text labels */
+.scan-preview-box p {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #222;
+    margin: 4px 0;
+}
+
+/* Responsive fix for mobile */
+@media(max-width: 768px) {
+    .entry-layout {
+        flex-direction: column;
+    }
+
+    .scan-preview-box {
+        width: 100%;
+    }
+}

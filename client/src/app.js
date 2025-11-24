@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
+
   /* -------------------- VIEW + NAV -------------------- */
   const allViews = [
     document.getElementById("home-view"),
@@ -61,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  /* -------------------- FORM TOGGLE SYSTEM (Standard / Custom) -------------------- */
+  /* -------------------- FORM TOGGLE SYSTEM -------------------- */
   const standardToggle = document.getElementById("standard-toggle");
   const customToggle = document.getElementById("custom-toggle");
   const formStandard = document.getElementById("form-standard");
@@ -74,6 +75,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     activeToggle.classList.add("active-toggle");
     inactiveToggle.classList.remove("active-toggle");
+
+    // Hide preview when switching forms
+    document.getElementById("scan-preview-standard").style.display = "none";  // FIXED
   }
 
   standardToggle.onclick = () =>
@@ -87,26 +91,24 @@ document.addEventListener("DOMContentLoaded", function () {
     const scanBtn = document.getElementById("scan-btn");
 
     scanBtn.onclick = () => {
-      // STEP 1 — Run Python scanner and get barcode directly
       fetch("http://localhost:5000/run-scanner")
         .then((res) => res.json())
         .then((data) => {
           const barcode = data.barcode;
 
-          // STEP 2 — Fetch LIVE product details for this barcode
           return fetch(`http://localhost:5000/barcode/details/${barcode}`)
             .then((r) => r.json())
             .then((productData) => ({ productData, barcode }));
         })
         .then(({ productData, barcode }) => {
-          // STEP 3 — Show scanned product in Add New section
-          document.getElementById("scan-preview").style.display = "block";
-          document.getElementById("scan-name").innerText =
-            "Name: " + productData.product.name;
-          document.getElementById("scan-barcode").innerText =
-            "Barcode: " + barcode;
 
-          // STEP 4 — Store scanned item for Save button
+          // ⭐ FIXED: Show preview in STANDARD ONLY
+          document.getElementById("scan-preview-standard").style.display = "flex";
+          document.getElementById("scan-name-standard").innerText =
+            productData.product.name;
+          document.getElementById("scan-barcode-standard").innerText =
+            barcode;
+
           window.scannedItem = {
             barcode,
             name: productData.product.name,
@@ -145,7 +147,6 @@ document.addEventListener("DOMContentLoaded", function () {
           <div>
             <div class="item-title">${item.name || "Unnamed"}</div>
             <div class="item-meta small-muted">
-              ${item.location || ""} • 
               <span class="barcode">${item.barcode || ""}</span>
             </div>
           </div>
@@ -179,18 +180,12 @@ document.addEventListener("DOMContentLoaded", function () {
   fetchItemsFromApi();
 
   /* -------------------- BACKGROUND BARCODE POLLING -------------------- */
-  let LAST_SCANNED = null;
-
   function handleScannedProduct(data) {
     const p = data.product;
     const code = String(p.barcode || "").trim();
-    if (!code || code === LAST_SCANNED) return;
+    if (!code) return;
 
-    LAST_SCANNED = code;
-    console.log("[scan]", p);
-
-    const newItem = {
-      id: "scan-" + Date.now(),
+    window.scannedItem = {
       barcode: code,
       name: p.name || "Scanned Item",
       quantity: p.quantity || "",
@@ -198,12 +193,16 @@ document.addEventListener("DOMContentLoaded", function () {
       expiry_date: p.expiry_date || "",
     };
 
-    ALL_ITEMS.unshift(newItem);
-    renderItems();
+    if (document.getElementById("entry-view").style.display === "block") {
+      document.getElementById("scan-preview-standard").style.display = "flex";  // FIXED
+      document.getElementById("scan-name-standard").innerText =
+        window.scannedItem.name;
+      document.getElementById("scan-barcode-standard").innerText =
+        window.scannedItem.barcode;
+    }
   }
 
   setInterval(async () => {
-    // ❌ If user is in Add New page, DO NOT poll
     if (document.getElementById("entry-view").style.display === "block") return;
 
     try {
@@ -214,4 +213,54 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("[scan error]", err);
     }
   }, 1500);
+
+  /* -------------------- SAVE ITEM -------------------- */
+  const standardForm = document.getElementById("form-standard");
+
+  standardForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const quantity = document.getElementById("quantity").value.trim();
+    const mfg = document.getElementById("manufacture-date").value.trim();
+    const exp = document.getElementById("expiry-date").value.trim();
+
+    const scanned = window.scannedItem || {};
+
+    if (!scanned.barcode) {
+      return alert("Please scan a barcode before saving.");
+    }
+
+    const newItem = {
+      barcode: scanned.barcode,
+      name: scanned.name || "Unnamed Product",
+      quantity,
+      manufacture_date: mfg,
+      expiry_date: exp,
+    };
+
+    try {
+      const res = await fetch("http://localhost:5000/items/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newItem),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Item saved successfully!");
+        fetchItemsFromApi();
+
+        standardForm.reset();
+
+        // hide new preview correctly
+        document.getElementById("scan-preview-standard").style.display = "none";  // FIXED
+        window.scannedItem = null;
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Failed to save item.");
+    }
+  });
+
 });
