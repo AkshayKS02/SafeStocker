@@ -46,21 +46,6 @@
             <button class="filter-pill blue-bg-pill">Date</button>
         </div>
 
-    <!-- NEW Search + Filter UI -->
-        <div class="product-controls">
-            <div class="search-row">
-                <input id="search-input" type="search" placeholder="Search" class="styled-input" />
-                <select id="status-filter" class="styled-select">
-                    <option value="all">All statuses</option>
-                    <option value="expired">Expired</option>
-                    <option value="near">Near Expiry</option>
-                    <option value="fresh">Fresh</option>
-                </select>
-                <input id="date-filter" type="date" class="styled-input" />
-                <button id="refresh-items" class="nav-button">Refresh</button>
-            </div>
-        </div>
-
         <!-- NEW: Cards will load here -->
         <div id="items-container" class="items-grid"></div>
     </section>
@@ -105,14 +90,18 @@
             <button type="submit" class="action-button submit-button">
                 Save Item
             </button>
-    
-        </form>
-
-
-        <div class="form-content-container" id="form-custom" style="display: none;">
-
-            <form class="add-item-form">
             
+            </form>
+            
+            <div id="scan-preview" style="display:none; margin: 20px 0;">
+                <h3>Scanned Product</h3>
+                <p id="scan-name"></p>
+                <p id="scan-barcode"></p>
+            </div>          
+            
+            <div class="form-content-container" id="form-custom" style="display: none;">
+            
+                <form class="add-item-form">
                 <h4 class="section-title">Add New Category / Custom Item</h4>
             
                 <label for="category">Category : </label>

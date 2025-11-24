@@ -27,7 +27,7 @@ export async function handleBarcode(req, res) {
 
     lastScan = { product };   // store latest scan result
 
-    return res.json({ found: true, product });
+    return res.json({product});
 
   } catch (err) {
     console.error(err);

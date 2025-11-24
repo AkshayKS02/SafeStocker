@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-
   /* -------------------- VIEW + NAV -------------------- */
   const allViews = [
     document.getElementById("home-view"),
@@ -21,10 +20,18 @@ document.addEventListener("DOMContentLoaded", function () {
     buttonToActivate.classList.add("active-nav-button");
   }
 
-  homeButton.addEventListener("click", () => switchAppView(allViews[0], homeButton));
-  trackButton.addEventListener("click", () => switchAppView(allViews[1], trackButton));
-  billingButton.addEventListener("click", () => switchAppView(allViews[2], billingButton));
-  addNewButton.addEventListener("click", () => switchAppView(allViews[3], addNewButton));
+  homeButton.addEventListener("click", () =>
+    switchAppView(allViews[0], homeButton)
+  );
+  trackButton.addEventListener("click", () =>
+    switchAppView(allViews[1], trackButton)
+  );
+  billingButton.addEventListener("click", () =>
+    switchAppView(allViews[2], billingButton)
+  );
+  addNewButton.addEventListener("click", () =>
+    switchAppView(allViews[3], addNewButton)
+  );
 
   switchAppView(allViews[0], homeButton);
 
@@ -35,8 +42,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.getElementById("login-form");
   const usernameInput = document.getElementById("username");
 
-  userButton.addEventListener("click", () => (loginModal.style.display = "flex"));
-  closeModalButton.addEventListener("click", () => (loginModal.style.display = "none"));
+  userButton.addEventListener(
+    "click",
+    () => (loginModal.style.display = "flex")
+  );
+  closeModalButton.addEventListener(
+    "click",
+    () => (loginModal.style.display = "none")
+  );
 
   loginForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -48,23 +61,70 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  /* -------------------- FORM TOGGLE SYSTEM (Standard / Custom) -------------------- */
+  const standardToggle = document.getElementById("standard-toggle");
+  const customToggle = document.getElementById("custom-toggle");
+  const formStandard = document.getElementById("form-standard");
+  const formCustom = document.getElementById("form-custom");
+
+  function switchFormToggle(showForm, activeToggle, inactiveToggle) {
+    formStandard.style.display = "none";
+    formCustom.style.display = "none";
+    showForm.style.display = "block";
+
+    activeToggle.classList.add("active-toggle");
+    inactiveToggle.classList.remove("active-toggle");
+  }
+
+  standardToggle.onclick = () =>
+    switchFormToggle(formStandard, standardToggle, customToggle);
+
+  customToggle.onclick = () =>
+    switchFormToggle(formCustom, customToggle, standardToggle);
+
   /* -------------------- ADD NEW -> SCAN BUTTON -------------------- */
   addNewButton.addEventListener("click", () => {
     const scanBtn = document.getElementById("scan-btn");
+
     scanBtn.onclick = () => {
+      // STEP 1 — Run Python scanner and get barcode directly
       fetch("http://localhost:5000/run-scanner")
-        .then((res) => res.text())
-        .then(console.log)
-        .catch(console.error);
+        .then((res) => res.json())
+        .then((data) => {
+          const barcode = data.barcode;
+
+          // STEP 2 — Fetch LIVE product details for this barcode
+          return fetch(`http://localhost:5000/barcode/details/${barcode}`)
+            .then((r) => r.json())
+            .then((productData) => ({ productData, barcode }));
+        })
+        .then(({ productData, barcode }) => {
+          // STEP 3 — Show scanned product in Add New section
+          document.getElementById("scan-preview").style.display = "block";
+          document.getElementById("scan-name").innerText =
+            "Name: " + productData.product.name;
+          document.getElementById("scan-barcode").innerText =
+            "Barcode: " + barcode;
+
+          // STEP 4 — Store scanned item for Save button
+          window.scannedItem = {
+            barcode,
+            name: productData.product.name,
+            brand: productData.product.brand,
+            package_quantity: productData.product.package_quantity,
+          };
+        })
+        .catch((err) => console.error("Scan error:", err));
     };
   });
 
   /* -------------------- CARD SYSTEM -------------------- */
-  const ITEMS_API = "/items";
+  const ITEMS_API = "http://localhost:5000/items";
   let ALL_ITEMS = [];
 
   const parseDate = (d) => (d ? new Date(d) : null);
-  const formatDate = (d) => (parseDate(d) ? new Date(d).toLocaleDateString() : "-");
+  const formatDate = (d) =>
+    parseDate(d) ? new Date(d).toLocaleDateString() : "-";
 
   function computeStatus(item) {
     const exp = parseDate(item.expiry_date || item.expiryDate);
@@ -84,19 +144,17 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="card-top">
           <div>
             <div class="item-title">${item.name || "Unnamed"}</div>
-            <div class="item-meta small-muted">${item.location || ""} • <span class="barcode">${item.barcode || ""}</span></div>
+            <div class="item-meta small-muted">
+              ${item.location || ""} • 
+              <span class="barcode">${item.barcode || ""}</span>
+            </div>
           </div>
           <div class="qty-box">Qty: ${item.quantity || "-"}</div>
         </div>
 
         <div style="display:flex; justify-content:space-between;">
-          <div class="status"><span class="status-dot ${status.dot}"></span> ${status.label}</div>
-
-          <div class="manuf-exp">
-            <div class="label">Mfg</div>
-            <div class="value">${formatDate(item.manufacture_date)}</div>
-            <div class="label" style="margin-top:6px;">Exp</div>
-            <div class="value">${formatDate(item.expiry_date)}</div>
+          <div class="status">
+            <span class="status-dot ${status.dot}"></span> ${status.label}
           </div>
         </div>
       </div>
@@ -120,7 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   fetchItemsFromApi();
 
-  /* -------------------- BARCODE POLLING (short comments) -------------------- */
+  /* -------------------- BACKGROUND BARCODE POLLING -------------------- */
   let LAST_SCANNED = null;
 
   function handleScannedProduct(data) {
@@ -137,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
       name: p.name || "Scanned Item",
       quantity: p.quantity || "",
       manufacture_date: p.manufacture_date || "",
-      expiry_date: p.expiry_date || ""
+      expiry_date: p.expiry_date || "",
     };
 
     ALL_ITEMS.unshift(newItem);
@@ -145,6 +203,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   setInterval(async () => {
+    // ❌ If user is in Add New page, DO NOT poll
+    if (document.getElementById("entry-view").style.display === "block") return;
+
     try {
       const res = await fetch("http://localhost:5000/barcode/latest");
       const data = await res.json();
@@ -153,5 +214,4 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("[scan error]", err);
     }
   }, 1500);
-
 });
