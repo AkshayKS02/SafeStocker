@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/run-scanner", (req, res) => {
-    exec("python ./barcode.py", (err, stdout) => {
+    exec("py ./python/barcode.py", (err, stdout) => {
         if (err) return res.status(500).send("Error running scanner");
         console.log(stdout);
         res.send("Scanner started");
