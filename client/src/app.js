@@ -1,9 +1,4 @@
-// app.js (Full code with all interactivity, including login)
-
 document.addEventListener("DOMContentLoaded", function () {
-  // --- 1. Get Elements ---
-
-  // Main View Sections
   const allViews = [
     document.getElementById("home-view"),
     document.getElementById("track-view"),
@@ -11,102 +6,66 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("entry-view"),
   ];
 
-  // Navigation Buttons
   const allNavButtons = document.querySelectorAll(".nav-button");
   const homeButton = document.getElementById("home-button");
   const trackButton = document.getElementById("track-button");
   const billingButton = document.getElementById("billing-button");
   const addNewButton = document.getElementById("add-new-button");
 
-  // Form Toggles and Content
   const standardToggle = document.getElementById("standard-toggle");
   const customToggle = document.getElementById("custom-toggle");
   const formStandard = document.getElementById("form-standard");
   const formCustom = document.getElementById("form-custom");
 
-  // NEW: Login Modal Elements
   const userButton = document.getElementById("user-button");
   const loginModal = document.getElementById("login-modal");
   const closeModalButton = document.getElementById("modal-close-button");
   const loginForm = document.getElementById("login-form");
   const usernameInput = document.getElementById("username");
 
-  // --- 2. Main Navigation Logic (Switches pages) ---
-
   function switchAppView(viewToShow, buttonToActivate) {
     allViews.forEach((view) => (view.style.display = "none"));
     viewToShow.style.display = "block";
-
     allNavButtons.forEach((btn) => btn.classList.remove("active-nav-button"));
     buttonToActivate.classList.add("active-nav-button");
   }
 
-  homeButton.addEventListener("click", () =>
-    switchAppView(allViews[0], homeButton)
-  );
-  trackButton.addEventListener("click", () =>
-    switchAppView(allViews[1], trackButton)
-  );
-  billingButton.addEventListener("click", () =>
-    switchAppView(allViews[2], billingButton)
-  );
-  addNewButton.addEventListener("click", () =>
-    switchAppView(allViews[3], addNewButton)
-  );
+  homeButton.addEventListener("click", () => switchAppView(allViews[0], homeButton));
+  trackButton.addEventListener("click", () => switchAppView(allViews[1], trackButton));
+  billingButton.addEventListener("click", () => switchAppView(allViews[2], billingButton));
+  addNewButton.addEventListener("click", () => switchAppView(allViews[3], addNewButton));
 
-  // Initial setup: Show Home view
   switchAppView(allViews[0], homeButton);
-
-  // --- 3. Form Toggle Logic (Switches Standard/Custom forms) ---
 
   function switchFormToggle(formToShow, toggleToActivate, toggleToDeactivate) {
     formStandard.style.display = "none";
     formCustom.style.display = "none";
     formToShow.style.display = "block";
-
     toggleToActivate.classList.add("active-toggle");
     toggleToDeactivate.classList.remove("active-toggle");
   }
 
   if (standardToggle && customToggle) {
-    standardToggle.addEventListener("click", () => {
-      switchFormToggle(formStandard, standardToggle, customToggle);
-    });
-    customToggle.addEventListener("click", () => {
-      switchFormToggle(formCustom, customToggle, standardToggle);
-    });
+    standardToggle.addEventListener("click", () =>
+      switchFormToggle(formStandard, standardToggle, customToggle)
+    );
+    customToggle.addEventListener("click", () =>
+      switchFormToggle(formCustom, customToggle, standardToggle)
+    );
   }
 
-  // --- 4. NEW: Login Modal Logic ---
+  userButton.addEventListener("click", () => (loginModal.style.display = "flex"));
+  closeModalButton.addEventListener("click", () => (loginModal.style.display = "none"));
 
-  // Open the modal when 'user' button is clicked
-  userButton.addEventListener("click", () => {
-    loginModal.style.display = "flex"; // Use flex to center it
-  });
-
-  // Close the modal when 'X' is clicked
-  closeModalButton.addEventListener("click", () => {
-    loginModal.style.display = "none";
-  });
-
-  // Handle the (simulated) login
   loginForm.addEventListener("submit", function (event) {
-    event.preventDefault(); // Stop the form from reloading the page
-
+    event.preventDefault();
     const username = usernameInput.value;
-
-    // Check if the user actually typed something
     if (username.trim() !== "") {
-      // Update the user button text
       userButton.textContent = `Hi, ${username}`;
-      // Close the modal
       loginModal.style.display = "none";
-      // Clear the form for next time
       loginForm.reset();
     }
   });
-
-  // --- 5. Track View: Sorting Logic for Table ---
 
   const filterButtons = document.querySelectorAll(".filter-pill");
   const productTable = document.querySelector(".product-table tbody");
@@ -115,22 +74,19 @@ document.addEventListener("DOMContentLoaded", function () {
     filterButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const rows = Array.from(productTable.querySelectorAll("tr"));
-        const column = button.textContent.trim().toLowerCase(); // 'name', 'quantity', 'date'
-        const isDate = column === "date";
-        const isQuantity = column === "quantity";
-        const isName = column === "name";
+        const column = button.textContent.trim().toLowerCase();
 
         rows.sort((a, b) => {
           let A, B;
-          if (isDate) {
+          if (column === "date") {
             A = new Date(a.cells[2].textContent.split("/").reverse().join("-"));
             B = new Date(b.cells[2].textContent.split("/").reverse().join("-"));
             return A - B;
-          } else if (isQuantity) {
+          } else if (column === "quantity") {
             A = a.cells[1].textContent.toLowerCase();
             B = b.cells[1].textContent.toLowerCase();
             return A.localeCompare(B);
-          } else if (isName) {
+          } else {
             A = a.cells[0].textContent.toLowerCase();
             B = b.cells[0].textContent.toLowerCase();
             return A.localeCompare(B);
@@ -138,8 +94,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         rows.forEach((row) => productTable.appendChild(row));
-
-        // highlight the active filter button
         filterButtons.forEach((b) => b.classList.remove("active"));
         button.classList.add("active");
       });
@@ -148,12 +102,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   addNewButton.addEventListener("click", () => {
     switchAppView(allViews[3], addNewButton);
-
-    // Now the entry view is visible — attach event safely
     const scanBtn = document.getElementById("scan-btn");
-
     scanBtn.addEventListener("click", () => {
-      console.log("Scan button clicked!");
       fetch("http://localhost:5000/run-scanner")
         .then((res) => res.text())
         .then(console.log)
@@ -166,9 +116,146 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((res) => res.json())
       .then((data) => {
         if (!data || !data.product) return;
-
-        // TODO: display product in a card
         console.log("New Product:", data.product);
       });
   }, 1500);
+    /* ---------- Card system: fetch items, compute status, render cards, search/filter ---------- */
+  const ITEMS_API = "/items"; // change to full origin if needed, e.g. http://localhost:5000/items
+
+  let ALL_ITEMS = [];
+
+  function parseDate(d) {
+    if (!d) return null;
+    const dt = new Date(d);
+    return isNaN(dt) ? null : dt;
+  }
+  function formatDateStr(d) {
+    const dt = parseDate(d);
+    return dt ? dt.toLocaleDateString() : (d || '-');
+  }
+
+  function computeStatus(item) {
+    const expiryRaw = item.expiryDate || item.expiry_date || item.expDate || item.expiry;
+    const expiry = parseDate(expiryRaw);
+    if (!expiry) return { key: "unknown", label: "Unknown", dot: "" };
+    const now = new Date();
+    const diffDays = Math.ceil((expiry - now) / (1000*60*60*24));
+    if (diffDays < 0) return { key: "expired", label: "Expired", dot: "red" };
+    if (diffDays <= 7) return { key: "near", label: "Near Expiry", dot: "yellow" };
+    return { key: "fresh", label: "Fresh", dot: "darkgreen" };
+  }
+
+  function escapeHtml(s) {
+    if (s === undefined || s === null) return '';
+    return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+  }
+
+  function jsonSafe(v) { return v === undefined || v === null ? "''" : JSON.stringify(v); }
+
+  function renderCard(item) {
+    const status = computeStatus(item);
+    const manuf = formatDateStr(item.manufacturerDate || item.manufacture_date || item.mfgDate || item.mfg);
+    const expiry = formatDateStr(item.expiryDate || item.expiry_date || item.expDate || item.expiry);
+    const qty = item.quantity ?? item.qty ?? '—';
+    const location = item.location || item.place || '';
+    const barcode = item.barcode || item.code || '';
+
+    return `
+      <div class="item-card" data-id="${item.id ?? ''}" data-name="${escapeHtml((item.name||'').toLowerCase())}" data-barcode="${escapeHtml(String(barcode).toLowerCase())}" data-status="${status.key}">
+        <div class="card-top">
+          <div>
+            <div class="item-title">${escapeHtml(item.name || item.title || 'Unnamed')}</div>
+            <div class="item-meta small-muted">${escapeHtml(location)} • <span class="barcode">${escapeHtml(barcode)}</span></div>
+          </div>
+          <div class="qty-box">Qty: ${escapeHtml(String(qty))}</div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <div class="item-meta">
+            <div class="status"><span class="status-dot ${status.dot}"></span> ${status.label}</div>
+          </div>
+
+          <div class="manuf-exp">
+            <div class="label">Mfg</div>
+            <div class="value">${escapeHtml(manuf)}</div>
+
+            <div class="label" style="margin-top:6px;">Exp</div>
+            <div class="value">${escapeHtml(expiry)}</div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="card-button" onclick="viewItem(${jsonSafe(item.id)})">View</button>
+          <button class="card-button primary" onclick="openEdit(${jsonSafe(item.id)})">Edit</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderItemsToDom(items) {
+    const container = document.getElementById("items-container");
+    if (!container) return;
+    container.innerHTML = Array.isArray(items) ? items.map(renderCard).join('') : renderCard(items);
+  }
+
+  async function fetchItemsFromApi() {
+    try {
+      const res = await fetch(ITEMS_API);
+      if (!res.ok) throw new Error('Network response not ok: ' + res.status);
+      const data = await res.json();
+      ALL_ITEMS = Array.isArray(data) ? data : [data];
+      applyFiltersAndRender();
+    } catch (err) {
+      console.error('Failed to load items', err);
+      const container = document.getElementById("items-container");
+      if (container) container.innerHTML = '<div class="small-muted">Could not load items. Check server/CORS.</div>';
+    }
+  }
+
+  function applyFiltersAndRender() {
+    const q = (document.getElementById("search-input")?.value || '').trim().toLowerCase();
+    const statusFilter = document.getElementById("status-filter")?.value || 'all';
+    const dateVal = document.getElementById("date-filter")?.value; // yyyy-mm-dd
+
+    const filtered = ALL_ITEMS.filter(it => {
+      if (q) {
+        const hay = ((it.name||'') + ' ' + (it.barcode||'') + ' ' + (it.title||'')).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      const status = computeStatus(it).key;
+      if (statusFilter !== 'all' && status !== statusFilter) return false;
+      if (dateVal) {
+        const d = parseDate(it.expiryDate || it.expiry_date || it.expDate || it.expiry);
+        if (!d) return false;
+        if (d.toISOString().slice(0,10) !== dateVal) return false;
+      }
+      return true;
+    });
+
+    renderItemsToDom(filtered);
+  }
+
+  /* placeholder handlers — hook into your detail/edit UI */
+  function viewItem(id) { console.log('view', id); /* open modal or navigate */ }
+  function openEdit(id) { console.log('edit', id); /* open edit UI */ }
+
+  /* wire up controls */
+  document.addEventListener('DOMContentLoaded', () => {
+    // fetch items immediately on load
+    fetchItemsFromApi();
+
+    const s = document.getElementById('search-input');
+    if (s) s.addEventListener('input', applyFiltersAndRender);
+
+    const sf = document.getElementById('status-filter');
+    if (sf) sf.addEventListener('change', applyFiltersAndRender);
+
+    const df = document.getElementById('date-filter');
+    if (df) df.addEventListener('change', applyFiltersAndRender);
+
+    const refresh = document.getElementById('refresh-items');
+    if (refresh) refresh.addEventListener('click', fetchItemsFromApi);
+  });
+
 });
+
