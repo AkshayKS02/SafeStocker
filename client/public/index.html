@@ -45,40 +45,26 @@
             <button class="filter-pill blue-bg-pill">Quantity</button>
             <button class="filter-pill blue-bg-pill">Date</button>
         </div>
-    
-        <div class="product-table-container">
-            <table class="product-table">
-                <thead>
-                    <tr>
-                        <th>Product Name</th>
-                        <th>Quantity</th>
-                        <th>Expiry Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Milk</td>
-                        <td>10 litre</td>
-                        <td>25/11/2025</td>
-                        <td><span class="status-dot red-dot"></span> Expired Soon</td>
-                    </tr>
-                    <tr>
-                        <td>Apples</td>
-                        <td>Bag</td>
-                        <td>29/11/2025</td>
-                        <td><span class="status-dot yellow-dot"></span> Near Expiry</td>
-                    </tr>
-                    <tr>
-                        <td>Canned Beans</td>
-                        <td>—</td>
-                        <td>01/12/2026</td>
-                        <td><span class="status-dot darkgreen-dot"></span> Fresh</td>
-                    </tr>
-                </tbody>
-            </table>
+
+    <!-- NEW Search + Filter UI -->
+        <div class="product-controls">
+            <div class="search-row">
+                <input id="search-input" type="search" placeholder="Search" class="styled-input" />
+                <select id="status-filter" class="styled-select">
+                    <option value="all">All statuses</option>
+                    <option value="expired">Expired</option>
+                    <option value="near">Near Expiry</option>
+                    <option value="fresh">Fresh</option>
+                </select>
+                <input id="date-filter" type="date" class="styled-input" />
+                <button id="refresh-items" class="nav-button">Refresh</button>
+            </div>
         </div>
+
+        <!-- NEW: Cards will load here -->
+        <div id="items-container" class="items-grid"></div>
     </section>
+
 
 
     <section class="page-view" id="billing-view" style="display: none;">
@@ -98,7 +84,16 @@
         </div>
     
         <form class="form-content-container" id="form-standard">
-    
+            <div class="input-row">
+                <label for="quantity">Quantity:</label>
+                <input type="text" id="quantity" name="quantity" placeholder="e.g., DD/MM/YYYY" class="dark-input"
+                    required>
+            </div>
+            <div class="input-row">
+                <label for="manufacture-date">Manufacture Date:</label>
+                <input type="text" id="manufacture-date" name="manufacture-date" placeholder="e.g., DD/MM/YYYY" class="dark-input"
+                    required>
+            </div>
             <div class="input-row">
                 <label for="expiry-date">Expiry Date:</label>
                 <input type="text" id="expiry-date" name="expiry-date" placeholder="e.g., DD/MM/YYYY" class="dark-input"
@@ -131,7 +126,11 @@
                     <option value="Beverages">
                     <option value="Other">
                 </datalist>
-            
+                <div class="input-row">
+                    <label for="quantity">Quantity:</label>
+                    <input type="text" id="quantity" name="quantity" placeholder="e.g., DD/MM/YYYY" class="dark-input"
+                    required>
+                </div>
             
                 <div class="input-row">
                     <label for="purchase-date">Purchase Date:</label>
