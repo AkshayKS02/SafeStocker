@@ -11,10 +11,11 @@ scanned_history = set()
 # ---------------- Send barcode to Node server ----------------
 def send_to_node(barcode_value):
     try:
-        res = requests.post(NODE_SERVER_URL, json={"barcode": barcode_value})
-        print("[Scanner] Node Response:", res.json())
+        requests.post(NODE_SERVER_URL, json={"barcode": barcode_value})
+        print(barcode_value)  # <-- OUTPUT ONLY BARCODE
     except:
-        print("[Scanner Error] Could not send barcode to Node.js server")
+        print("ERROR")
+
 
 # ---------------- Scan barcodes from webcam ----------------
 def scan_barcodes(frame):

@@ -11,8 +11,11 @@ app.use(express.json());
 app.get("/run-scanner", (req, res) => {
     exec("py ./python/barcode.py", (err, stdout) => {
         if (err) return res.status(500).send("Error running scanner");
-        console.log(stdout);
-        res.send("Scanner started");
+        
+        const barcode = stdout.trim();  
+        console.log("Scanned:", barcode);
+
+        res.json({ barcode });   // <-- return barcode
     });
 });
 
