@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-
   /* -------------------- VIEW + NAV -------------------- */
   const allViews = [
     document.getElementById("home-view"),
@@ -77,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
     inactiveToggle.classList.remove("active-toggle");
 
     // Hide preview when switching forms
-    document.getElementById("scan-preview-standard").style.display = "none";  // FIXED
+    document.getElementById("scan-preview-standard").style.display = "none"; // FIXED
   }
 
   standardToggle.onclick = () =>
@@ -101,13 +100,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .then((productData) => ({ productData, barcode }));
         })
         .then(({ productData, barcode }) => {
-
           // ⭐ FIXED: Show preview in STANDARD ONLY
-          document.getElementById("scan-preview-standard").style.display = "flex";
+          document.getElementById("scan-preview-standard").style.display =
+            "flex";
           document.getElementById("scan-name-standard").innerText =
             productData.product.name;
-          document.getElementById("scan-barcode-standard").innerText =
-            barcode;
+          document.getElementById("scan-barcode-standard").innerText = barcode;
 
           window.scannedItem = {
             barcode,
@@ -194,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     if (document.getElementById("entry-view").style.display === "block") {
-      document.getElementById("scan-preview-standard").style.display = "flex";  // FIXED
+      document.getElementById("scan-preview-standard").style.display = "flex"; // FIXED
       document.getElementById("scan-name-standard").innerText =
         window.scannedItem.name;
       document.getElementById("scan-barcode-standard").innerText =
@@ -254,7 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
         standardForm.reset();
 
         // hide new preview correctly
-        document.getElementById("scan-preview-standard").style.display = "none";  // FIXED
+        document.getElementById("scan-preview-standard").style.display = "none"; // FIXED
         window.scannedItem = null;
       }
     } catch (err) {
@@ -263,4 +261,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("add-bill-btn")) {
+      const name = e.target.dataset.name;
+      const price = parseInt(e.target.dataset.price);
+
+      const container = document.getElementById("bill-items");
+      const totalBox = document.getElementById("bill-total");
+
+      container.innerHTML += `
+            <div class="bill-line">
+                <span>${name}</span>
+                <span>₹${price}</span>
+            </div>
+        `;
+
+      const current = parseInt(totalBox.innerText.replace("₹", ""));
+      totalBox.innerText = "₹" + (current + price);
+    }
+  });
 });

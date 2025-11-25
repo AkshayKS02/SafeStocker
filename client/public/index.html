@@ -50,11 +50,65 @@
     </section>
 
     <section class="page-view" id="billing-view" style="display: none;">
-        <div class="welcome-message">
-            <h2>Billing Information</h2>
-            <p>Billing features are coming soon!</p>
+
+        <h2 class="billing-title">Billing</h2>
+
+        <!-- SEARCH BAR -->
+        <div class="billing-search-row">
+            <input type="text" id="billing-search" class="billing-input"
+                placeholder="Search product or scan barcode...">
+            <button class="billing-scan-btn">Scan</button>
         </div>
+
+        <div class="billing-layout">
+
+            <!-- LEFT SIDE: PRODUCT LIST -->
+            <div class="billing-products-box">
+                <h3>Products</h3>
+
+                <div class="billing-product-card">
+                    <div>
+                        <div class="bill-item-name">Sprite 500ml</div>
+                        <div class="bill-item-barcode">8901234567890</div>
+                    </div>
+                    <button class="add-bill-btn" data-name="Sprite 500ml" data-price="30">Add</button>
+                </div>
+
+                <div class="billing-product-card">
+                    <div>
+                        <div class="bill-item-name">Lays Chips (Blue)</div>
+                        <div class="bill-item-barcode">8900987654321</div>
+                    </div>
+                    <button class="add-bill-btn" data-name="Lays Chips (Blue)" data-price="20">Add</button>
+                </div>
+
+                <div class="billing-product-card">
+                    <div>
+                        <div class="bill-item-name">Paracetamol Strip</div>
+                        <div class="bill-item-barcode">9988776655443</div>
+                    </div>
+                    <button class="add-bill-btn" data-name="Paracetamol Strip" data-price="15">Add</button>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE: BILL PANEL -->
+            <div class="billing-cart-box">
+                <h3>Current Bill</h3>
+
+                <div id="bill-items"></div>
+
+                <div class="bill-summary">
+                    <div class="bill-total-label">Grand Total:</div>
+                    <div id="bill-total" class="bill-total-value">₹0</div>
+                </div>
+
+                <button class="generate-bill-btn">Generate Bill</button>
+            </div>
+
+        </div>
+
     </section>
+
 
     <!-- ADD NEW ITEM VIEW -->
     <section class="page-view" id="entry-view" style="display: none;">
