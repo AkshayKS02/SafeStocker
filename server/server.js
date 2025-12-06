@@ -3,6 +3,7 @@ import cors from "cors";
 import barcodeRoutes from "./routes/barcodeRoutes.js";
 import itemRoutes from "./routes/itemRoutes.js";
 import { exec } from "child_process";
+import stockRoutes from "./routes/stockRoutes.js";
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,7 @@ app.get("/run-scanner", (req, res) => {
 // Routes
 app.use("/barcode", barcodeRoutes);
 app.use("/items", itemRoutes);
+app.use("/stock", stockRoutes);  
 
 const PORT = 5000;
 app.listen(PORT, () => console.log("Server running on port", PORT));

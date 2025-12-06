@@ -1,13 +1,11 @@
-import { Router } from "express";
-import { getAllItems, saveNewItem } from "../controllers/itemController.js";
+import express from "express";
+import { getAllItems, addItem } from "../controllers/itemController.js";
 
-const router = Router();
+const router = express.Router();
 
-// GET /items → return everything from items.json
 router.get("/", getAllItems);
-
-// POST /items/add → save new item
-router.post("/add", saveNewItem);
+router.post("/", addItem);
 
 export default router;
+
 

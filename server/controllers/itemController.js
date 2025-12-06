@@ -1,38 +1,31 @@
-import { loadItems, saveItems } from "../db/itemsDB.js";
+import db from "../config/db.js";
 
-// GET /items
-export function getAllItems(req, res) {
+export async function getAllItems(req, res) {
     try {
-        const items = loadItems();
-        res.json(items);
+        const [rows] = await db.query(`
+            SELECT Items.*, Category.CategoryName
+            FROM Items
+            LEFT JOIN Category ON Items.CategoryID = Category.CategoryID
+        `);
+
+        res.json(rows);
     } catch (err) {
-        console.error("Error loading items:", err);
-        res.status(500).json({ error: "Could not load items" });
+        res.status(500).json({ error: err.message });
     }
 }
 
-// POST /items/add
-export function saveNewItem(req, res) {
+export async function addItem(req, res) {
+    const { ItemName, Barcode, CategoryID, ShelfLife, Source } = req.body;
+
     try {
-        const item = req.body;
+        const [result] = await db.query(
+            `INSERT INTO Items (ItemName, Barcode, CategoryID, ShelfLife, Source)
+             VALUES (?, ?, ?, ?, ?)`,
+            [ItemName, Barcode, CategoryID, ShelfLife, Source]
+        );
 
-        if (!item || !item.barcode) {
-            return res.status(400).json({ error: "Invalid item data" });
-        }
-
-        const items = loadItems();
-
-        items.push({
-            ...item,
-            timestamp: Date.now()  // Add timestamp automatically
-        });
-
-        saveItems(items);
-
-        res.json({ success: true, item });
+        res.json({ message: "Item added", ItemID: result.insertId });
     } catch (err) {
-        console.error("Error saving item:", err);
-        res.status(500).json({ error: "Could not save item" });
+        res.status(500).json({ error: err.message });
     }
 }
-
