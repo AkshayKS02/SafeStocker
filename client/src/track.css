@@ -1,0 +1,248 @@
+/* --- Track view: filters --- */
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 20px 0;
+}
+
+.filter-pill {
+  border: 1px solid var(--color-blue, #1e3a8a);
+  color: var(--color-blue, #1e3a8a);
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-pill:hover {
+  background-color: var(--color-blue, #1e3a8a);
+  color: white;
+}
+
+.filter-pill.active {
+  background-color: var(--color-blue, #1e3a8a);
+  color: white;
+}
+
+/* --- Optional table layout --- */
+
+.product-table-container {
+  margin-top: 25px;
+  overflow-x: auto;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.product-table thead {
+  background-color: var(--color-blue, #1e3a8a);
+  color: white;
+}
+
+.product-table th,
+.product-table td {
+  text-align: left;
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+}
+
+.product-table th:first-child,
+.product-table td:first-child {
+  border-left: none;
+}
+
+.product-table tbody tr:hover {
+  background-color: #f8f8f8;
+}
+
+/* small-dot style (old) */
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Color states for table usage */
+.red-dot {
+  background-color: #e53935;
+}
+
+.yellow-dot {
+  background-color: #fbc02d;
+}
+
+.darkgreen-dot {
+  background-color: #388e3c;
+}
+
+/* ---------- Cards layout (SafeStocker style) ---------- */
+
+.product-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.search-row .styled-input,
+.search-row .styled-select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: white;
+}
+
+/* Grid of item cards */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+/* Card styling */
+.item-card {
+  background: var(--color-white);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 6px 14px rgba(17,24,39,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(17,24,39,0.10);
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.item-title {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.qty-box {
+  background: #f1f5f9;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.item-meta {
+  font-size: 0.9rem;
+  color: #444;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Manufacturer above expiry, same font-size (future use) */
+.manuf-exp {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.manuf-exp .label {
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.manuf-exp .value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.barcode {
+  font-family: monospace;
+  color: #222;
+  font-size: 0.9rem;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+/* override & extend status-dot for card usage */
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.status-dot.red {
+  background: #e53935;
+}
+
+.status-dot.yellow {
+  background: #fbc02d;
+}
+
+.status-dot.darkgreen {
+  background: #388e3c;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.card-button {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background: white;
+}
+
+.card-button.primary {
+  background: #000;
+  color: #fff;
+  border-color: transparent;
+}
+
+.small-muted {
+  font-size: 0.85rem;
+  color: #666;
+}
