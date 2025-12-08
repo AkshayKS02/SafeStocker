@@ -122,6 +122,73 @@ body { font-family: Arial, sans-serif; background-color: var(--color-light-gray-
   transform: translateY(-3px);
 }
 
+.learn-more-info { display: none; }
+.learn-more-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--color-white);
+  color: #111;
+  padding: 22px 26px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(12,20,30,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.learn-more-card h2 {
+  margin-top: 0;
+  font-size: 1.6rem;
+  margin-bottom: 12px; /* space after heading */
+}
+.learn-more-card p {
+  line-height: 1.7;
+  font-size: 1.05rem;
+  color: #333;
+  margin: 0 0 12px 0; /* add bottom margin so paragraphs are spaced */
+}
+
+/* Fade in animation for learn-more */
+.learn-more-info { opacity: 0; transform: translateY(8px); transition: opacity 280ms ease, transform 280ms ease; }
+.learn-more-info.visible { display: block; opacity: 1; transform: translateY(0); }
+
+/* --- Tighter layout controls --- */
+/*
+  To reduce the vertical gap between the hero buttons and the info card change the
+  `--hero-compact-min` value or adjust the `padding-top` on `#learn-more-section`.
+  The most direct control is the `min-height` below in `.hero-section.compact`.
+  Change `min-height: 30vh;` to a smaller value to bring the info closer.
+*/
+:root { --hero-compact-min: 30vh; }
+.hero-section.compact {
+  /* This controls how much vertical space the hero keeps when Learn More is opened. */
+  /* Adjust `--hero-compact-min` above to change spacing. */
+  height: auto;
+  min-height: var(--hero-compact-min);
+  padding-bottom: 8px;
+}
+
+/* Accent bar to improve visual style */
+.learn-more-card {
+  position: relative;
+}
+.learn-more-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 6px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--color-blue), #274bb5);
+}
+
+/* make the card text sit away from the accent */
+.learn-more-card > * { margin-left: 18px; }
+
+@media (max-width: 768px) {
+  .learn-more-card { padding: 18px; margin: 0 12px; }
+  .hero-section h1 { font-size: 2.2rem; }
+  .hero-section p { font-size: 1rem; }
+}
+
 
 .filter-controls {
   display: flex;
