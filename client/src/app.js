@@ -47,9 +47,10 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   if (getStartedButton) {
-    getStartedButton.addEventListener("click", () =>
-      switchAppView(allViews[3], addNewButton)
-    );
+    getStartedButton.addEventListener("click", () => {
+      // Open the login modal instead of switching views
+      document.getElementById("login-modal").style.display = "flex"; 
+    });
   }
 
   // Learn More -> reveal info on the home page and scroll to it
