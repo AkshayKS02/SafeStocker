@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const trackButton = document.getElementById("track-button");
   const billingButton = document.getElementById("billing-button");
   const addNewButton = document.getElementById("add-new-button");
+  const getStartedButton = document.getElementById("get-started-button");
+  const learnMoreButton = document.getElementById("learn-more-button");
   const allNavButtons = document.querySelectorAll(".nav-button");
 
   function switchAppView(viewToShow, buttonToActivate) {
@@ -18,6 +20,17 @@ document.addEventListener("DOMContentLoaded", function () {
     viewToShow.style.display = "block";
     allNavButtons.forEach((b) => b.classList.remove("active-nav-button"));
     buttonToActivate.classList.add("active-nav-button");
+    // Hide the Learn More info and restore hero when switching away from home
+    const infoEl = document.getElementById("learn-more-section") || document.getElementById("learn-more-info");
+    const hero = document.querySelector(".hero-section");
+    if (infoEl && viewToShow && viewToShow.id !== "home-view") {
+      infoEl.classList.remove("visible");
+      // hide after transition (keep timing similar to CSS transition)
+      setTimeout(() => (infoEl.style.display = "none"), 300);
+    }
+    if (hero && viewToShow && viewToShow.id !== "home-view") {
+      hero.classList.remove("compact");
+    }
   }
 
   homeButton.addEventListener("click", () =>
@@ -32,6 +45,49 @@ document.addEventListener("DOMContentLoaded", function () {
   addNewButton.addEventListener("click", () =>
     switchAppView(allViews[3], addNewButton)
   );
+
+  if (getStartedButton) {
+    getStartedButton.addEventListener("click", () =>
+      switchAppView(allViews[3], addNewButton)
+    );
+  }
+
+  // Learn More -> reveal info on the home page and scroll to it
+  if (learnMoreButton) {
+    learnMoreButton.addEventListener("click", () => {
+      // ensure home view is visible
+      switchAppView(allViews[0], homeButton);
+
+      const infoEl = document.getElementById("learn-more-section");
+      if (!infoEl) return;
+
+      // show with fade-in then scroll smoothly
+      infoEl.style.display = "block";
+      // reduce hero height so the info sits closer to the buttons
+      const hero = document.querySelector(".hero-section");
+      if (hero) hero.classList.add("compact");
+      // allow layout to update then add visible class for transition
+      setTimeout(() => infoEl.classList.add("visible"), 20);
+
+      // small timeout to allow visible class to apply before scrolling
+      setTimeout(() => {
+        infoEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 120);
+    });
+  }
+
+  // Hide learn-more info when returning to home via nav button
+  homeButton.addEventListener("click", () => {
+    const infoEl = document.getElementById("learn-more-section");
+    if (infoEl) {
+      infoEl.classList.remove("visible");
+      // hide after transition
+      setTimeout(() => (infoEl.style.display = "none"), 300);
+    }
+    // remove compact hero mode when returning to normal home
+    const hero = document.querySelector(".hero-section");
+    if (hero) hero.classList.remove("compact");
+  });
 
   switchAppView(allViews[0], homeButton);
 
