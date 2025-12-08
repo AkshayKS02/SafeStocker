@@ -1,0 +1,10 @@
+body { font-family: Arial, sans-serif; padding: 20px; }
+.header { display: flex; justify-content: space-between; }
+.items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.items th { background: #eee; padding: 10px; }
+.items td { border: 1px solid #ccc; padding: 8px; }
+.center { text-align: center; }
+.right { text-align: right; }
+.totals { margin-top: 20px; text-align: right; }
+.grand { font-size: 18px; font-weight: bold; }
+

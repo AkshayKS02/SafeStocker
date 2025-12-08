@@ -92,3 +92,11 @@ export async function handleBarcode(req, res) {
         res.status(500).json({ error: "Server error" });
     }
 }
+
+export function getLatestScan(req, res) {
+    if (!lastScan) {
+        return res.json({ found: false });
+    }
+    return res.json({ found: true, data: lastScan });
+}
+
