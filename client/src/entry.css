@@ -1,100 +1,113 @@
-/* --- ENTRY VIEW (Add New) --- */
+/* --- Entry View (Add New) Specific Styles --- */
 
+/* 1. Toggles: Aligned Left with 40px spacing */
 .entry-toggles {
-  margin-left: 10px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 15px;
+  margin-top: 30px;
   margin-bottom: 30px;
+  margin-left: 40px;
 }
 
 .toggle-button {
   padding: 10px 30px;
-  border-radius: var(--round-pill);
-  font-weight: bold;
+  border: none;
+  background: #e0e0e0;
+  border-radius: 20px;
   cursor: pointer;
-  margin-right: 15px;
-  border: 1px solid var(--color-black);
-  background-color: var(--color-white);
-  color: var(--color-black);
+  font-weight: bold;
+  color: #555;
+  transition: all 0.2s;
 }
 
-.active-toggle {
-  background-color: var(--color-black);
-  color: var(--color-white);
+.toggle-button.active-toggle {
+  background: #000;
+  color: white;
 }
 
-/* Separator bar with title */
+/* 2. Separator Line: Blue Pill Style */
 .detail-separator {
-  position: relative;
   text-align: center;
-  margin: 30px 0;
+  position: relative;
+  margin: 20px 40px;
 }
 
 .detail-separator hr {
-  border: 1px;
-  border-top: 1px solid var(--color-black);
+  border: 0;
+  border-top: 1px solid #4f6eeb;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  z-index: 0;
+  opacity: 0.3;
 }
 
 .separator-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--color-white);
-  border-width: 1px;
-  border-radius: 10px;
-  border-color: #000;
-  padding: 0 10px;
-  font-size: 1rem;
-  color: white;
-  background-color: #1e3a8a;
+  background: #4f6eeb; 
+  color: #fff;
+  padding: 8px 25px;
+  border-radius: 30px;
+  position: relative;
+  border: none;
+  font-weight: bold;
+  z-index: 1;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 5px rgba(79, 110, 235, 0.3);
 }
 
-/* Layout: standard form + scan preview */
+/* 3. Standard Layout Wrapper */
 .entry-layout {
   display: flex;
-  gap: 25px;
-  align-items: center;
-  margin-top: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 40px;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-bottom: 40px;
+  flex-wrap: wrap;
 }
 
-/* Standard form takes more width */
+/* 4. Form Container Base Style */
+.form-content-container {
+  width: 100%;
+  max-width: 450px;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* 5. FIX: Push Standard Form DOWN to match Custom */
 #form-standard {
-  flex: 2;
+  margin-top: 55px; /* Adds space to top so it sits lower */
 }
 
-/* Scan preview panel */
+/* 6. Custom Form Alignment */
+#form-custom {
+  margin-left: 40px !important;
+  margin-top: 0; 
+  margin-bottom: 40px;
+}
+
+/* Scan Preview Box - Also pushed down to match */
 .scan-preview-box {
-  flex: 1;
-  background: #ffffff;
-  border: black;
+  background: white;
+  padding: 30px;
   border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 2px dashed #4f6eeb;
+  width: 100%;
+  max-width: 300px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  position: relative;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: fit-content;
+  min-height: 200px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-top: 55px; /* Matches the standard form push */
 }
 
 .scan-preview-box h3 {
-  font-size: 1.3rem;
-  margin-bottom: 10px;
-  color: #000;
-}
-
-.scan-preview-box p {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #222;
-  margin: 4px 0;
-}
-
-/* Responsive: stack form & preview vertically */
-@media (max-width: 768px) {
-  .entry-layout {
-    flex-direction: column;
-  }
-
-  .scan-preview-box {
-    width: 100%;
-  }
+  margin-top: 0;
+  color: #4f6eeb;
 }
