@@ -110,7 +110,62 @@
 }
 
 .hero-buttons .nav-button:hover {
+<<<<<<< HEAD
   transform: translateY(-2px);
   background-color: var(--color-white);
   color: var(--color-black);
 }
+=======
+  transform: translateY(-3px);
+}
+
+/* --- Learn More section card --- */
+
+.learn-more-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--color-white);
+  color: #111;
+  padding: 22px 26px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(12,20,30,0.08);
+  border: 1px solid rgba(0,0,0,0.06);
+  position: relative;
+}
+
+.user-card {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 180px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 999;
+}
+
+.hidden {
+  display: none;
+}
+
+.user-card-name {
+  margin: 0 0 10px;
+  font-weight: bold;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: #ff5a5a;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  opacity: 0.9;
+}
+>>>>>>> 8b19985f4724ed1ae0852826bcabb485ccd49bf8

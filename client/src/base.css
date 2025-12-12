@@ -211,3 +211,47 @@ label {
   color: #aaa;
   cursor: pointer;
 }
+
+/* Wrapper to center the button */
+.google-login-wrapper {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Main Google login button */
+.google-login-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #ffffff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 1px solid #dadce0;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    color: #3c4043;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Google button hover effects */
+.google-login-btn:hover {
+    background: #f7f8f8;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* Google icon styling */
+.google-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.profile-pic {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
