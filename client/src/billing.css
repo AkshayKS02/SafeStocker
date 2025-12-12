@@ -3,17 +3,22 @@
 /* 1. Styled Header with Underline */
 /* 1. Styled Header with Underline */
 .billing-title {
-  padding: 10px 20px 20px; 
-  margin: 2;
-  /* CHANGED: Now uses the same font as SafeStocker */
-  font-family: "Times New Roman", Times, serif;
-  font-size: 3rem; /* Slightly larger to match the new font style */
+  margin: 0;
+
+  /* Smaller gap above, bigger gap below */
+  padding: 12px 0 15px 50px;
+
+  font-family: "Poppins", "Inter", sans-serif;
+  font-size: 2rem;
   font-weight: 800;
-  color: #111;
-  border-bottom: 1px solid #e0e0e0; 
-  margin-bottom: 25px; 
-  background-color: #fff; 
+  letter-spacing: 1px;
+  color: #000;
+
+  line-height: 1.05;
+
+  border-bottom: 1px solid #e2e2e2;
 }
+
 
 /* 2. Search Bar Area */
 .billing-search-row {

@@ -1,248 +1,124 @@
-/* --- Track view: filters --- */
+/* --- Track View Specific Styles --- */
 
+/* 1. Filter Buttons Section (Restoring the missing part) */
 .filter-controls {
   display: flex;
-  gap: 10px;
-  margin: 10px 0 20px 0;
+  gap: 15px;
+  padding: 0 40px 30px; /* Aligns with the grid below */
 }
 
 .filter-pill {
-  border: 1px solid var(--color-blue, #1e3a8a);
-  color: var(--color-blue, #1e3a8a);
-  background: transparent;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 600;
+  padding: 8px 25px;
+  border-radius: 30px; /* Pill shape */
+  border: 1px solid #4f6eeb; /* Blue border */
+  background: white;
+  color: #4f6eeb;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-pill:hover {
-  background-color: var(--color-blue, #1e3a8a);
-  color: white;
-}
-
-.filter-pill.active {
-  background-color: var(--color-blue, #1e3a8a);
-  color: white;
-}
-
-/* --- Optional table layout --- */
-
-.product-table-container {
-  margin-top: 25px;
-  overflow-x: auto;
-}
-
-.product-table {
-  width: 100%;
-  border-collapse: collapse;
+  font-weight: bold;
   font-size: 0.95rem;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.2s;
 }
 
-.product-table thead {
-  background-color: var(--color-blue, #1e3a8a);
+/* Style for active or hovered buttons */
+.filter-pill:hover,
+.filter-pill.active {
+  background: #4f6eeb;
   color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(79, 110, 235, 0.2);
 }
 
-.product-table th,
-.product-table td {
-  text-align: left;
-  padding: 14px 18px;
-  border-bottom: 1px solid #eee;
-}
-
-.product-table th:first-child,
-.product-table td:first-child {
-  border-left: none;
-}
-
-.product-table tbody tr:hover {
-  background-color: #f8f8f8;
-}
-
-/* small-dot style (old) */
-.status-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
-/* Color states for table usage */
-.red-dot {
-  background-color: #e53935;
-}
-
-.yellow-dot {
-  background-color: #fbc02d;
-}
-
-.darkgreen-dot {
-  background-color: #388e3c;
-}
-
-/* ---------- Cards layout (SafeStocker style) ---------- */
-
-.product-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 12px 0;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.search-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  width: 100%;
-}
-
-.search-row .styled-input,
-.search-row .styled-select {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background: white;
-}
-
-/* Grid of item cards */
+/* 2. The Grid Layout */
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
-  margin: 18px 0;
+  /* Auto-fit columns: roughly 280px wide each */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 0 40px 40px; /* Aligns with filters */
 }
 
-/* Card styling */
+/* 3. The Individual Card */
 .item-card {
-  background: var(--color-white);
+  background: white;
+  border: 1px solid #eee;
   border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 6px 14px rgba(17,24,39,0.06);
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  justify-content: space-between;
+  min-height: 140px;
 }
 
 .item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(17,24,39,0.10);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-
+/* 4. Card Typography */
 .item-title {
-  font-family: "Times New Roman", Times, serif;
-  font-size: 1.05rem;
   font-weight: 700;
+  font-size: 1.1rem;
   color: #111;
-}
-
-.qty-box {
-  background: #f1f5f9;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  margin-bottom: 5px;
 }
 
 .item-meta {
-  font-size: 0.9rem;
-  color: #444;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Manufacturer above expiry, same font-size (future use) */
-.manuf-exp {
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-}
-
-.manuf-exp .label {
-  font-size: 0.78rem;
   color: #666;
-}
-
-.manuf-exp .value {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #111;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
 }
 
 .barcode {
   font-family: monospace;
-  color: #222;
-  font-size: 0.9rem;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #333;
 }
 
+/* 5. Quantity Box */
+.qty-box {
+  font-weight: bold;
+  font-size: 0.95rem;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* 6. Status Indicators (The Dots) */
 .status {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.9rem;
   font-weight: 600;
+  color: #444;
 }
 
-/* override & extend status-dot for card usage */
 .status-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
 
-.status-dot.red {
-  background: #e53935;
+/* --- THE COLORS --- */
+.status-dot.green {
+  background-color: #2ecc71; /* Fresh */
+  box-shadow: 0 0 5px rgba(46, 204, 113, 0.5);
 }
 
 .status-dot.yellow {
-  background: #fbc02d;
+  background-color: #f1c40f; /* Near Expiry */
+  box-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
 }
 
-.status-dot.darkgreen {
-  background: #388e3c;
+.status-dot.red {
+  background-color: #e74c3c; /* Expired */
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
 }
 
-.card-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.card-button {
-  padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  background: white;
-}
-
-.card-button.primary {
-  background: #000;
-  color: #fff;
-  border-color: transparent;
-}
-
-.small-muted {
-  font-size: 0.85rem;
-  color: #666;
+.status-dot.gray {
+  background-color: #bdc3c7; /* Unknown */
 }
