@@ -110,12 +110,6 @@
 }
 
 .hero-buttons .nav-button:hover {
-<<<<<<< HEAD
-  transform: translateY(-2px);
-  background-color: var(--color-white);
-  color: var(--color-black);
-}
-=======
   transform: translateY(-3px);
 }
 
@@ -168,4 +162,3 @@
 .logout-btn:hover {
   opacity: 0.9;
 }
->>>>>>> 8b19985f4724ed1ae0852826bcabb485ccd49bf8

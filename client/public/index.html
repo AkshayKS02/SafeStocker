@@ -24,22 +24,17 @@
         </nav>
         <div class="user-area">
             <button class="icon-button white-bg-icon">
-                <img src="images/bell.png" alt="Notifications" class="icon-img">
+                <img src="images/bell.png" alt="Notifications" class="icon-img" style="width: 25px; height: 25px; object-fit: contain;">
             </button>
             <button class="icon-button black-bg-icon" id="user-button">
-                <img src="images/user.png" alt="User" class="icon-img">
+                <img id="user-icon" src="images/user.png" alt="">
             </button>
         </div>
     </header>
 
-<<<<<<< HEAD
-    <div style="height:1px; background: linear-gradient(90deg, rgba(79,110,235,0), rgba(79,110,235,0.14), rgba(79,110,235,0)); margin: 0;"></div>
-
-=======
     <div
         style="height:1px; background: linear-gradient(90deg, rgba(79,110,235,0), rgba(79,110,235,0.14), rgba(79,110,235,0)); margin:6px 0 14px;">
     </div>
->>>>>>> 8b19985f4724ed1ae0852826bcabb485ccd49bf8
 
     <section class="page-view" id="home-view">
         <div class="hero-section">
@@ -106,64 +101,53 @@
                     </div>
                 </div>
             </div>
-        </section>
-    </section>
-
-    <section class="page-view" id="track-view" style="display: none;">
-        <div class="filter-controls">
-            <button class="filter-pill blue-bg-pill">Name</button>
-            <button class="filter-pill blue-bg-pill">Quantity</button>
-            <button class="filter-pill blue-bg-pill">Date</button>
-        </div>
-        <div id="items-container" class="items-grid"></div>
-    </section>
-
-    <section class="page-view" id="billing-view" style="display: none;">
-        <h2 class="billing-title">Billing</h2>
-        <div class="billing-search-row">
-            <input type="text" id="billing-search" class="billing-input"
-                placeholder="Search product or scan barcode...">
-            <button class="billing-scan-btn">Scan</button>
-        </div>
-        <div class="billing-layout">
-            <div class="billing-products-box">
-                <h3>Products</h3>
-                <div class="billing-product-card">
-                    <div>
-                        <div class="bill-item-name">Sprite 500ml</div>
-                        <div class="bill-item-barcode">8901234567890</div>
+            </section>
+            </section>
+            
+            <section class="page-view" id="track-view" style="display: none;">
+                <div class="filter-controls">
+                    <button class="filter-pill blue-bg-pill">Name</button>
+                    <button class="filter-pill blue-bg-pill">Quantity</button>
+                    <button class="filter-pill blue-bg-pill">Date</button>
+                </div>
+                <div id="items-container" class="items-grid"></div>
+            </section>
+            
+            <section class="page-view" id="billing-view" style="display: none;">
+                <h2 class="billing-title">Billing</h2>
+            
+                <div class="billing-search-row">
+                    <input type="text" id="billing-search" class="billing-input" placeholder="Search product or scan barcode...">
+                    <button class="billing-scan-btn">Scan</button>
+                </div>
+            
+                <div class="billing-layout">
+            
+                    <!-- LEFT SIDE: Dynamic Product List -->
+                    <div class="billing-products-box">
+                        <h3>Products</h3>
                     </div>
-                    <button class="add-bill-btn" data-name="Sprite 500ml" data-price="30">Add</button>
-                </div>
-                <div class="billing-product-card">
-                    <div>
-                        <div class="bill-item-name">Lays Chips (Blue)</div>
-                        <div class="bill-item-barcode">8900987654321</div>
+            
+                    <!-- RIGHT SIDE: Cart -->
+                    <div class="billing-cart-box">
+                        <h3>Current Bill</h3>
+            
+                        <div id="bill-items"></div>
+            
+                        <div class="bill-summary">
+                            <div class="bill-total-label">Grand Total:</div>
+                            <div id="bill-total" class="bill-total-value">₹0</div>
+                        </div>
+            
+                        <button class="generate-bill-btn">Generate Bill</button>
                     </div>
-                    <button class="add-bill-btn" data-name="Lays Chips (Blue)" data-price="20">Add</button>
+            
                 </div>
-                <div class="billing-product-card">
-                    <div>
-                        <div class="bill-item-name">Paracetamol Strip</div>
-                        <div class="bill-item-barcode">9988776655443</div>
-                    </div>
-                    <button class="add-bill-btn" data-name="Paracetamol Strip" data-price="15">Add</button>
-                </div>
-            </div>
-            <div class="billing-cart-box">
-                <h3>Current Bill</h3>
-                <div id="bill-items"></div>
-                <div class="bill-summary">
-                    <div class="bill-total-label">Grand Total:</div>
-                    <div id="bill-total" class="bill-total-value">₹0</div>
-                </div>
-                <button class="generate-bill-btn">Generate Bill</button>
-            </div>
-        </div>
-    </section>
-
-    <section class="page-view" id="entry-view" style="display: none;">
-        <div class="entry-toggles">
+            </section>
+            
+            
+            <section class="page-view" id="entry-view" style="display: none;">
+                <div class="entry-toggles">
             <button class="toggle-button active-toggle" id="standard-toggle">Standard</button>
             <button class="toggle-button" id="custom-toggle">Custom</button>
         </div>
@@ -301,7 +285,7 @@
         <button id="logout-btn" class="logout-btn">Logout</button>
     </div>
 
-    <script src="../src/app.js"></script>
+    <script type="module" src="../src/app.js"></script>
 
 </body>
 

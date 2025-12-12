@@ -1,58 +1,12 @@
+import { 
+  checkGoogleLogin, 
+  manualLogin, 
+  logoutUser 
+} from "./auth.js";
+
+import { STOCK_ITEMS, loadStock } from "./stock.js";
+
 document.addEventListener("DOMContentLoaded", function () {
-  async function checkGoogleLogin() {
-    try {
-      const res = await fetch("http://localhost:5000/auth/user", {
-        credentials: "include",
-      });
-      const data = await res.json();
-
-      if (data.user) {
-        const userBtn = document.getElementById("user-button");
-        const loginModal = document.getElementById("login-modal");
-
-        // Update user button text
-        userBtn.textContent = `${data.user.displayName}`;
-
-        // Hide login modal if open
-        if (loginModal) loginModal.style.display = "none";
-
-        // Remove old login click listeners
-        const newBtn = userBtn.cloneNode(true);
-        userBtn.parentNode.replaceChild(newBtn, userBtn);
-
-        // Prepare card
-        const userCard = document.getElementById("user-card");
-        const userCardName = document.getElementById("user-card-name");
-        const logoutBtn = document.getElementById("logout-btn");
-
-        userCardName.textContent = data.user.displayName;
-
-        // Toggle card on click
-        newBtn.addEventListener("click", () => {
-          userCard.classList.toggle("hidden");
-        });
-
-        // Logout
-        logoutBtn.addEventListener("click", () => {
-          window.location.href = "http://localhost:5000/auth/logout";
-        });
-
-        // ⭐ CLOSE CARD WHEN CLICKING OUTSIDE (FIXED)
-        setTimeout(() => {
-          document.addEventListener("click", (e) => {
-            const clickedInsideCard = userCard.contains(e.target);
-            const clickedUserButton = newBtn.contains(e.target);
-
-            if (!clickedInsideCard && !clickedUserButton) {
-              userCard.classList.add("hidden");
-            }
-          });
-        }, 50);
-      }
-    } catch (err) {
-      console.error("Google login check failed:", err);
-    }
-  }
 
   /* -------------------- VIEW + NAV -------------------- */
   const allViews = [
@@ -83,12 +37,17 @@ document.addEventListener("DOMContentLoaded", function () {
   homeButton.addEventListener("click", () =>
     switchAppView(allViews[0], homeButton)
   );
-  trackButton.addEventListener("click", () =>
-    switchAppView(allViews[1], trackButton)
-  );
-  billingButton.addEventListener("click", () =>
-    switchAppView(allViews[2], billingButton)
-  );
+  trackButton.addEventListener("click", async () => {
+    switchAppView(allViews[1], trackButton);
+    await loadStock();
+    renderTrackCards();
+  });
+  billingButton.addEventListener("click", async () => {
+    switchAppView(allViews[2], billingButton);
+    await loadStock();
+    renderBillingProducts(STOCK_ITEMS);
+  });
+
   addNewButton.addEventListener("click", () =>
     switchAppView(allViews[3], addNewButton)
   );
@@ -97,8 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
   if (addStockButton) {
     addStockButton.addEventListener("click", () => {
       switchAppView(allViews[4], addStockButton);
-      // Refresh the dropdown when clicking the button
-      fetchItemsFromApi();
     });
   }
 
@@ -130,30 +87,37 @@ document.addEventListener("DOMContentLoaded", function () {
 
   switchAppView(allViews[0], homeButton);
 
-  /* -------------------- LOGIN -------------------- */
+  /* -------------------- LOGIN (MANUAL + GOOGLE SUPPORT) -------------------- */
+
   const userButton = document.getElementById("user-button");
   const loginModal = document.getElementById("login-modal");
   const closeModalButton = document.getElementById("modal-close-button");
   const loginForm = document.getElementById("login-form");
   const usernameInput = document.getElementById("username");
 
+  /* Named function so Google login can REMOVE it */
+  function openLoginModal() {
+    loginModal.style.display = "flex";
+  }
+
   if (userButton && loginModal) {
-    userButton.addEventListener(
-      "click",
-      () => (loginModal.style.display = "flex")
-    );
-    closeModalButton.addEventListener(
-      "click",
-      () => (loginModal.style.display = "none")
-    );
+    // Manual login – open modal
+    userButton.onclick = openLoginModal;
+
+    // Close modal
+    closeModalButton.addEventListener("click", () => {
+      loginModal.style.display = "none";
+    });
+
+    // Manual login submit
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
-      const username = usernameInput.value.trim();
-      if (username) {
-        userButton.textContent = `Hi, ${username}`;
-        loginModal.style.display = "none";
-        loginForm.reset();
-      }
+      const phone = usernameInput.value.trim();
+      if (!phone) return;
+      manualLogin(phone, "Owner");
+
+      loginModal.style.display = "none";
+      loginForm.reset();
     });
   }
 
@@ -220,180 +184,56 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  /* -------------------- CARD SYSTEM & STOCK DROPDOWN -------------------- */
-  const ITEMS_API = "http://localhost:5000/items";
-  let ALL_ITEMS = [];
-
-  const parseDate = (d) => (d ? new Date(d) : null);
-
-  function computeStatus(item) {
-    // Try to find a valid expiry date field
-    const dateStr = item.expiry_date || item.expiryDate || item.exp;
-    
-    if (!dateStr) return { key: "unknown", label: "No Date", dot: "gray" };
-
-    const expDate = new Date(dateStr);
-    const today = new Date();
-    
-    // Calculate difference in days
-    const diffTime = expDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-      return { key: "expired", label: "Expired", dot: "red" };
-    } else if (diffDays <= 30) { // Warn if expiring in 30 days
-      return { key: "near", label: `Expires in ${diffDays} days`, dot: "yellow" };
-    } else {
-      return { key: "fresh", label: "Fresh", dot: "green" };
-    }
-  }
-
-  function renderCard(item) {
-    const status = computeStatus(item);
-    
-    return `
-      <div class="item-card" data-id="${item.id}">
-        <div>
-          <div class="item-title">${item.name || "Unnamed Product"}</div>
-          <div class="item-meta">
-            <span class="barcode">${item.barcode || "No Barcode"}</span>
-          </div>
-          <div class="qty-box">In Stock: ${item.quantity || 0}</div>
-        </div>
-        
-        <div class="status">
-          <span class="status-dot ${status.dot}"></span>
-          <span>${status.label}</span>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderItems() {
+  function renderTrackCards() {
     const container = document.getElementById("items-container");
-    if (container) container.innerHTML = ALL_ITEMS.map(renderCard).join("");
-  }
+    if (!container) return;
 
-  /* --- NEW: Populate Stock Dropdown --- */
-  const stockItemSelect = document.getElementById("stock-item-select");
+    if (STOCK_ITEMS.length === 0) {
+      container.innerHTML = "<p>No stock found.</p>";
+      return;
+    }
+
+    container.innerHTML = STOCK_ITEMS.map(
+      (item) => `
+    <div class="item-card ${item.color}">
+      <div class="item-title">${item.name}</div>
+      <div class="item-meta">Barcode: ${item.barcode}</div>
+      <div class="qty-box">In Stock: ${item.inStock}</div>
+      <div class="expiry">Expiry: ${item.expiry}</div>
+      <div class="days-left">Days Left: ${item.daysLeft}</div>
+    </div>
+  `
+    ).join("");
+  }
 
   function populateStockItemDropdown() {
+    const stockItemSelect = document.getElementById("stock-item-select");
     if (!stockItemSelect) return;
-    stockItemSelect.innerHTML =
-      '<option value="">-- Choose an item --</option>';
-    if (ALL_ITEMS && ALL_ITEMS.length > 0) {
-      ALL_ITEMS.forEach((item) => {
-        const option = document.createElement("option");
-        // Adjust these keys based on your exact database columns
-        option.value = item.ItemID || item.id;
-        option.textContent =
-          (item.ItemName || item.name) + " (" + (item.barcode || "") + ")";
-        stockItemSelect.appendChild(option);
-      });
-    }
-  }
 
-  async function fetchItemsFromApi() {
-    try {
-      const res = await fetch(ITEMS_API);
-      ALL_ITEMS = await res.json();
-      renderItems();
-      populateStockItemDropdown(); // Update the dropdown whenever items load
-    } catch (err) {
-      console.error("Failed to load items (API might be offline)", err);
-    }
-  }
+    stockItemSelect.innerHTML = `<option value="">-- Choose an item --</option>`;
 
-  fetchItemsFromApi();
-
-  /* -------------------- ADD STOCK FORM SUBMIT -------------------- */
-  const stockForm = document.getElementById("stock-form");
-
-  if (stockForm) {
-    stockForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const itemID = stockItemSelect.value;
-      const quantity = document.getElementById("stock-quantity").value.trim();
-      const mfgDate = document
-        .getElementById("stock-manufacture-date")
-        .value.trim();
-      const expDate = document.getElementById("stock-expiry-date").value.trim();
-
-      if (!itemID) {
-        alert("Please select an item.");
-        return;
-      }
-
-      try {
-        const res = await fetch("http://localhost:5000/items/update-stock", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ItemID: itemID,
-            quantity: parseInt(quantity),
-            manufacture_date: mfgDate,
-            expiry_date: expDate,
-          }),
-        });
-
-        const data = await res.json();
-
-        if (data.success || res.ok) {
-          alert("Stock added successfully!");
-          fetchItemsFromApi(); // Refresh list
-          stockForm.reset();
-        } else {
-          alert("Failed to add stock: " + (data.error || "Unknown error"));
-        }
-      } catch (err) {
-        console.error("Stock add error:", err);
-        alert("Error adding stock. Check backend console.");
-      }
+    STOCK_ITEMS.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.itemID;
+      opt.textContent = `${item.name} (${item.barcode})`;
+      stockItemSelect.appendChild(opt);
     });
   }
 
   /* -------------------- TRACK VIEW FILTER PILLS -------------------- */
-  const filterPills = document.querySelectorAll(".filter-pill");
-  const currentSort = { key: null, dir: 1 };
+  document.getElementById("sort-name").onclick = () => {
+    STOCK_ITEMS.sort((a, b) => a.name.localeCompare(b.name));
+    renderTrackCards();
+  };
+  document.getElementById("sort-qty").onclick = () => {
+    STOCK_ITEMS.sort((a, b) => a.inStock - b.inStock);
+    renderTrackCards();
+  };
+  document.getElementById("sort-date").onclick = () => {
+    STOCK_ITEMS.sort((a, b) => new Date(a.expiry) - new Date(b.expiry));
+    renderTrackCards();
+  };
 
-  function renderItemsWithList(list) {
-    const container = document.getElementById("items-container");
-    if (container) container.innerHTML = list.map(renderCard).join("");
-  }
-
-  if (filterPills && filterPills.length) {
-    filterPills.forEach((pill) => {
-      pill.addEventListener("click", () => {
-        const key = pill.textContent.trim().toLowerCase();
-        filterPills.forEach((p) => p.classList.remove("active"));
-        pill.classList.add("active");
-
-        if (currentSort.key === key) {
-          currentSort.dir = -currentSort.dir;
-        } else {
-          currentSort.key = key;
-          currentSort.dir = 1;
-        }
-
-        const list = [...ALL_ITEMS];
-        if (key === "name") {
-          list.sort((a, b) => {
-            const an = (a.name || "").toString();
-            const bn = (b.name || "").toString();
-            return an.localeCompare(bn) * currentSort.dir;
-          });
-        } else if (key === "quantity") {
-          list.sort((a, b) => {
-            const aq = Number(a.quantity) || 0;
-            const bq = Number(b.quantity) || 0;
-            return (aq - bq) * currentSort.dir;
-          });
-        }
-        renderItemsWithList(list);
-      });
-    });
-  }
 
   /* -------------------- BACKGROUND BARCODE POLLING -------------------- */
   function handleScannedProduct(data) {
@@ -466,7 +306,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const data = await res.json();
         if (data.success) {
           alert("Item saved successfully!");
-          fetchItemsFromApi();
+          await loadStock();
+          populateStockItemDropdown();
           standardForm.reset();
           const preview = document.getElementById("scan-preview-standard");
           if (preview) preview.style.display = "none";
@@ -499,21 +340,53 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
+
+  function renderBillingProducts(list) {
+    const box = document.querySelector(".billing-products-box");
+
+    box.innerHTML =
+      "<h3>Products</h3>" +
+      list
+        .map(
+          (item) => `
+      <div class="billing-product-card">
+        <div>
+          <div class="bill-item-name">${item.name}</div>
+          <div class="bill-item-barcode">${item.barcode}</div>
+        </div>
+        <button class="add-bill-btn" data-name="${item.name}" data-price="0">Add</button>
+      </div>
+    `
+        )
+        .join("");
+  }
+
+  const billingSearch = document.getElementById("billing-search");
+
+  billingSearch.addEventListener("input", () => {
+    const q = billingSearch.value.toLowerCase();
+    const filtered = STOCK_ITEMS.filter(
+      (i) => i.name.toLowerCase().includes(q) || i.barcode.includes(q)
+    );
+    renderBillingProducts(filtered);
+  });
+
+
   /* -------------------- HERO CAROUSEL -------------------- */
   const slides = document.querySelectorAll(".hero-image");
   if (slides.length > 1) {
-      let currentSlide = 0;
-      
-      setInterval(() => {
-          // 1. Hide current slide
-          slides[currentSlide].classList.remove("active");
-          
-          // 2. Calculate next slide index
-          currentSlide = (currentSlide + 1) % slides.length;
-          
-          // 3. Show next slide
-          slides[currentSlide].classList.add("active");
-      }, 5000); // Change image every 5000ms (5 seconds)
+    let currentSlide = 0;
+
+    setInterval(() => {
+      // 1. Hide current slide
+      slides[currentSlide].classList.remove("active");
+
+      // 2. Calculate next slide index
+      currentSlide = (currentSlide + 1) % slides.length;
+
+      // 3. Show next slide
+      slides[currentSlide].classList.add("active");
+    }, 5000); // Change image every 5000ms (5 seconds)
   }
 
   checkGoogleLogin();
