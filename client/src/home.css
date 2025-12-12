@@ -5,32 +5,61 @@
   margin: 0;
 }
 
-.hero-section {
-  position: relative;
-  width: 100%;
-  min-height: 80vh;
+/* --- HOME VIEW & HERO SECTION (Full Width Banner) --- */
+
+#home-view {
+  /* Removes padding so the image touches the edges */
+  padding: 0; 
+  margin: 0;
   display: flex;
   flex-direction: column;
-  /* FIXED: Centers content vertically */
+  align-items: center;
+  width: 100%;
+}
+
+.hero-section {
+  position: relative;
+  /* CHANGED: Full width from left to right */
+  width: 100%; 
+  /* CHANGED: Fixed height (Banner style) */
+  height: 350px; 
+  
+  /* Layout mechanics */
+  display: flex;
+  flex-direction: column;
   justify-content: center; 
   align-items: center;
   text-align: center;
   color: var(--color-white);
+  
+  /* Removed border-radius since it touches edges now */
+  border-radius: 0; 
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 40px;
 }
 
-/* Background image inside hero */
+/* Carousel Images */
 .hero-section .hero-image {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%; /* FIXED: Covers full height */
-  object-fit: cover;
+  height: 100%;
+  /* Ensures image fills the wide banner without stretching */
+  object-fit: cover; 
   z-index: 0;
-  filter: brightness(0.5);
+  filter: brightness(0.6); 
+  
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
 }
 
-/* Text & buttons above image */
+.hero-section .hero-image.active {
+  opacity: 1;
+}
+
+/* --- Text & Content Adjustment --- */
 .hero-section h1,
 .hero-section p,
 .hero-section .hero-buttons {
@@ -39,16 +68,18 @@
 }
 
 .hero-section h1 {
-  font-size: 3rem;
+  font-size: 2.5rem; /* Good size for a banner */
   font-weight: 700;
-  margin-bottom: 15px;
-  text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  margin-bottom: 10px;
+  line-height: 1.2;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
 }
 
 .hero-section p {
-  font-size: 1.2rem;
-  margin-bottom: 30px;
+  font-size: 1.1rem;
+  margin-bottom: 25px;
   color: #f0f0f0;
+  max-width: 700px;
 }
 
 /* Buttons row */
@@ -58,7 +89,7 @@
 }
 
 .hero-buttons .nav-button {
-  padding: 12px 25px;
+  padding: 10px 25px;
   font-size: 1rem;
   border-radius: var(--round-pill);
   font-weight: bold;
@@ -67,31 +98,19 @@
 }
 
 .hero-buttons .nav-button:first-child {
-  background-color: var(--color-black);
-  color: var(--color-white);
+  background-color: var(--color-white);
+  color: var(--color-black);
   border: none;
 }
 
 .hero-buttons .nav-button:last-child {
-  background-color: var(--color-white);
-  color: var(--color-black);
-  border: 2px solid var(--color-black);
+  background-color: transparent;
+  color: var(--color-white);
+  border: 1px solid var(--color-white);
 }
 
 .hero-buttons .nav-button:hover {
-  transform: translateY(-3px);
-}
-
-/* --- Learn More section card --- */
-
-.learn-more-card {
-  max-width: 900px;
-  margin: 0 auto;
-  background: var(--color-white);
-  color: #111;
-  padding: 22px 26px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(12,20,30,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
-  position: relative;
+  transform: translateY(-2px);
+  background-color: var(--color-white);
+  color: var(--color-black);
 }

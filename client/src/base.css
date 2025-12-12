@@ -32,7 +32,7 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0px 0px 0;
+  padding: 0;
   border-bottom: 0px solid #eee;
 }
 
@@ -68,7 +68,7 @@ html {
 .main-nav {
   display: flex;
   gap: 15px;
-  padding: 20px 0;
+  padding: 5px 0;
 }
 
 .nav-button {

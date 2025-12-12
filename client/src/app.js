@@ -154,32 +154,43 @@ document.addEventListener("DOMContentLoaded", function () {
   const parseDate = (d) => (d ? new Date(d) : null);
 
   function computeStatus(item) {
-    const exp = parseDate(item.expiry_date || item.expiryDate);
-    if (!exp) return { key: "unknown", label: "Unknown", dot: "" };
+    // Try to find a valid expiry date field
+    const dateStr = item.expiry_date || item.expiryDate || item.exp;
+    
+    if (!dateStr) return { key: "unknown", label: "No Date", dot: "gray" };
 
-    const days = (exp - new Date()) / (1000 * 60 * 60 * 24);
-    if (days < 0) return { key: "expired", label: "Expired", dot: "red" };
-    if (days <= 7) return { key: "near", label: "Near Expiry", dot: "yellow" };
-    return { key: "fresh", label: "Fresh", dot: "darkgreen" };
+    const expDate = new Date(dateStr);
+    const today = new Date();
+    
+    // Calculate difference in days
+    const diffTime = expDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return { key: "expired", label: "Expired", dot: "red" };
+    } else if (diffDays <= 30) { // Warn if expiring in 30 days
+      return { key: "near", label: `Expires in ${diffDays} days`, dot: "yellow" };
+    } else {
+      return { key: "fresh", label: "Fresh", dot: "green" };
+    }
   }
 
   function renderCard(item) {
     const status = computeStatus(item);
+    
     return `
       <div class="item-card" data-id="${item.id}">
-        <div class="card-top">
-          <div>
-            <div class="item-title">${item.name || "Unnamed"}</div>
-            <div class="item-meta small-muted">
-              <span class="barcode">${item.barcode || ""}</span>
-            </div>
+        <div>
+          <div class="item-title">${item.name || "Unnamed Product"}</div>
+          <div class="item-meta">
+            <span class="barcode">${item.barcode || "No Barcode"}</span>
           </div>
-          <div class="qty-box">Qty: ${item.quantity || "-"}</div>
+          <div class="qty-box">In Stock: ${item.quantity || 0}</div>
         </div>
-        <div style="display:flex; justify-content:space-between;">
-          <div class="status">
-            <span class="status-dot ${status.dot}"></span> ${status.label}
-          </div>
+        
+        <div class="status">
+          <span class="status-dot ${status.dot}"></span>
+          <span>${status.label}</span>
         </div>
       </div>
     `;
@@ -409,4 +420,20 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
+  /* -------------------- HERO CAROUSEL -------------------- */
+  const slides = document.querySelectorAll(".hero-image");
+  if (slides.length > 1) {
+      let currentSlide = 0;
+      
+      setInterval(() => {
+          // 1. Hide current slide
+          slides[currentSlide].classList.remove("active");
+          
+          // 2. Calculate next slide index
+          currentSlide = (currentSlide + 1) % slides.length;
+          
+          // 3. Show next slide
+          slides[currentSlide].classList.add("active");
+      }, 5000); // Change image every 5000ms (5 seconds)
+  }
 });
