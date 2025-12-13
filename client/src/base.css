@@ -9,6 +9,10 @@
   --hero-compact-min: 30vh;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* --- CRITICAL FIX: Global Reset --- */
 html, body {
   margin: 0;
@@ -261,13 +265,15 @@ label {
     height: 20px;
 }
 
-/* --- FIX USER AVATAR ALIGNMENT --- */
 #user-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 45px;
+    height: 45px;
     padding: 0;
+    border-radius: 50%;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #user-button img {
@@ -276,6 +282,11 @@ label {
     object-fit: cover;
     border-radius: 50%;
     display: block;
-    background: transparent;
 }
+
+.google-profile-pic {
+    width: 100%;
+    height: 100%;
+}
+
 
