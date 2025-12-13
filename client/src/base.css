@@ -276,5 +276,6 @@ label {
     object-fit: cover;
     border-radius: 50%;
     display: block;
+    background: transparent;
 }
 

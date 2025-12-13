@@ -19,7 +19,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5000",
+  credentials: true
+}));
 app.use(express.json());
 
 // Serve /public (HTML, images)
@@ -37,7 +40,12 @@ app.use("/templates", express.static(path.join(__dirname, "templates")));
 app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // Set to true if using HTTPS
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 
 app.use(passport.initialize());
@@ -47,50 +55,60 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "http://localhost:5000/auth/google/callback"
-}, (accessToken, refreshToken, profile, done) => {
+}, async (accessToken, refreshToken, profile, done) => {
 
     const email = profile.emails[0].value;
     const name = profile.displayName;
+    const picture = profile.photos?.[0]?.value || "";
 
-    // Lookup shop owner
-    db.query(
-        "SELECT ShopID, OwnerName, Email FROM Shop WHERE Email = ?",
-        [email],
-        (err, rows) => {
-            if (err) return done(err);
+    try {
+        // Lookup shop owner (Promise-based query)
+        const [rows] = await db.query( 
+            "SELECT ShopID, OwnerName, Email FROM Shop WHERE Email = ?",
+            [email]
+        );
 
-            // Owner exists → login success
-            if (rows.length > 0) {
-                return done(null, {
-                    ShopID: rows[0].ShopID,
-                    OwnerName: rows[0].OwnerName,
-                    Email: rows[0].Email,
-                    isNew: false
-                });
-            }
-
-            // Owner does NOT exist → create shop entry
-            db.query(
-                "INSERT INTO Shop (OwnerName, Phone, Email) VALUES (?, NULL, ?)",
-                [name, email],
-                (err2, result) => {
-                    if (err2) return done(err2);
-
-                    return done(null, {
-                        ShopID: result.insertId,
-                        OwnerName: name,
-                        Email: email,
-                        isNew: true
-                    });
-                }
-            );
+        // Owner exists → login success
+        if (rows.length > 0) {
+            return done(null, {
+                ShopID: rows[0].ShopID,
+                OwnerName: rows[0].OwnerName,
+                Email: rows[0].Email,
+                isNew: false,
+                picture // 🛠️ FIX: Ensure picture is passed
+            });
         }
-    );
+
+        // Owner does NOT exist → create shop entry
+        const [result] = await db.query(
+            "INSERT INTO Shop (OwnerName, Phone, Email) VALUES (?, '', ?)",
+            [name, email]
+        );
+
+        return done(null, {
+            ShopID: result.insertId,
+            OwnerName: name,
+            Email: email,
+            isNew: true,
+            picture // 🛠️ FIX: Ensure picture is passed
+        });
+
+    } catch (err) {
+        console.error("3. Critical error in Passport strategy:", err);
+        return done(err);
+    }
 }));
 
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+passport.serializeUser((user, done) => {
+  // 🛠️ FIX: Serialize the entire user object including picture
+  done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+  // 🛠️ FIX: Deserialize the entire user object
+  done(null, obj);
+});
 
 // Routes
 app.get("/run-scanner", (req, res) => {
@@ -120,12 +138,11 @@ app.get("/auth/google/callback",
 );
 
 app.get("/auth/google/user", (req, res) => {
-
   if (!req.user) {
     return res.json({ loggedIn: false });
   }
 
-  // If this user was auto-created or already existed
+  // Return user data with picture
   return res.json({
     loggedIn: true,
     shopFound: true,
@@ -133,19 +150,35 @@ app.get("/auth/google/user", (req, res) => {
       ShopID: req.user.ShopID,
       OwnerName: req.user.OwnerName,
       Email: req.user.Email,
-      isNew: req.user.isNew
+      isNew: req.user.isNew,
+      picture: req.user.picture // 🛠️ FIX: Ensure picture is included
     }
   });
 });
 
+// 🛠️ FIX: Changed to POST and return JSON
+app.post("/auth/logout", (req, res, next) => {
+  req.logout(function(err) {
+    if (err) { 
+      console.error("Logout error:", err);
+      return res.json({ success: false, message: "Logout failed" });
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Session destroy error:", err);
+      }
+      res.json({ success: true });
+    });
+  });
+});
 
+// Keep the GET route for browser navigation
 app.get("/auth/logout", (req, res, next) => {
   req.logout(function(err) {
     if (err) { return next(err); }
     res.redirect("/");
   });
 });
-
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/public/index.html"));
