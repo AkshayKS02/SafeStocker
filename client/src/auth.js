@@ -24,13 +24,12 @@ export async function applyUserUI(shop) {
   }
 
   // 1. Update global state
-  currentUser = {
-    OwnerName: shop.OwnerName,
-    Email: shop.Email,
-    Picture: shop.picture || "",
-    ShopID: shop.ShopID,
-    loggedIn: true,
-  };
+  currentUser.OwnerName = shop.OwnerName;
+  currentUser.Email = shop.Email;
+  currentUser.Picture = shop.picture || "";
+  currentUser.ShopID = shop.ShopID;
+  currentUser.loggedIn = true;
+
   log(`User logged in: ${shop.OwnerName} (ShopID: ${shop.ShopID})`, 'success');
 
   setShopID(shop.ShopID);
@@ -89,13 +88,11 @@ export function logoutUser() {
   log("logoutUser() start", 'action');
   fetch("http://localhost:5000/auth/logout", { credentials: "include" });
 
-  currentUser = {
-    OwnerName: "",
-    Email: "",
-    Picture: "",
-    ShopID: null,
-    loggedIn: false,
-  };
+  currentUser.OwnerName = "";
+  currentUser.Email = "";
+  currentUser.Picture = "";
+  currentUser.ShopID = null;
+  currentUser.loggedIn = false;
   log("User state reset", 'ui');
 
   window.location.reload();
