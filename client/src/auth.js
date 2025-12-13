@@ -6,8 +6,7 @@ import { closeLogin } from "./auth/auth.ui.js";
 
 log("auth.js loaded", 'info');
 
-// ------------------ GLOBAL USER STATE ------------------
-export let currentUser = {
+export const currentUser = {
   OwnerName: "",
   Email: "",
   Picture: "",
@@ -15,8 +14,8 @@ export let currentUser = {
   loggedIn: false,
 };
 
+let listenersBound = false;
 
-// ------------------ APPLY USER UI ------------------
 export async function applyUserUI(shop) {
   log("applyUserUI() start", 'action');
   if (!shop) {
@@ -34,10 +33,7 @@ export async function applyUserUI(shop) {
   };
   log(`User logged in: ${shop.OwnerName} (ShopID: ${shop.ShopID})`, 'success');
 
-  // 2. Save ShopID globally for stock system
   setShopID(shop.ShopID);
-
-  // 3. Load stock for that shop
   await loadStock();
   
   // 4. Update UI
@@ -106,8 +102,6 @@ export function logoutUser() {
   log("Page reload triggered", 'ui');
 }
 
-
-// ------------------ MANUAL LOGIN ------------------
 export async function manualLogin(phone, ownerName) {
   log("manualLogin() start", 'action');
   const res = await fetch("http://localhost:5000/auth/login", {
@@ -118,7 +112,6 @@ export async function manualLogin(phone, ownerName) {
   });
 
   const data = await res.json();
-
   if (!data.success) {
     log(`Manual Login failed: ${data.message || "Unknown error"}`, 'error');
     alert(data.message || "Login failed");
@@ -131,8 +124,6 @@ export async function manualLogin(phone, ownerName) {
   log("manualLogin() end", 'end');
 }
 
-
-// ------------------ GOOGLE LOGIN CHECK (after redirect) ------------------
 export async function checkGoogleLogin() {
   log("checkGoogleLogin() start", 'action');
   const params = new URLSearchParams(window.location.search);
