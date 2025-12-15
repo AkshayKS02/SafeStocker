@@ -1,6 +1,5 @@
-// src/auth.js
 import { setShopID, loadStock } from "./stock.js";
-import { DOM } from "./core/dom.js";
+import { DOM } from "./core/dom.js"; 
 import { log } from "./utils/logger.js";
 import { closeLogin } from "./auth/auth.ui.js"; 
 
@@ -14,14 +13,9 @@ export const currentUser = {
   loggedIn: false,
 };
 
-let listenersBound = false;
-
 export async function applyUserUI(shop) {
   log("applyUserUI() start", 'action');
-  if (!shop) {
-    log("applyUserUI called with no shop data", 'error');
-    return;
-  }
+  if (!shop) return;
 
   // 1. Update global state
   currentUser.OwnerName = shop.OwnerName;
@@ -30,77 +24,86 @@ export async function applyUserUI(shop) {
   currentUser.ShopID = shop.ShopID;
   currentUser.loggedIn = true;
 
-  log(`User logged in: ${shop.OwnerName} (ShopID: ${shop.ShopID})`, 'success');
-
   setShopID(shop.ShopID);
   await loadStock();
+
+  // 2. Update the User Icon Image
+  const userIconImg = document.getElementById("user-icon");
+  const userCardName = document.getElementById("user-card-name");
   
-  // 4. Update UI
-  if (DOM.auth.userCardName) DOM.auth.userCardName.textContent = shop.OwnerName;
-  if (DOM.auth.userIcon) {
-    if (shop.picture) {
-      DOM.auth.userIcon.src = shop.picture;
-      DOM.auth.userIcon.className = "google-profile-pic";
-      log("User profile picture updated", 'ui');
-    } else {
-      DOM.auth.userIcon.src = "images/user.png";
-      DOM.auth.userIcon.className = "";
-      log("Default user icon set", 'ui');
-    }
+  if (userCardName) userCardName.textContent = shop.OwnerName;
+  if (userIconImg && shop.picture) {
+      userIconImg.src = shop.picture;
+      userIconImg.className = "google-profile-pic";
   }
 
-  // Disable login modal opening and replace with dropdown toggle
-  if (DOM.auth.userBtn) {
-    // Remove the temporary listener used by auth.events.js before login
-    DOM.auth.userBtn.onclick = null; 
-    
-    // Add the permanent listener for the dropdown toggle
-    DOM.auth.userBtn.addEventListener("click", (e) => {
+  // 3. User Icon Behavior: Swap from "Login" to "Dropdown"
+  const userBtn = document.getElementById("user-button");
+  const userCard = document.getElementById("user-card");
+
+  if (userBtn) {
+    // Remove old listeners using the clone method
+    const newBtn = userBtn.cloneNode(true);
+    userBtn.parentNode.replaceChild(newBtn, userBtn);
+
+    newBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      DOM.auth.userCard?.classList.toggle("hidden");
-      log("User dropdown toggled", 'ui');
+      if (userCard) userCard.classList.toggle("hidden");
     });
-    log("User button listener replaced with dropdown toggle", 'attach');
   }
 
-  // Close dropdown on outside click
+  // 4. Close dropdown on outside click
   document.addEventListener("click", (e) => {
-    // Ensure the card exists and the click is outside both the card and the button
-    if (DOM.auth.userCard && !DOM.auth.userCard.contains(e.target) && e.target !== DOM.auth.userBtn) {
-      DOM.auth.userCard.classList.add("hidden");
+    const uCard = document.getElementById("user-card");
+    const uBtn = document.getElementById("user-button"); 
+    
+    if (uCard && !uCard.classList.contains("hidden")) {
+       if (!uCard.contains(e.target) && uBtn && !uBtn.contains(e.target)) {
+           uCard.classList.add("hidden");
+       }
     }
   });
 
-  if (DOM.auth.logoutBtn) {
-    DOM.auth.logoutBtn.addEventListener("click", () => {
-        log("Logout button clicked", 'click');
+  // ---------------------------------------------------------
+  // 5. FIX: LOGOUT BUTTON LISTENER
+  // ---------------------------------------------------------
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    // We use .onclick here because it is simpler and overwrites 
+    // any previous listeners automatically. It just works.
+    logoutBtn.onclick = (e) => {
+        e.preventDefault(); 
         logoutUser();
-    });
-    log("Logout button listener attached", 'attach');
+    };
+    log("Logout button connected", 'success');
+  } else {
+    log("Logout button NOT found in DOM", 'error');
   }
 
   log("applyUserUI() end", 'end');
 }
 
-
 // ------------------ LOGOUT ------------------
-export function logoutUser() {
-  log("logoutUser() start", 'action');
-  fetch("http://localhost:5000/auth/logout", { credentials: "include" });
+export async function logoutUser() {
+  log("Logging out...", 'action');
+  
+  try {
+      // FIX: Use await so the page doesn't reload before the request finishes
+      // Note: Using relative path /auth/logout handles localhost vs production automatically
+      await fetch("/auth/logout", { method: "GET" });
+      
+      currentUser.loggedIn = false;
+      log("Session destroyed", 'success');
 
-  currentUser.OwnerName = "";
-  currentUser.Email = "";
-  currentUser.Picture = "";
-  currentUser.ShopID = null;
-  currentUser.loggedIn = false;
-  log("User state reset", 'ui');
+  } catch (err) {
+      console.error("Logout fetch failed", err);
+  }
 
+  // Reload page to reset UI to "Logged Out" state
   window.location.reload();
-  log("Page reload triggered", 'ui');
 }
 
 export async function manualLogin(phone, ownerName) {
-  log("manualLogin() start", 'action');
   const res = await fetch("http://localhost:5000/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -110,25 +113,17 @@ export async function manualLogin(phone, ownerName) {
 
   const data = await res.json();
   if (!data.success) {
-    log(`Manual Login failed: ${data.message || "Unknown error"}`, 'error');
     alert(data.message || "Login failed");
     return;
   }
 
-  log("Manual Login successful", 'success');
-  closeLogin(); // Close the modal on success
+  closeLogin(); 
   await applyUserUI(data.shop);
-  log("manualLogin() end", 'end');
 }
 
 export async function checkGoogleLogin() {
-  log("checkGoogleLogin() start", 'action');
   const params = new URLSearchParams(window.location.search);
-  if (params.get("google_login") !== "1") {
-    log("Not a Google login redirect", 'info');
-    return;
-  }
-  log("Detected Google login redirect", 'info');
+  if (params.get("google_login") !== "1") return;
 
   try {
     const res = await fetch("http://localhost:5000/auth/google/user", {
@@ -136,20 +131,12 @@ export async function checkGoogleLogin() {
     });
 
     const data = await res.json();
-    if (!data.loggedIn || !data.shopFound) {
-      log("Google user not logged in or shop not found", 'error');
-      return;
+    if (data.loggedIn && data.shopFound) {
+      const shop = data.shop;
+      if (data.picture) shop.picture = data.picture;
+      await applyUserUI(shop); 
     }
-
-    const shop = data.shop;
-    if (data.picture) shop.picture = data.picture;
-
-    log("Google user and shop found. Applying UI.", 'success');
-    await applyUserUI(shop);
-
   } catch (err) {
-    log(`Google login check error: ${err.message}`, 'error');
-  } finally {
-    log("checkGoogleLogin() end", 'end');
+    console.error(err);
   }
 }
