@@ -69,6 +69,13 @@
             learnMoreBtn: document.getElementById("learn-more-button"),
             aboutSection: document.getElementById("about-section"),
             heroImages: document.querySelectorAll(".hero-image"),
+        },
+        stock: {
+            itemSelect: document.getElementById("stock-item-select"),
+            form: document.getElementById("stock-form"),
+            quantity: document.getElementById("stock-quantity"),
+            mfgDate: document.getElementById("stock-manufacture-date"),
+            expDate: document.getElementById("stock-expiry-date"),
         }
     };
 

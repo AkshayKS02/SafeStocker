@@ -1,77 +1,106 @@
 import db from "../config/db.js";
 
-/**
- * Add a new stock batch (one row = one batch)
- * Body: { ShopID, ItemID, SupplierID (optional), Quantity, ManfDate }
- */
 export async function addStock(req, res) {
-    const { ShopID, ItemID, SupplierID, Quantity, ManfDate } = req.body;
+    const ShopID = req.user?.ShopID;
+    const { ItemID, SupplierID, Quantity, ManufactureDate, ExpiryDate } = req.body;
 
-    if (!ShopID || !ItemID || Quantity == null || !ManfDate) {
+    if (!ShopID) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (!ItemID || !Quantity || !ManufactureDate || !ExpiryDate) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
     try {
         const [result] = await db.query(
-            `INSERT INTO Stock (ShopID, ItemID, SupplierID, Quantity, ManfDate)
-             VALUES (?, ?, ?, ?, ?)`,
-            [ShopID, ItemID, SupplierID || null, Quantity, ManfDate]
+            `
+            INSERT INTO Stock (ShopID, ItemID, SupplierID, Quantity, ManufactureDate, ExpiryDate)
+            VALUES (?, ?, ?, ?, ?, ?)
+            `,
+            [
+                ShopID,
+                ItemID,
+                SupplierID || null,
+                Quantity,
+                ManufactureDate,
+                ExpiryDate
+            ]
         );
 
         res.json({
-            message: "Stock added successfully",
+            success: true,
             StockID: result.insertId
         });
+
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: "Failed to add stock" });
     }
 }
 
-/**
- * Get stock batches for a specific shop
- */
 export async function getStockByShop(req, res) {
-    const { shopID } = req.params;
+    const ShopID = req.user?.ShopID;
+
+    if (!ShopID) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
 
     try {
-        const [rows] = await db.query(`
-            SELECT 
-              Stock.StockID,
-              Stock.ItemID,
-              Stock.Quantity,
-              Stock.ManfDate,
-              Items.ItemName,
-              Items.Barcode,
-              Items.ShelfLife,
-              DATE_ADD(Stock.ManfDate, INTERVAL Items.ShelfLife DAY) AS ExpiryDate
+        const [rows] = await db.query(
+            `
+            SELECT
+                Stock.StockID,
+                Stock.ItemID,
+                Stock.Quantity,
+                Stock.ManufactureDate,
+                Stock.ExpiryDate,
+                Items.ItemName,
+                Items.Barcode
             FROM Stock
             JOIN Items ON Stock.ItemID = Items.ItemID
             WHERE Stock.ShopID = ?
-            ORDER BY ExpiryDate ASC
-        `, [shopID]);
+            ORDER BY Stock.ExpiryDate ASC
+            `,
+            [ShopID]
+        );
 
         res.json(rows);
-    } 
-    catch (err) {
-        res.status(500).json({ error: err.message });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to fetch stock" });
     }
 }
 
-
-/**
- * Update stock quantity (useful when billing reduces stock or manual corrections)
- * Body: { Quantity }
- */
 export async function updateStockQuantity(req, res) {
+    const ShopID = req.user?.ShopID;
     const { stockID } = req.params;
     const { Quantity } = req.body;
 
-    if (Quantity == null) return res.status(400).json({ error: "Quantity missing" });
+    if (!ShopID) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    if (Quantity == null) {
+        return res.status(400).json({ error: "Quantity missing" });
+    }
 
     try {
-        await db.query(`UPDATE Stock SET Quantity = ? WHERE StockID = ?`, [Quantity, stockID]);
-        res.json({ message: "Stock quantity updated" });
+        await db.query(
+            `
+            UPDATE Stock
+            SET Quantity = ?
+            WHERE StockID = ? AND ShopID = ?
+            `,
+            [Quantity, stockID, ShopID]
+        );
+
+        res.json({ success: true });
+
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: "Failed to update stock" });
     }
 }
+
