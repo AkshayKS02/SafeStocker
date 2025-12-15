@@ -46,9 +46,8 @@
             scanNameField: document.getElementById("scan-name-standard"),
             scanCodeField: document.getElementById("scan-barcode-standard"),
             // Standard Form Inputs
-            quantity: document.getElementById("quantity"),
-            mfgDate: document.getElementById("manufacture-date"),
-            expDate: document.getElementById("expiry-date"),
+            quantity: document.getElementById("price"),
+            
         },
         // Track View
         track: {
