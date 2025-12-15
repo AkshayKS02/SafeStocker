@@ -30,11 +30,53 @@ export async function applyUserUI(shop) {
   // 2. Update the User Icon Image
   const userIconImg = document.getElementById("user-icon");
   const userCardName = document.getElementById("user-card-name");
-  
-  if (userCardName) userCardName.textContent = shop.OwnerName;
-  if (userIconImg && shop.picture) {
-      userIconImg.src = shop.picture;
-      userIconImg.className = "google-profile-pic";
+
+  log("Avatar step: DOM lookup done", "info");
+
+  if (userCardName) {
+    userCardName.textContent = shop.OwnerName;
+    log(`User card name set: ${shop.OwnerName}`, "ui");
+  } else {
+    log("User card name element NOT found", "error");
+  }
+
+  if (!userIconImg) {
+    log("User icon <img> NOT found in DOM", "error");
+
+  } else if (!shop.picture) {
+    log("No profile picture received from backend", "warn");
+
+    userIconImg.src = "/images/user.png";
+    userIconImg.className = "";
+    log("Fallback avatar applied (/images/user.png)", "ui");
+
+  } else {
+    log("Profile picture URL received from backend", "info");
+    log(shop.picture, "info");
+
+    userIconImg.referrerPolicy = "no-referrer";
+
+    userIconImg.onload = () => {
+      log(
+        `Profile picture LOADED (${userIconImg.naturalWidth}x${userIconImg.naturalHeight})`,
+        "success"
+      );
+    };
+
+    userIconImg.onerror = () => {
+      log("Profile picture FAILED to load → switching to fallback", "error");
+
+      // prevent infinite loop
+      userIconImg.onerror = null;
+
+      userIconImg.src = "/images/user.png";
+      log("Fallback avatar applied (/images/user.png)", "ui");
+    };
+
+    userIconImg.src = shop.picture;
+    userIconImg.className = "google-profile-pic";
+
+    log("Profile picture SRC assigned to <img>", "ui");
   }
 
   // 3. User Icon Behavior: Swap from "Login" to "Dropdown"
