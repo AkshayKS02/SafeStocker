@@ -56,11 +56,19 @@ function attachEntryListeners() {
                 return;
             }
 
+            const price = Number(DOM.entry.price?.value);
+
+            if (!price || price <= 0) {
+                alert("Please enter a valid price");
+                return;
+            }
+
             const payload = {
                 ItemName: scanned.name || "Unnamed Product",
                 Barcode: scanned.barcode,
-                CategoryID: 1, // General
-                Source: "API"
+                CategoryID: 1,
+                Source: "API",
+                Price: price
             };
 
             try {

@@ -37,6 +37,7 @@ function normalize(row) {
 
         name: row.ItemName || "Unknown",
         barcode: row.Barcode || "",
+        price: Number(row.price) || 0,  
         inStock: row.Quantity ?? 0,
 
         expiry: row.ExpiryDate || "",
@@ -44,6 +45,7 @@ function normalize(row) {
         color: statusColor(days)
     };
 }
+
 
 // Fetch stock for the logged-in shop
 export async function loadStock() {
@@ -57,6 +59,7 @@ export async function loadStock() {
         const res = await fetch(`http://localhost:5000/stock/${SHOP_ID}`);
         log(`Fetched stock for Shop ID: ${SHOP_ID}`, 'ui');
         const rows = await res.json();
+        console.log("RAW ROW:", rows[0]);
         STOCK_ITEMS = rows.map(normalize);
         log(`Stock loaded: ${STOCK_ITEMS.length} items`, 'success');
         return STOCK_ITEMS;
