@@ -82,10 +82,11 @@ passport.use(new GoogleStrategy({
             });
         }
 
+        const phone = "9" + Math.floor(100000000 + Math.random() * 900000000);
         // Owner does NOT exist → create shop entry
         const [result] = await db.query(
-            "INSERT INTO Shop (OwnerName, Phone, Email) VALUES (?, '', ?)",
-            [name, email]
+            "INSERT INTO Shop (OwnerName, Phone, Email) VALUES (?,?,?)",
+            [name, phone , email]
         );
 
         return done(null, {
@@ -93,7 +94,7 @@ passport.use(new GoogleStrategy({
             OwnerName: name,
             Email: email,
             isNew: true,
-            picture // 🛠️ FIX: Ensure picture is passed
+            picture
         });
 
     } catch (err) {
