@@ -46,7 +46,7 @@
             scanNameField: document.getElementById("scan-name-standard"),
             scanCodeField: document.getElementById("scan-barcode-standard"),
             // Standard Form Inputs
-            quantity: document.getElementById("price"),
+            price: document.getElementById("price"),
             
         },
         // Track View

@@ -56,7 +56,8 @@ export async function getStockByShop(req, res) {
                 Stock.ManufactureDate,
                 Stock.ExpiryDate,
                 Items.ItemName,
-                Items.Barcode
+                Items.Barcode,
+                Items.price
             FROM Stock
             JOIN Items ON Stock.ItemID = Items.ItemID
             WHERE Stock.ShopID = ?

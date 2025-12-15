@@ -12,6 +12,7 @@ export async function getAllItems(req, res) {
                 Items.ItemName,
                 Items.Barcode,
                 Items.Source,
+                Items.Price,
                 Category.CategoryName
             FROM Items
             LEFT JOIN Category ON Items.CategoryID = Category.CategoryID
@@ -32,9 +33,9 @@ export async function addItem(req, res) {
     const ShopID = req.user?.ShopID;
     if (!ShopID) return res.status(401).json({ error: "Unauthorized" });
 
-    const { ItemName, Barcode, CategoryID, Source } = req.body;
+    const { ItemName, Barcode, CategoryID, Source, Price } = req.body;
 
-    if (!ItemName || !Barcode) {
+    if (!ItemName || !Barcode || Price == null) {
         return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -50,10 +51,17 @@ export async function addItem(req, res) {
 
         const [result] = await db.query(
             `
-            INSERT INTO Items (ShopID, ItemName, Barcode, CategoryID, Source)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO Items (ShopID, ItemName, Barcode, CategoryID, Source, Price)
+            VALUES (?, ?, ?, ?, ?, ?)
             `,
-            [ShopID, ItemName, Barcode, CategoryID || null, Source || "API"]
+            [
+                ShopID,
+                ItemName,
+                Barcode,
+                CategoryID || null,
+                Source || "API",
+                Price
+            ]
         );
 
         res.json({ success: true, ItemID: result.insertId });
@@ -62,3 +70,4 @@ export async function addItem(req, res) {
         res.status(500).json({ error: "Failed to add item" });
     }
 }
+
