@@ -1,102 +1,53 @@
 import db from "../config/db.js";
 import { fetchFromOpenFoodFacts } from "../services/offAPI.js";
 
-let lastScan = null;
-
 export async function handleBarcode(req, res) {
     const { barcode } = req.body;
+    const ShopID = req.user?.ShopID;
 
     if (!barcode) return res.status(400).json({ error: "barcode missing" });
+    if (!ShopID) return res.status(401).json({ error: "Unauthorized" });
 
     try {
-        // CHECK LOCAL DB FIRST
         const [rows] = await db.query(
-            "SELECT * FROM Items WHERE Barcode = ?",
-            [barcode]
+            "SELECT ItemID, ItemName, Barcode, CategoryID, Source FROM Items WHERE ShopID = ? AND Barcode = ?",
+            [ShopID, barcode]
         );
 
         if (rows.length > 0) {
-            const item = rows[0];
-
-            lastScan = { 
-                from: "database",
-                product: {
-                    barcode: item.Barcode,
-                    name: item.ItemName,
-                    brand: "Local Entry",
-                    package_quantity: "",
-                    ItemID: item.ItemID,
-                    CategoryID: item.CategoryID,
-                    ShelfLife: item.ShelfLife
-                }
-            };
-
             return res.json({
                 found: true,
                 source: "database",
-                product: lastScan.product
+                product: {
+                    ItemID: rows[0].ItemID,
+                    name: rows[0].ItemName,
+                    barcode: rows[0].Barcode,
+                    CategoryID: rows[0].CategoryID
+                }
             });
         }
 
-        // NOT IN DB → CALL OPEN FOOD FACTS
         const offData = await fetchFromOpenFoodFacts(barcode);
 
-        if (!offData.product) {
-            lastScan = { product: null };
+        if (!offData?.product) {
             return res.json({ found: false });
         }
 
         const p = offData.product;
 
-        const product = {
-            barcode,
-            name: p.product_name || "Unknown product",
-            brand: p.brands || "Unknown brand",
-            package_quantity: p.quantity || "",
-        };
-
-        // AUTO-SAVE TO ITEMS TABLE
-        const [insertResult] = await db.query(
-            `INSERT INTO Items (ItemName, Barcode, CategoryID, ShelfLife, Source)
-             VALUES (?, ?, ?, ?, 'API')`,
-            [
-                product.name,
-                product.barcode,
-                null,          // CategoryID is not known from OFF
-                0              // ShelfLife is unknown → user can update later
-            ]
-        );
-
-        const newItemID = insertResult.insertId;
-
-        // Store the scan result
-        lastScan = { 
-            from: "off_api",
-            product: {
-                ...product,
-                ItemID: newItemID,
-                CategoryID: null,
-                ShelfLife: 0
-            }
-        };
-
         return res.json({
             found: true,
             source: "off_api",
-            product: lastScan.product,
-            autoSaved: true
+            product: {
+                barcode,
+                name: p.product_name || "Unknown product",
+                brand: p.brands || "",
+                quantity: p.quantity || ""
+            }
         });
 
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Server error" });
+        res.status(500).json({ error: "Barcode lookup failed" });
     }
 }
-
-export function getLatestScan(req, res) {
-    if (!lastScan) {
-        return res.json({ found: false });
-    }
-    return res.json({ found: true, data: lastScan });
-}
-

@@ -68,3 +68,29 @@ export async function loadStock() {
         log("loadStock() end", 'end');
     }
 }
+
+export async function loadItemOptions(selectEl) {
+    if (!selectEl) return;
+
+    try {
+        const res = await fetch("http://localhost:5000/items", {
+            credentials: "include"
+        });
+
+        const items = await res.json();
+
+        selectEl.innerHTML = `<option value="">-- Select Product --</option>`;
+
+        items.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.ItemID;
+            opt.textContent = item.ItemName;
+            selectEl.appendChild(opt);
+        });
+
+        log("Add Stock dropdown populated", "success");
+
+    } catch (err) {
+        log(`Dropdown load failed: ${err.message}`, "error");
+    }
+}

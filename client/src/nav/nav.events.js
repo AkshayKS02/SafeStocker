@@ -5,6 +5,7 @@ import { log } from "../utils/logger.js";
 // Import all rendering functions that are called after view switch
 import { renderTrackCards } from "../views/track.view.js";
 import { renderBillingProducts } from "../views/billing.view.js";
+import { initStockView } from "../views/stock.view.js";
 
 log("nav.events.js loaded", 'info');
 
@@ -24,14 +25,12 @@ function attachViewListener(btn, viewName) {
     const handler = async () => {
         log(`Nav button clicked: ${viewName}`, 'click');
         
-        // Data Loading Logic
         if (viewName === 'track' || viewName === 'billing') {
             const { loadStock, STOCK_ITEMS } = await import('../stock.js');
             log(`Loading stock for ${viewName} view...`, 'action');
             await loadStock();
             log(`Stock loaded for ${viewName} view.`, 'end');
 
-            // Render UI after data is ready
             if (viewName === 'track') {
                 renderTrackCards();
             } else if (viewName === 'billing') {
@@ -39,9 +38,14 @@ function attachViewListener(btn, viewName) {
             }
         }
 
+        if (viewName === 'stock') {
+            initStockView();   
+        }
+
         showView(viewName, btn);
         log(`showView(${viewName}) executed`, 'end');
     };
+
     
     btn.addEventListener("click", handler);
     log(`Listener attached to ${viewName} button`, 'attach');
