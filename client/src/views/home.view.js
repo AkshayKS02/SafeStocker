@@ -1,4 +1,3 @@
-import { log } from "../utils/logger.js"; 
 
 export function initHomeCarousel() {
     // We select the images directly here 
@@ -18,8 +17,5 @@ export function initHomeCarousel() {
             slides[currentSlide].classList.add("active");
         }, 5000); // Changes every 5 seconds
         
-        log("Hero carousel started", "success");
-    } else {
-        log("Hero carousel: Not enough images found", "warn");
-    }
+    } else { }
 }

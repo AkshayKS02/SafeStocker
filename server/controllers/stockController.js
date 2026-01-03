@@ -60,7 +60,7 @@ export async function getStockByShop(req, res) {
                 Items.price
             FROM Stock
             JOIN Items ON Stock.ItemID = Items.ItemID
-            WHERE Stock.ShopID = ?
+            WHERE Stock.ShopID = ? and Stock.Quantity > 0
             ORDER BY Stock.ExpiryDate ASC
             `,
             [ShopID]

@@ -1,7 +1,4 @@
 // src/core/state.js
-import { log } from "../utils/logger.js";
-
-log("state.js loaded", 'info');
 
 export const state = {
     user: null, // Full user object from API
