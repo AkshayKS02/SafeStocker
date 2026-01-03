@@ -105,12 +105,10 @@ passport.use(new GoogleStrategy({
 
 
 passport.serializeUser((user, done) => {
-  // 🛠️ FIX: Serialize the entire user object including picture
   done(null, user);
 });
 
 passport.deserializeUser((obj, done) => {
-  // 🛠️ FIX: Deserialize the entire user object
   done(null, obj);
 });
 
