@@ -1,56 +1,42 @@
-/* --- HOME VIEW & HERO SECTION --- */
+/* --- HOME VIEW --- */
 
 #home-view {
   padding: 0;
   margin: 0;
-}
-
-/* --- HOME VIEW & HERO SECTION (Full Width Banner) --- */
-
-#home-view {
-  /* Removes padding so the image touches the edges */
-  padding: 0; 
-  margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
 }
+
+/* --- HERO SECTION --- */
 
 .hero-section {
   position: relative;
-  /* CHANGED: Full width from left to right */
-  width: 100%; 
-  /* CHANGED: Fixed height (Banner style) */
-  height: 350px; 
-  
-  /* Layout mechanics */
+  width: 100%;
+  height: 350px;
+
   display: flex;
   flex-direction: column;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
   text-align: center;
+
   color: var(--color-white);
-  
-  /* Removed border-radius since it touches edges now */
-  border-radius: 0; 
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  margin-bottom: 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 28px;
 }
 
-/* Carousel Images */
 .hero-section .hero-image {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  /* Ensures image fills the wide banner without stretching */
-  object-fit: cover; 
+  object-fit: cover;
+  filter: brightness(0.7);
   z-index: 0;
-  filter: brightness(0.6); 
-  
+
   opacity: 0;
   transition: opacity 1s ease-in-out;
 }
@@ -59,16 +45,21 @@
   opacity: 1;
 }
 
-/* --- Text & Content Adjustment --- */
 .hero-section h1,
 .hero-section p,
-.hero-section .hero-buttons {
+.hero-buttons {
   position: relative;
   z-index: 1;
+  animation: fadeInUp 0.6s ease both;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .hero-section h1 {
-  font-size: 2.5rem; /* Good size for a banner */
+  font-size: 2.35rem;
   font-weight: 700;
   margin-bottom: 10px;
   line-height: 1.2;
@@ -82,7 +73,8 @@
   max-width: 700px;
 }
 
-/* Buttons row */
+/* --- HERO BUTTONS --- */
+
 .hero-buttons {
   display: flex;
   gap: 15px;
@@ -94,71 +86,83 @@
   border-radius: var(--round-pill);
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .hero-buttons .nav-button:first-child {
-  background-color: var(--color-white);
+  background: var(--color-white);
   color: var(--color-black);
   border: none;
 }
 
 .hero-buttons .nav-button:last-child {
-  background-color: transparent;
+  background: transparent;
   color: var(--color-white);
   border: 1px solid var(--color-white);
 }
 
 .hero-buttons .nav-button:hover {
-  transform: translateY(-3px);
+  opacity: 0.9;
 }
 
-/* --- Learn More section card --- */
+/* --- INFO SECTIONS (About + How It Works) --- */
 
-.learn-more-card {
+.info-section {
+  padding: 50px 40px;
+  text-align: left;
+}
+
+.info-section.gradient-bg {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.info-section.white-bg {
+  background: #fff;
+}
+
+.info-container {
   max-width: 900px;
   margin: 0 auto;
-  background: var(--color-white);
-  color: #111;
-  padding: 22px 26px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(12,20,30,0.08);
-  border: 1px solid rgba(0,0,0,0.06);
-  position: relative;
 }
 
-.user-card {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  width: 180px;
-  background: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  z-index: 999;
+.section-title {
+  font-size: 2.2rem;
+  margin-bottom: 28px;
+  color: #000;
 }
 
-.hidden {
-  display: none;
+.section-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #333;
+  margin-bottom: 18px;
 }
 
-.user-card-name {
-  margin: 0 0 10px;
-  font-weight: bold;
+/* --- HOW IT WORKS GRID --- */
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
 }
 
-.logout-btn {
-  width: 100%;
-  padding: 8px;
-  border: none;
-  background: #ff5a5a;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
+.how-card {
+  padding: 20px;
+  border-left: 3px solid rgba(79,110,235,0.65);
 }
 
-.logout-btn:hover {
-  opacity: 0.9;
+.how-card h3 {
+  font-size: 1.25rem;
+  color: var(--color-blue);
+  margin-bottom: 10px;
+}
+
+.how-card p {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.how-card:hover {
+  background: rgba(79,110,235,0.03);
 }
