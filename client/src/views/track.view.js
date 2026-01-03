@@ -12,7 +12,7 @@ export function renderTrackCards() {
     }
 
     container.innerHTML = stockItems.map(item => `
-        <div class="item-card ${item.color}">
+        <div class="item-card ${item.color}" data-stock-id="${item.stockID}">
             <div class="item-title">${item.name}</div>
 
             <div class="item-meta">
@@ -26,11 +26,15 @@ export function renderTrackCards() {
             <div class="status">
                 <span class="status-dot ${item.color}"></span>
                 ${
-                    item.color === "red"
+                    item.color === "gray"
+                        ? "No expiry info"
+                    : item.color === "red"
                         ? "EXPIRED"
-                        : item.color === "yellow"
-                        ? `Expiring in ${item.daysLeft} days`
-                        : "Fresh"
+                    : item.color === "orange"
+                        ? `Critical • ${item.daysLeft} days left`
+                    : item.color === "yellow"
+                        ? `Expiring soon • ${item.daysLeft} days`
+                    : "Fresh"
                 }
             </div>
         </div>

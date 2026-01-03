@@ -122,3 +122,12 @@
 .status-dot.gray {
   background-color: #bdc3c7; /* Unknown */
 }
+
+.status-dot.orange {
+  background-color: #ff9800; /* Orange */
+  box-shadow: 0 0 5px rgba(255, 152, 0, 0.5);
+}
+
+.item-card.orange {
+  border-left: 6px solid #ff9800;
+}

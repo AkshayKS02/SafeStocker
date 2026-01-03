@@ -10,6 +10,7 @@ import "../events/stock.events.js";
 
 // Barcode / scanner events
 import "../barcode/barcode.events.js";
+import "../alerts/alerts.events.js";
 
 export function initApp() {
     // App bootstrapping happens via imports
