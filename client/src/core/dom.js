@@ -1,7 +1,4 @@
     // src/core/dom.js
-    import { log } from "../utils/logger.js";
-
-    log("dom.js loaded", 'info');
 
     export const DOM = {
         // Views
@@ -78,9 +75,10 @@
         }
     };
 
-    // Check for critical elements
-    Object.entries(DOM.views).forEach(([name, el]) => {
-        if (el) log(`View ${name} found`, 'success');
+    Object.values(DOM.views).forEach(el => {
+        if (!el) return;
     });
 
-    if (!DOM.auth.userBtn) log("Auth user-button NOT found", 'error');
+    if (!DOM.auth.userBtn) {
+        // optional: auth button not present
+    }

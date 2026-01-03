@@ -1,99 +1,62 @@
 // src/nav/nav.events.js
 import { DOM } from "../core/dom.js";
 import { showView } from "./nav.ui.js";
-import { log } from "../utils/logger.js";
-// Import all rendering functions that are called after view switch
+import { loadStock, stockItems } from "../stock.js";
 import { renderTrackCards } from "../views/track.view.js";
 import { renderBillingProducts } from "../views/billing.view.js";
-import { initStockView } from "../views/stock.view.js";
 
-log("nav.events.js loaded", 'info');
-
-/**
- * Attaches a click listener to a navigation button.
- * @param {HTMLElement} btn - The navigation button element.
- * @param {string} viewName - The corresponding view name (e.g., "home").
- */
 function attachViewListener(btn, viewName) {
-    if (!btn) {
-        log(`${viewName} button NOT found`, 'error');
-        return;
-    }
+    if (!btn) return;
 
-    log(`${viewName} button found`, 'success');
+    btn.addEventListener("click", async () => {
 
-    const handler = async () => {
-        log(`Nav button clicked: ${viewName}`, 'click');
-        
-        if (viewName === 'track' || viewName === 'billing') {
-            const { loadStock, STOCK_ITEMS } = await import('../stock.js');
-            log(`Loading stock for ${viewName} view...`, 'action');
+        // Views that need stock data
+        if (viewName === "track" || viewName === "billing") {
             await loadStock();
-            log(`Stock loaded for ${viewName} view.`, 'end');
 
-            if (viewName === 'track') {
+            if (viewName === "track") {
                 renderTrackCards();
-            } else if (viewName === 'billing') {
-                renderBillingProducts(STOCK_ITEMS);
+            }
+
+            if (viewName === "billing") {
+                renderBillingProducts(stockItems);
             }
         }
 
-        if (viewName === 'stock') {
-            initStockView();   
-        }
-
         showView(viewName, btn);
-        log(`showView(${viewName}) executed`, 'end');
-    };
-
-    
-    btn.addEventListener("click", handler);
-    log(`Listener attached to ${viewName} button`, 'attach');
+    });
 }
 
+// Navigation buttons
 attachViewListener(DOM.nav.homeBtn, "home");
 attachViewListener(DOM.nav.trackBtn, "track");
 attachViewListener(DOM.nav.billingBtn, "billing");
 attachViewListener(DOM.nav.addBtn, "entry");
 attachViewListener(DOM.nav.addStockBtn, "stock");
 
-// Initial state and special buttons
-
-// Show home view on initial load
+// Default view
 showView("home", DOM.nav.homeBtn);
 
+// Get Started → Login modal
 if (DOM.nav.getStartedBtn) {
     DOM.nav.getStartedBtn.addEventListener("click", () => {
-        log("Get Started button clicked", 'click');
-        import("../auth/auth.ui.js").then(({ openLogin }) => {
-            openLogin();
-        });
+        import("../auth/auth.ui.js").then(({ openLogin }) => openLogin());
     });
-    log("Listener attached to Get Started button", 'attach');
-} else {
-    log("Get Started button NOT found", 'error');
 }
 
-// Learn More Scroll Logic
+// Learn More → scroll to About
 if (DOM.home.learnMoreBtn) {
     DOM.home.learnMoreBtn.addEventListener("click", (e) => {
-        log("Learn More button clicked", 'click');
         e.preventDefault();
-
         showView("home", DOM.nav.homeBtn);
 
         setTimeout(() => {
-            if (DOM.home.aboutSection) {
-                const yCoordinate =
-                    DOM.home.aboutSection.getBoundingClientRect().top + window.scrollY - 75;
-                window.scrollTo({ top: yCoordinate, behavior: "smooth" });
-                log("Smooth scroll executed to about-section", 'ui');
-            } else {
-                log("About section NOT found for scrolling", 'error');
-            }
+            if (!DOM.home.aboutSection) return;
+            const y =
+                DOM.home.aboutSection.getBoundingClientRect().top +
+                window.scrollY -
+                75;
+            window.scrollTo({ top: y, behavior: "smooth" });
         }, 300);
     });
-    log("Listener attached to Learn More button", 'attach');
-} else {
-    log("Learn More button NOT found", 'error');
 }

@@ -1,27 +1,21 @@
+// src/barcode/barcode.events.js
 import { DOM } from "../core/dom.js";
-import { log } from "../utils/logger.js";
 import { state } from "../core/state.js";
 import { updateScanPreview } from "./barcode.ui.js";
 
-log("barcode.events.js loaded", "info");
-
 function handleScannedProduct(data) {
     const p = data.product;
-    const code = String(p.barcode || "").trim();
-
-    if (!code) return;
+    if (!p || !p.barcode) return;
 
     state.scannedItem = {
-        barcode: code,
+        barcode: String(p.barcode).trim(),
         name: p.name || "Scanned Item",
-        brand: p.brand || "",
-        package_quantity: p.package_quantity || ""
+        brand: p.brand || ""
     };
 
     if (
-        DOM.views.entry &&
-        DOM.views.entry.style.display === "block" &&
-        DOM.entry.formStandard.style.display === "block"
+        DOM.views.entry?.style.display === "block" &&
+        DOM.entry.formStandard?.style.display === "block"
     ) {
         updateScanPreview(state.scannedItem);
     }
@@ -32,16 +26,14 @@ function attachEntryScanListener() {
 
     DOM.entry.scanBtn.addEventListener("click", async () => {
         try {
-            const resScan = await fetch("http://localhost:5000/run-scanner");
-            const scanData = await resScan.json();
-            const barcode = scanData.barcode;
-
+            const scanRes = await fetch("/run-scanner");
+            const { barcode } = await scanRes.json();
             if (!barcode) {
                 alert("Scanner failed");
                 return;
             }
 
-            const res = await fetch("http://localhost:5000/barcode", {
+            const res = await fetch("/barcode", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -49,7 +41,6 @@ function attachEntryScanListener() {
             });
 
             const data = await res.json();
-
             if (!data.found) {
                 alert("Product not found");
                 return;
@@ -57,8 +48,7 @@ function attachEntryScanListener() {
 
             handleScannedProduct(data);
 
-        } catch (err) {
-            console.error(err);
+        } catch {
             alert("Barcode scan failed");
         }
     });
