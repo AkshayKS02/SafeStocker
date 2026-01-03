@@ -2,6 +2,7 @@
 import { DOM } from "../core/dom.js";
 import { state } from "../core/state.js";
 import { updateScanPreview } from "./barcode.ui.js";
+import { attachCustomBarcodeGenerator } from "./customBarcode.js";
 
 function handleScannedProduct(data) {
     const p = data.product;
@@ -55,3 +56,4 @@ function attachEntryScanListener() {
 }
 
 attachEntryScanListener();
+attachCustomBarcodeGenerator();

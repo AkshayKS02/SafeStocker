@@ -1,5 +1,3 @@
-/* --- Entry View (Add New) Specific Styles --- */
-
 /* 1. Toggles: Aligned Left with 40px spacing */
 .entry-toggles {
   display: flex;
@@ -110,4 +108,31 @@
 .scan-preview-box h3 {
   margin-top: 0;
   color: #4f6eeb;
+}
+
+.custom-entry-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+/* keep form size stable */
+#form-custom {
+    flex: 1;
+}
+
+/* barcode panel */
+#custom-barcode-preview {
+    width: 280px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #fafafa;
+    text-align: center;
+}
+
+#custom-barcode-preview img {
+    max-width: 100%;
+    height: auto;
+    margin: 10px 0;
 }

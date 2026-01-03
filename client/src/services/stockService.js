@@ -5,15 +5,15 @@ function calcDays(dateStr) {
         (new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24)
     );
 }
-
-
-//set color for the time period 
+ 
 function statusColor(days) {
     if (days === null) return "gray";
     if (days < 0) return "red";
-    if (days <= 7) return "yellow";
-    return "green";
+    if (days <= 7) return "orange";
+    if (days <= 14) return "yellow";
+    return "green";   // everything safe/fresh
 }
+
 
 //Handle the data and fix unexpected results
 function normalizeStockRow(row) {

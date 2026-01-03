@@ -4,59 +4,105 @@ import { state } from "../core/state.js";
 import { loadStock } from "../stock.js";
 import { createItem } from "../services/itemService.js";
 import {
-    showStandardForm,
-    showCustomForm,
-    hideScanPreview
+  showStandardForm,
+  showCustomForm,
+  hideScanPreview,
 } from "../views/entry.view.js";
 
 function attachEntryEvents() {
+  // Toggle buttons
+  if (DOM.entry.standardToggle && DOM.entry.customToggle) {
+    DOM.entry.standardToggle.onclick = showStandardForm;
+    DOM.entry.customToggle.onclick = showCustomForm;
 
-    // Toggle buttons
-    if (DOM.entry.standardToggle && DOM.entry.customToggle) {
-        DOM.entry.standardToggle.onclick = showStandardForm;
-        DOM.entry.customToggle.onclick = showCustomForm;
+    showStandardForm(); // default
+  }
 
-        showStandardForm(); // default
-    }
+  // Standard form submit
+  if (DOM.entry.formStandard) {
+    DOM.entry.formStandard.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    // Standard form submit
-    if (DOM.entry.formStandard) {
-        DOM.entry.formStandard.addEventListener("submit", async (e) => {
+      const scanned = state.scannedItem;
+      if (!scanned?.barcode) {
+        alert("Please scan a barcode first");
+        return;
+      }
+
+      const price = Number(DOM.entry.price?.value);
+      if (!price || price <= 0) {
+        alert("Enter a valid price");
+        return;
+      }
+
+      const payload = {
+        ItemName: scanned.name || "Unnamed Product",
+        Barcode: scanned.barcode,
+        CategoryID: 1,
+        Source: "API",
+        Price: price,
+      };
+
+      try {
+        await createItem(payload);
+
+        DOM.entry.formStandard.reset();
+        hideScanPreview();
+        await loadStock();
+
+        alert("Item saved successfully");
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  // Custom form submit
+    if (DOM.entry.formCustom) {
+        DOM.entry.formCustom.addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            const scanned = state.scannedItem;
-            if (!scanned?.barcode) {
-                alert("Please scan a barcode first");
-                return;
+            const name = document.getElementById("name-custom")?.value.trim();
+            const price = Number(document.getElementById("price-custom")?.value);
+            const barcode = state.scannedItem?.barcode;
+
+            if (!name) {
+            alert("Please enter item name");
+            return;
             }
 
-            const price = Number(DOM.entry.price?.value);
-            if (!price || price <= 0) {
-                alert("Enter a valid price");
-                return;
+            if (Number.isNaN(price) || price < 0) {
+            alert("Please enter valid price");
+            return;
+            }
+
+            if (!barcode) {
+            alert("Please generate barcode first");
+            return;
             }
 
             const payload = {
-                ItemName: scanned.name || "Unnamed Product",
-                Barcode: scanned.barcode,
-                CategoryID: 1,
-                Source: "API",
-                Price: price
+            ItemName: name,
+            Barcode: barcode,
+            CategoryID: 1,      // placeholder
+            Source: "CUSTOM",
+            Price: price
             };
 
             try {
-                await createItem(payload);
+            await createItem(payload);
 
-                DOM.entry.formStandard.reset();
-                hideScanPreview();
-                await loadStock();
+            DOM.entry.formCustom.reset();
+            state.scannedItem = null;
+            await loadStock();
 
-                alert("Item saved successfully");
+            alert("Item registered. Add stock to activate.");
             } catch (err) {
-                alert(err.message);
+            alert(err.message);
             }
         });
     }
+
 }
 
 attachEntryEvents();
