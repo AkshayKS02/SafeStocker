@@ -41,6 +41,7 @@ html {
   top: 0;
   background-color: var(--color-light-gray-bg);
   border-bottom: 0px solid #eee;
+  z-index: 1000;
 }
 
 /* Fix user icon + bell alignment */
@@ -314,7 +315,7 @@ label {
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
   padding: 10px;
-  z-index: 999;
+  z-index: 3000; 
 }
 
 .alert-item {
@@ -354,6 +355,43 @@ label {
   0% { transform: scale(1); }
   50% { transform: scale(1.03); }
   100% { transform: scale(1); }
+}
+
+/* --- User Logout Dropdown --- */
+
+.user-card {
+  position: absolute;
+  top: 45px;            /* sits just below the profile icon */
+  right: 0;
+  width: 180px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 3001;        /* above hero + alerts */
+}
+
+.user-card-name {
+  margin: 0 0 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: #ff5a5a;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.logout-btn:hover {
+  opacity: 0.9;
 }
 
 

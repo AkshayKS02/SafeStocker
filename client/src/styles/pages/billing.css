@@ -168,3 +168,29 @@
 .generate-bill-btn:hover {
   background: #27ae60;
 }
+
+.bill-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1rem;
+}
+
+.bill-line span:first-child {
+  flex: 2;
+  font-weight: 600;
+  color: #333;
+}
+
+.bill-line span:last-child {
+  font-weight: 700;
+}
+
+.bill-qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;                  
+  margin-right: 14px;
+}

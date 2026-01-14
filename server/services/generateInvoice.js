@@ -27,8 +27,6 @@ export default async function generateInvoice(invoiceData) {
 
     // Bill To
     document.getElementById("bill_name").innerText = data.customer.name;
-    document.getElementById("bill_addr1").innerText = data.customer.address1;
-    document.getElementById("bill_addr2").innerText = data.customer.address2;
 
     // Items table
     const tbody = document.getElementById("items_tbody");
