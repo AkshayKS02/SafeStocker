@@ -39,8 +39,16 @@ export async function applyUserUI(shop) {
     if (userName) userName.textContent = shop.OwnerName;
 
     if (userIcon) {
-        userIcon.src = shop.picture || "/images/user.png";
-        userIcon.className = shop.picture ? "google-profile-pic" : "";
+    userIcon.referrerPolicy = "no-referrer"; // MUST be before src
+
+    userIcon.onerror = () => {
+        userIcon.onerror = null; // prevent loop
+        userIcon.src = "/images/user.png";
+        userIcon.className = "";
+    };
+
+    userIcon.src = shop.picture || "/images/user.png";
+    userIcon.className = shop.picture ? "google-profile-pic" : "";
     }
 
     if (userBtn && userCard) {

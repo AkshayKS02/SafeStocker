@@ -42,14 +42,14 @@ export function renderBillLines(billItems) {
                 <span>${item.name}</span>
 
                 <div class="bill-qty-controls">
-                    <button class="qty-btn minus" data-id="${item.itemID}">−</button>
-                    <span>${item.qty}</span>
-                    <button class="qty-btn plus" data-id="${item.itemID}">+</button>
+                <button class="qty-btn minus" data-id="${item.itemID}">−</button>
+                <span class="qty-value">${item.qty}</span>
+                <button class="qty-btn plus" data-id="${item.itemID}">+</button>
                 </div>
 
                 <span>₹${lineTotal}</span>
             </div>
-        `;
+            `;
     });
 
     totalBox.textContent = "₹" + total;

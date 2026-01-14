@@ -158,7 +158,6 @@ app.get("/auth/google/user", (req, res) => {
   });
 });
 
-// 🛠️ FIX: Changed to POST and return JSON
 app.post("/auth/logout", (req, res, next) => {
   req.logout(function(err) {
     if (err) { 
@@ -174,7 +173,6 @@ app.post("/auth/logout", (req, res, next) => {
   });
 });
 
-// Keep the GET route for browser navigation
 app.get("/auth/logout", (req, res, next) => {
   req.logout(function(err) {
     if (err) { return next(err); }
