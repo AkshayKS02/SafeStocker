@@ -2,13 +2,11 @@ import puppeteer from "puppeteer";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Fix __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function generateInvoice(invoiceData) {
 
-  // Load invoice HTML served over HTTP so CSS loads properly
   const templateUrl = "http://localhost:5000/templates/invoice.html";
 
   const browser = await puppeteer.launch({
@@ -18,27 +16,27 @@ export default async function generateInvoice(invoiceData) {
   const page = await browser.newPage();
   await page.goto(templateUrl, { waitUntil: "networkidle0" });
 
-  // Inject invoice data into the HTML DOM
   await page.evaluate((data) => {
 
     // Basic invoice info
-    document.getElementById("invoice_no").innerText = data.invoice_no;
-    document.getElementById("invoice_date").innerText = data.date;
+    document.getElementById("invoice_no").innerText = data.receiptID;
+    document.getElementById("invoice_date").innerText =
+      new Date().toLocaleDateString();
 
-    // Bill To
-    document.getElementById("bill_name").innerText = data.customer.name;
+    // Bill To (default walk-in)
+    document.getElementById("bill_name").innerText =
+      "Walk-in Customer";
 
-    // Items table
     const tbody = document.getElementById("items_tbody");
     tbody.innerHTML = "";
 
     data.items.forEach(item => {
       const row = `
         <tr>
-          <td>${item.description}</td>
+          <td>${item.name}</td>
           <td class="center">${item.qty}</td>
-          <td class="right">₹${item.price.toFixed(2)}</td>
-          <td class="right">₹${(item.qty * item.price).toFixed(2)}</td>
+          <td class="right">₹${Number(item.price).toFixed(2)}</td>
+          <td class="right">₹${Number(item.lineTotal).toFixed(2)}</td>
         </tr>
       `;
       tbody.insertAdjacentHTML("beforeend", row);
@@ -46,20 +44,18 @@ export default async function generateInvoice(invoiceData) {
 
     // Totals
     document.getElementById("subtotal").innerText =
-      `₹${data.subtotal.toFixed(2)}`;
+      `₹${data.totalAmount.toFixed(2)}`;
 
     document.getElementById("tax_amount").innerText =
-      `₹${data.tax_amount.toFixed(2)}`;
+      `₹0.00`;
 
     document.getElementById("grand_total").innerText =
-      `₹${data.grand_total.toFixed(2)}`;
+      `₹${data.totalAmount.toFixed(2)}`;
 
   }, invoiceData);
 
-  // Output file path
   const outPath = path.join(__dirname, `../invoice_${Date.now()}.pdf`);
 
-  // Generate PDF
   await page.pdf({
     path: outPath,
     format: "A4",

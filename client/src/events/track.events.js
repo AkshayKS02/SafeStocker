@@ -23,6 +23,36 @@ function sortByExpiry() {
     renderTrackCards();
 }
 
+async function handleDelete(stockID) {
+    try {
+        const response = await fetch(
+            `http://localhost:5000/stock/expire/${stockID}`,
+            {
+                method: "DELETE",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Delete failed");
+            return;
+        }
+
+        // Refetch updated stock list from backend
+        await loadStockFromServer();
+
+        renderTrackCards();
+
+        alert("Expired stock cleared. Loss recorded.");
+
+    } catch (err) {
+        console.error(err);
+        alert("Server error");
+    }
+}
+
 function attachTrackEvents() {
     if (DOM.track.sortName) {
         DOM.track.sortName.addEventListener("click", sortByName);
@@ -35,6 +65,21 @@ function attachTrackEvents() {
     if (DOM.track.sortDate) {
         DOM.track.sortDate.addEventListener("click", sortByExpiry);
     }
+
+    // DELETE EVENT (event delegation)
+    if (DOM.track.container) {
+        DOM.track.container.addEventListener("click", (e) => {
+            const btn = e.target.closest(".delete-btn");
+            if (!btn) return;
+
+            const stockID = btn.dataset.stockId;
+
+            if (confirm("Mark this expired stock as lost?")) {
+                handleDelete(stockID);
+            }
+        });
+    }
 }
+
 
 attachTrackEvents();

@@ -10,13 +10,15 @@
     <link rel="stylesheet" href="../src/styles/pages/track.css">
     <link rel="stylesheet" href="../src/styles/pages/billing.css">
     <link rel="stylesheet" href="../src/styles/pages/entry.css">
+    <link rel="stylesheet" href="../src/styles/pages/dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
     <header class="top-bar">
-        <h1 class="page-title">SafeStocker</h1>
+        <h1 class="page-title" id="title-link" style="cursor:pointer;">SafeStocker</h1>
         <nav class="main-nav">
-            <button class="nav-button active-nav-button" id="home-button">Home</button>
+            <button class="nav-button active-nav-button" id="dashboard-button">Dashboard</button>
             <button class="nav-button" id="track-button">Track Product</button>
             <button class="nav-button" id="billing-button">Billing</button>
             <button class="nav-button" id="add-new-button">Add New</button>
@@ -35,7 +37,60 @@
         </div>
     </header>
 
-    <section class="page-view" id="home-view">
+    <section class="page-view" id="dashboard-view">
+        <div class="dashboard-container">
+
+            <div class="dashboard-top">
+                <div class="dashboard-cards">
+                    <div class="dashboard-card green-card">
+                        <h3>Total Products</h3>
+                        <p id="total-products">0</p>
+                    </div>
+
+                    <div class="dashboard-card blue-card">
+                        <h3>Total Stock Units</h3>
+                        <p id="total-stock">0</p>
+                    </div>
+
+                    <div class="dashboard-card purple-card">
+                        <h3>Today's Sales</h3>
+                        <p id="today-sales">₹0</p>
+                    </div>
+
+                    <div class="dashboard-card red-card">
+                        <h3>Near Expiry</h3>
+                        <p id="near-expiry">0</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-charts">
+                    <div class="chart-header">
+                        <div class="chart-filters">
+                            <button class="chart-btn active">Hours</button>
+                            <button class="chart-btn">Days</button>
+                            <button class="chart-btn">Months</button>
+                        </div>
+                    </div>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="dashboard-bottom">
+                <div class="big-rev-section">
+                    <h3>Biggest Revenue Days</h3>
+                    <ul id="big-rev-list"></ul>
+                </div>
+
+                <div class="order-section">
+                    <h3>Recent Orders</h3>
+                    <ul id="order-list"></ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="page-view" id="home-view" style="display:none;">
         <div class="hero-section">
             <img src="images/dashboard-preview.jpg" class="hero-image active" alt="Slide 1">
             <img src="images/store-bg-2.png" class="hero-image" alt="Slide 2">

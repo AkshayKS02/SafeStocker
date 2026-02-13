@@ -7,6 +7,7 @@ import "../events/track.events.js";
 import "../events/entry.events.js";
 import "../events/billing.events.js";
 import "../events/stock.events.js";
+import "../events/dashboard.events.js";
 
 // Barcode / scanner events
 import "../barcode/barcode.events.js";
