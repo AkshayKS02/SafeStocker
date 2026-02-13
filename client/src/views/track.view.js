@@ -11,32 +11,47 @@ export function renderTrackCards() {
         return;
     }
 
-    container.innerHTML = stockItems.map(item => `
-        <div class="item-card ${item.color}" data-stock-id="${item.stockID}">
-            <div class="item-title">${item.name}</div>
+    container.innerHTML = stockItems.map(item => {
+        const showDelete = item.color === "red" && item.inStock > 0;
 
-            <div class="item-meta">
-                Barcode: <span class="barcode">${item.barcode}</span>
-            </div>
+        return `
+            <div class="item-card ${item.color}" data-stock-id="${item.stockID}">
+                <div class="item-title">${item.name}</div>
 
-            <div class="qty-box">
-                In Stock: ${item.inStock}
-            </div>
-
-            <div class="status">
-                <span class="status-dot ${item.color}"></span>
                 ${
-                    item.color === "gray"
-                        ? "No expiry info"
-                    : item.color === "red"
-                        ? "EXPIRED"
-                    : item.color === "orange"
-                        ? `Critical • ${item.daysLeft} days left`
-                    : item.color === "yellow"
-                        ? `Expiring soon • ${item.daysLeft} days`
-                    : "Fresh"
+                    showDelete
+                    ? `
+                    <button class="delete-btn" data-stock-id="${item.stockID}">
+                        <img src="images/delete.png" class="delete-icon" alt="Delete">
+                    </button>
+                    `
+                    : ""
                 }
+
+                <div class="item-meta">
+                    Barcode: <span class="barcode">${item.barcode}</span>
+                </div>
+
+                <div class="qty-box">
+                    In Stock: ${item.inStock}
+                </div>
+
+                <div class="status">
+                    <span class="status-dot ${item.color}"></span>
+                    ${
+                        item.color === "gray"
+                            ? "No expiry info"
+                        : item.color === "red"
+                            ? "EXPIRED"
+                        : item.color === "orange"
+                            ? `Critical • ${item.daysLeft} days left`
+                        : item.color === "yellow"
+                            ? `Expiring soon • ${item.daysLeft} days`
+                        : "Fresh"
+                    }
+                </div>
             </div>
-        </div>
-    `).join("");
+        `;
+    }).join("");
+
 }

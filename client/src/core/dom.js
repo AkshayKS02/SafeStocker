@@ -4,6 +4,7 @@
       // Views
       views: {
         home: document.getElementById("home-view"),
+        dashboard: document.getElementById("dashboard-view"),
         track: document.getElementById("track-view"),
         billing: document.getElementById("billing-view"),
         entry: document.getElementById("entry-view"),
@@ -12,7 +13,7 @@
       // Navigation Buttons
       nav: {
         all: document.querySelectorAll(".nav-button"),
-        homeBtn: document.getElementById("home-button"),
+        dashboardBtn: document.getElementById("dashboard-button"),
         trackBtn: document.getElementById("track-button"),
         billingBtn: document.getElementById("billing-button"),
         addBtn: document.getElementById("add-new-button"),

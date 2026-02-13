@@ -105,14 +105,10 @@ function attachBillingEvents() {
                 customer: { name: "Walk-in Customer" },
                 items: billItems.map(i => ({
                     itemID: i.itemID,
-                    description: i.name,
-                    qty: i.qty,
-                    price: i.price
-                })),
-                subtotal,
-                tax_amount: 0,
-                grand_total: subtotal
+                    qty: i.qty
+                }))
             };
+
 
             try {
                 const blob = await generateInvoice(payload);

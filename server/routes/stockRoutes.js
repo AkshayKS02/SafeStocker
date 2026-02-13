@@ -2,6 +2,7 @@ import express from "express";
 import {
     addStock,
     getStockByShop,
+    deleteExpiredStock,
     updateStockQuantity
 } from "../controllers/stockController.js";
 
@@ -15,5 +16,7 @@ router.get("/:shopID", getStockByShop);
 
 // Update quantity in a batch
 router.put("/:stockID", updateStockQuantity);
+
+router.delete("/expire/:stockID", deleteExpiredStock);
 
 export default router;

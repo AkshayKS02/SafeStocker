@@ -105,3 +105,88 @@ export async function updateStockQuantity(req, res) {
     }
 }
 
+export async function deleteExpiredStock(req, res) {
+    const ShopID = req.user?.ShopID;
+    const { stockID } = req.params;
+
+    if (!ShopID) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Get stock + price
+        const [rows] = await connection.query(`
+            SELECT 
+                Stock.Quantity,
+                Stock.ExpiryDate,
+                Stock.ItemID,
+                Items.Price
+            FROM Stock
+            JOIN Items ON Stock.ItemID = Items.ItemID
+            WHERE Stock.StockID = ? AND Stock.ShopID = ?
+        `, [stockID, ShopID]);
+
+        if (rows.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: "Stock not found" });
+        }
+
+        const stock = rows[0];
+
+        // Check expiry
+        const today = new Date();
+        const expiry = new Date(stock.ExpiryDate);
+
+        if (expiry > today) {
+            await connection.rollback();
+            return res.status(400).json({ error: "Stock not expired yet" });
+        }
+
+        if (stock.Quantity <= 0) {
+            await connection.rollback();
+            return res.status(400).json({ error: "Stock already empty" });
+        }
+
+        const lossAmount = stock.Quantity * stock.Price;
+
+        // Insert into Losses table
+        await connection.query(`
+            INSERT INTO Losses 
+            (StockID, ItemID, QuantityLost, LossAmount, ShopID)
+            VALUES (?, ?, ?, ?, ?)
+        `, [
+            stockID,
+            stock.ItemID,
+            stock.Quantity,
+            lossAmount,
+            ShopID
+        ]);
+
+        // Set quantity to 0 instead of delete
+        await connection.query(`
+            UPDATE Stock
+            SET Quantity = 0
+            WHERE StockID = ?
+        `, [stockID]);
+
+        await connection.commit();
+
+        res.json({
+            success: true,
+            lossAmount
+        });
+
+    } catch (err) {
+        await connection.rollback();
+        console.error(err);
+        res.status(500).json({ error: "Failed to process expired stock" });
+    } finally {
+        connection.release();
+    }
+}
+
+

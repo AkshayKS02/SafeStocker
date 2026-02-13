@@ -8,6 +8,7 @@ import itemRoutes from "./routes/itemRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import dotenv from "dotenv";
 import session from "express-session";
 import passport from "passport";
@@ -78,7 +79,7 @@ passport.use(new GoogleStrategy({
                 OwnerName: rows[0].OwnerName,
                 Email: rows[0].Email,
                 isNew: false,
-                picture // 🛠️ FIX: Ensure picture is passed
+                picture 
             });
         }
 
@@ -127,6 +128,7 @@ app.use("/items", itemRoutes);
 app.use("/stock", stockRoutes);
 app.use("/invoice", invoiceRoutes);
 app.use("/auth", authRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 app.get("/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
@@ -153,7 +155,7 @@ app.get("/auth/google/user", (req, res) => {
       OwnerName: req.user.OwnerName,
       Email: req.user.Email,
       isNew: req.user.isNew,
-      picture: req.user.picture // 🛠️ FIX: Ensure picture is included
+      picture: req.user.picture 
     }
   });
 });

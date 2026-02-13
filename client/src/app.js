@@ -4,6 +4,5 @@ import { initHomeCarousel } from "./views/home.view.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     initApp();
-
     initHomeCarousel();
 });
