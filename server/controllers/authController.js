@@ -6,7 +6,7 @@ export async function loginOwner(req, res) {
     try {
         // 1. Lookup
         const [rows] = await db.query(
-            "SELECT ShopID, OwnerName, Phone, Email FROM Shop WHERE Phone = ?",
+            "SELECT ShopID, OwnerName, Phone, Email FROM shop WHERE Phone = ?",
             [phone]
         );
 
@@ -21,7 +21,7 @@ export async function loginOwner(req, res) {
 
         // 3. If not exists → INSERT new shop owner
         const [result] = await db.query(
-            "INSERT INTO Shop (OwnerName, Phone, Email) VALUES (?, ?, ?)",
+            "INSERT INTO shop (OwnerName, Phone, Email) VALUES (?, ?, ?)",
             [ownerName, phone, null]
         );
 

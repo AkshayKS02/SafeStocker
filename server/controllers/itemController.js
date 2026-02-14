@@ -8,16 +8,16 @@ export async function getAllItems(req, res) {
         const [rows] = await db.query(
             `
             SELECT 
-                Items.ItemID,
-                Items.ItemName,
-                Items.Barcode,
-                Items.Source,
-                Items.Price,
-                Category.CategoryName
-            FROM Items
-            LEFT JOIN Category ON Items.CategoryID = Category.CategoryID
-            WHERE Items.ShopID = ?
-            ORDER BY Items.CreatedAt DESC
+                items.ItemID,
+                items.ItemName,
+                items.Barcode,
+                items.Source,
+                items.Price,
+                category.CategoryName
+            FROM items
+            LEFT JOIN category ON items.CategoryID = category.CategoryID
+            WHERE items.ShopID = ?
+            ORDER BY items.CreatedAt DESC
             `,
             [ShopID]
         );
@@ -41,7 +41,7 @@ export async function addItem(req, res) {
 
     try {
         const [existing] = await db.query(
-            `SELECT ItemID FROM Items WHERE ShopID = ? AND Barcode = ?`,
+            `SELECT ItemID FROM items WHERE ShopID = ? AND Barcode = ?`,
             [ShopID, Barcode]
         );
 
@@ -51,7 +51,7 @@ export async function addItem(req, res) {
 
         const [result] = await db.query(
             `
-            INSERT INTO Items (ShopID, ItemName, Barcode, CategoryID, Source, Price)
+            INSERT INTO items (ShopID, ItemName, Barcode, CategoryID, Source, Price)
             VALUES (?, ?, ?, ?, ?, ?)
             `,
             [

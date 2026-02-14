@@ -12,7 +12,7 @@ export async function getDashboardOverview(req, res) {
     // Total Products
     const [[products]] = await db.query(
       `SELECT COUNT(*) AS totalProducts
-       FROM Items
+       FROM items
        WHERE ShopID = ?`,
       [ShopID]
     );
@@ -20,7 +20,7 @@ export async function getDashboardOverview(req, res) {
     // Total Stock Units
     const [[stock]] = await db.query(
       `SELECT SUM(Quantity) AS totalStockUnits
-       FROM Stock
+       FROM stock
        WHERE ShopID = ?`,
       [ShopID]
     );
@@ -28,7 +28,7 @@ export async function getDashboardOverview(req, res) {
     // Today's Sales
     const [[sales]] = await db.query(
       `SELECT SUM(TotalAmount) AS todaysSales
-       FROM Billing
+       FROM billing
        WHERE ShopID = ?
        AND DATE(BillDate) = CURDATE()`,
       [ShopID]
@@ -38,7 +38,7 @@ export async function getDashboardOverview(req, res) {
     const [[expiry]] = await db.query(
       `
       SELECT COUNT(*) AS nearExpiry
-      FROM Stock
+      FROM stock
       WHERE ShopID = ?
       AND Quantity > 0
       AND ExpiryDate > CURDATE()
@@ -74,7 +74,7 @@ export async function getBiggestRevenueDays(req, res) {
       SELECT 
         DATE(BillDate) AS day,
         SUM(TotalAmount) AS revenue
-      FROM Billing
+      FROM billing
       WHERE ShopID = ?
       AND MONTH(BillDate) = MONTH(CURDATE())
       AND YEAR(BillDate) = YEAR(CURDATE())
@@ -104,7 +104,7 @@ export async function getRecentOrders(req, res) {
     const [orders] = await db.query(
       `
       SELECT ReceiptID, BillDate, TotalAmount
-      FROM Billing
+      FROM billing
       WHERE ShopID = ?
       ORDER BY BillDate DESC
       LIMIT 10
@@ -139,7 +139,7 @@ export async function getRevenueGraph(req, res) {
       revenueQuery = `
         SELECT HOUR(BillDate) AS label,
                SUM(TotalAmount) AS value
-        FROM Billing
+        FROM billing
         WHERE ShopID = ?
         AND DATE(BillDate) = CURDATE()
         GROUP BY HOUR(BillDate)
@@ -149,7 +149,7 @@ export async function getRevenueGraph(req, res) {
       lossQuery = `
         SELECT HOUR(LossDate) AS label,
                SUM(LossAmount) AS value
-        FROM Losses
+        FROM losses
         WHERE ShopID = ?
         AND DATE(LossDate) = CURDATE()
         GROUP BY HOUR(LossDate)
@@ -164,7 +164,7 @@ export async function getRevenueGraph(req, res) {
       revenueQuery = `
         SELECT DAY(BillDate) AS label,
                SUM(TotalAmount) AS value
-        FROM Billing
+        FROM billing
         WHERE ShopID = ?
         AND MONTH(BillDate) = MONTH(CURDATE())
         AND YEAR(BillDate) = YEAR(CURDATE())
@@ -175,7 +175,7 @@ export async function getRevenueGraph(req, res) {
       lossQuery = `
         SELECT DAY(LossDate) AS label,
                SUM(LossAmount) AS value
-        FROM Losses
+        FROM losses
         WHERE ShopID = ?
         AND MONTH(LossDate) = MONTH(CURDATE())
         AND YEAR(LossDate) = YEAR(CURDATE())
@@ -191,7 +191,7 @@ export async function getRevenueGraph(req, res) {
       revenueQuery = `
         SELECT MONTH(BillDate) AS label,
                SUM(TotalAmount) AS value
-        FROM Billing
+        FROM billing
         WHERE ShopID = ?
         AND YEAR(BillDate) = YEAR(CURDATE())
         GROUP BY MONTH(BillDate)
@@ -201,7 +201,7 @@ export async function getRevenueGraph(req, res) {
       lossQuery = `
         SELECT MONTH(LossDate) AS label,
                SUM(LossAmount) AS value
-        FROM Losses
+        FROM losses
         WHERE ShopID = ?
         AND YEAR(LossDate) = YEAR(CURDATE())
         GROUP BY MONTH(LossDate)

@@ -68,7 +68,7 @@ passport.use(new GoogleStrategy({
     try {
         // Lookup shop owner (Promise-based query)
         const [rows] = await db.query( 
-            "SELECT ShopID, OwnerName, Email FROM Shop WHERE Email = ?",
+            "SELECT ShopID, OwnerName, Email FROM shop WHERE Email = ?",
             [email]
         );
 
@@ -86,7 +86,7 @@ passport.use(new GoogleStrategy({
         const phone = "9" + Math.floor(100000000 + Math.random() * 900000000);
         // Owner does NOT exist → create shop entry
         const [result] = await db.query(
-            "INSERT INTO Shop (OwnerName, Phone, Email) VALUES (?,?,?)",
+            "INSERT INTO shop (OwnerName, Phone, Email) VALUES (?,?,?)",
             [name, phone , email]
         );
 
@@ -114,14 +114,16 @@ passport.deserializeUser((obj, done) => {
 });
 
 // Routes
-app.get("/run-scanner", (req, res) => {
-  exec("py ./python/barcode.py", (err, stdout) => {
-    if (err) return res.status(500).send("Error running scanner");
-    const barcode = stdout.trim();
-    console.log("Scanned:", barcode);
-    res.json({ barcode });
+if (process.env.NODE_ENV !== "production") {
+  app.get("/run-scanner", (req, res) => {
+    exec("py ./python/barcode.py", (err, stdout) => {
+      if (err) return res.status(500).send("Error running scanner");
+      const barcode = stdout.trim();
+      console.log("Scanned:", barcode);
+      res.json({ barcode });
+    });
   });
-});
+}
 
 app.use("/barcode", barcodeRoutes);
 app.use("/items", itemRoutes);

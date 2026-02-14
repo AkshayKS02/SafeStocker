@@ -10,7 +10,7 @@ export async function handleBarcode(req, res) {
 
     try {
         const [rows] = await db.query(
-            "SELECT ItemID, ItemName, Barcode, CategoryID, Source FROM Items WHERE ShopID = ? AND Barcode = ?",
+            "SELECT ItemID, ItemName, Barcode, CategoryID, Source FROM items WHERE ShopID = ? AND Barcode = ?",
             [ShopID, barcode]
         );
 

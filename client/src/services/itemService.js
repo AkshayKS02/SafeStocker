@@ -1,6 +1,6 @@
 // src/services/itemService.js
 export async function createItem(payload) {
-    const res = await fetch("http://localhost:5000/items", {
+    const res = await fetch("/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 export default async function generateInvoice(invoiceData) {
 
-  const templateUrl = "http://localhost:5000/templates/invoice.html";
+  const templateUrl = `http://localhost:${process.env.PORT || 5000}/templates/invoice.html`;
 
   const browser = await puppeteer.launch({
     headless: "new"

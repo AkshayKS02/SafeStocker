@@ -26,7 +26,7 @@ export const createInvoice = async (req, res) => {
     for (const item of items) {
 
       const [rows] = await conn.query(
-        `SELECT ItemName, Price FROM Items WHERE ItemID = ? AND ShopID = ?`,
+        `SELECT ItemName, Price FROM items WHERE ItemID = ? AND ShopID = ?`,
         [item.itemID, ShopID]
       );
 
@@ -61,7 +61,7 @@ export const createInvoice = async (req, res) => {
       const [rows] = await conn.query(
         `
         SELECT StockID, Quantity
-        FROM Stock
+        FROM stock
         WHERE ShopID = ? AND ItemID = ?
         ORDER BY ExpiryDate ASC
         FOR UPDATE
@@ -80,7 +80,7 @@ export const createInvoice = async (req, res) => {
         const newQty = stock.Quantity - take;
 
         await conn.query(
-          `UPDATE Stock SET Quantity = ? WHERE StockID = ?`,
+          `UPDATE stock SET Quantity = ? WHERE StockID = ?`,
           [newQty, stock.StockID]
         );
 
@@ -95,7 +95,7 @@ export const createInvoice = async (req, res) => {
     // 3️⃣ Insert into Billing
     const [billingResult] = await conn.query(
       `
-      INSERT INTO Billing (ShopID, TotalAmount)
+      INSERT INTO billing (ShopID, TotalAmount)
       VALUES (?, ?)
       `,
       [ShopID, totalAmount]
@@ -107,7 +107,7 @@ export const createInvoice = async (req, res) => {
     for (const item of invoiceItems) {
       await conn.query(
         `
-        INSERT INTO BillingDetails
+        INSERT INTO billingdetails
         (ReceiptID, ItemID, Quantity, Price, Discount)
         VALUES (?, ?, ?, ?, ?)
         `,
