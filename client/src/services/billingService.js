@@ -15,7 +15,7 @@ export async function generateInvoice(payload) {
 }
 
 export async function scanBarcode() {
-    const res = await fetch("http://localhost:5000/run-scanner");
+    const res = await fetch("/run-scanner");
     const data = await res.json();
     return data.barcode || null;
 }

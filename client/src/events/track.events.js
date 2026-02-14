@@ -26,7 +26,7 @@ function sortByExpiry() {
 async function handleDelete(stockID) {
     try {
         const response = await fetch(
-            `http://localhost:5000/stock/expire/${stockID}`,
+            `/stock/expire/${stockID}`,
             {
                 method: "DELETE",
                 credentials: "include"

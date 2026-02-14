@@ -12,7 +12,7 @@ let currentChartType = "Hours";
 async function loadChartData(type) {
     try {
         const res = await fetch(
-            `http://localhost:5000/dashboard/graph?type=${type.toLowerCase()}`,
+            `/dashboard/graph?type=${type.toLowerCase()}`,
             { credentials: "include" }
         );
 
@@ -65,7 +65,7 @@ async function initDashboardData() {
 
         // 🔹 Overview
         const overviewRes = await fetch(
-            "http://localhost:5000/dashboard/overview",
+            "/dashboard/overview",
             { credentials: "include" }
         );
         const overview = await overviewRes.json();
@@ -79,7 +79,7 @@ async function initDashboardData() {
 
         // 🔹 Biggest Revenue Days
         const daysRes = await fetch(
-            "http://localhost:5000/dashboard/biggest-days",
+            "/dashboard/biggest-days",
             { credentials: "include" }
         );
         const biggestDays = await daysRes.json();
@@ -93,7 +93,7 @@ async function initDashboardData() {
 
         // 🔹 Recent Orders
         const ordersRes = await fetch(
-            "http://localhost:5000/dashboard/orders",
+            "/dashboard/orders",
             { credentials: "include" }
         );
         const orders = await ordersRes.json();

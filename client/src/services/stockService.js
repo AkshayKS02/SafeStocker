@@ -38,7 +38,7 @@ export async function fetchStock(shopID) {
     if (!shopID) return [];
 
     try {
-        const res = await fetch(`http://localhost:5000/stock/${shopID}`);
+        const res = await fetch(`/stock/${shopID}`);
         const rows = await res.json();
         return rows.map(normalizeStockRow);
     } catch {
@@ -49,7 +49,7 @@ export async function fetchStock(shopID) {
 //Backend Call that fetches Item names for dropdown
 export async function fetchItemOptions() {
     try {
-        const res = await fetch("http://localhost:5000/items", {
+        const res = await fetch("/items", {
             credentials: "include"
         });
         return await res.json();

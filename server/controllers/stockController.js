@@ -15,7 +15,7 @@ export async function addStock(req, res) {
     try {
         const [result] = await db.query(
             `
-            INSERT INTO Stock (ShopID, ItemID, SupplierID, Quantity, ManufactureDate, ExpiryDate)
+            INSERT INTO stock (ShopID, ItemID, SupplierID, Quantity, ManufactureDate, ExpiryDate)
             VALUES (?, ?, ?, ?, ?, ?)
             `,
             [
@@ -50,18 +50,18 @@ export async function getStockByShop(req, res) {
         const [rows] = await db.query(
             `
             SELECT
-                Stock.StockID,
-                Stock.ItemID,
-                Stock.Quantity,
-                Stock.ManufactureDate,
-                Stock.ExpiryDate,
-                Items.ItemName,
-                Items.Barcode,
-                Items.price
-            FROM Stock
-            JOIN Items ON Stock.ItemID = Items.ItemID
-            WHERE Stock.ShopID = ? and Stock.Quantity > 0
-            ORDER BY Stock.ExpiryDate ASC
+                stock.StockID,
+                stock.ItemID,
+                stock.Quantity,
+                stock.ManufactureDate,
+                stock.ExpiryDate,
+                items.ItemName,
+                items.Barcode,
+                items.price
+            FROM stock
+            JOIN items ON stock.ItemID = items.ItemID
+            WHERE stock.ShopID = ? and stock.Quantity > 0
+            ORDER BY stock.ExpiryDate ASC
             `,
             [ShopID]
         );
@@ -90,7 +90,7 @@ export async function updateStockQuantity(req, res) {
     try {
         await db.query(
             `
-            UPDATE Stock
+            UPDATE stock
             SET Quantity = ?
             WHERE StockID = ? AND ShopID = ?
             `,
@@ -121,13 +121,13 @@ export async function deleteExpiredStock(req, res) {
         // Get stock + price
         const [rows] = await connection.query(`
             SELECT 
-                Stock.Quantity,
-                Stock.ExpiryDate,
-                Stock.ItemID,
-                Items.Price
-            FROM Stock
-            JOIN Items ON Stock.ItemID = Items.ItemID
-            WHERE Stock.StockID = ? AND Stock.ShopID = ?
+                stock.Quantity,
+                stock.ExpiryDate,
+                stock.ItemID,
+                items.Price
+            FROM stock
+            JOIN items ON stock.ItemID = items.ItemID
+            WHERE stock.StockID = ? AND stock.ShopID = ?
         `, [stockID, ShopID]);
 
         if (rows.length === 0) {
@@ -155,7 +155,7 @@ export async function deleteExpiredStock(req, res) {
 
         // Insert into Losses table
         await connection.query(`
-            INSERT INTO Losses 
+            INSERT INTO losses 
             (StockID, ItemID, QuantityLost, LossAmount, ShopID)
             VALUES (?, ?, ?, ?, ?)
         `, [
@@ -168,7 +168,7 @@ export async function deleteExpiredStock(req, res) {
 
         // Set quantity to 0 instead of delete
         await connection.query(`
-            UPDATE Stock
+            UPDATE stock
             SET Quantity = 0
             WHERE StockID = ?
         `, [stockID]);
