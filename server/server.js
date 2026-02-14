@@ -20,11 +20,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(cors({
-  origin: [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500"
-  ],
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
@@ -46,9 +44,10 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: {
-    secure: false, // Set to true if using HTTPS
+    secure: process.env.NODE_ENV === "production",
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    sameSite: "lax",
+    maxAge: 24 * 60 * 60 * 1000
   }
 }));
 
@@ -58,7 +57,7 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:5000/auth/google/callback"
+    callbackURL: "https://safestocker.onrender.com/auth/google/callback"
 }, async (accessToken, refreshToken, profile, done) => {
 
     const email = profile.emails[0].value;
