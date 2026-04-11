@@ -1,11 +1,4 @@
-import {
-    Dimensions,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 
 const { width } = Dimensions.get("window");
@@ -18,60 +11,72 @@ const data = [
 
 export default function HeroCarousel() {
   return (
-    <View>
+   
+    <View style={styles.container}> 
+      
       <Carousel
         loop
         width={width}
-        height={300}
+        height={400}
         autoPlay
         data={data}
         scrollAnimationDuration={1000}
+        
         renderItem={({ item }) => (
-          <View style={styles.slide}>
-            <Image source={item} style={styles.image} />
-
-            <View style={styles.overlay}>
-              <Text style={styles.title}>Track your stock.</Text>
-              <Text style={styles.subtitle}>Never miss an expiry again.</Text>
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity style={styles.primaryBtn}>
-                  <Text style={styles.primaryText}>Get Started</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.secondaryBtn}>
-                  <Text style={styles.secondaryText}>Learn More</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+          <Image source={item} style={styles.image} />
         )}
       />
+
+      <View style={styles.overlay}>
+        <Text style={styles.title}>Track your stock.</Text>
+        <Text style={styles.subtitle}>Never miss an expiry again.</Text>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity style={styles.primaryBtn}>
+            <Text style={styles.primaryText}>Get Started</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.secondaryBtn}>
+            <Text style={styles.secondaryText}>Learn More</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  slide: {
+  
+  container: {
     position: "relative",
+    height: 400,
+    
   },
   image: {
     width: "100%",
-    height: 300,
+    height: 400,
   },
   overlay: {
-    position: "absolute",
+    position: "absolute", 
     bottom: 20,
     left: 20,
+    zIndex: 10, 
   },
   title: {
-    color: "#fff",
-    fontSize: 22,
+    color: "#f1f2f3",
+    fontSize: 24,
     fontWeight: "bold",
+    textShadowColor: 'rgba(0, 0, 0, 0.75)', 
+    textShadowOffset: { width: -1, height: 1 }, 
+    textShadowRadius: 10,
   },
   subtitle: {
-    color: "#ddd",
+    color: "#dddde0",
     marginVertical: 5,
+    textShadowColor: 'rgba(0, 0, 0, 0.75)', 
+    textShadowOffset: { width: -1, height: 1 }, 
+    textShadowRadius: 10,
   },
   buttonRow: {
     flexDirection: "row",
@@ -83,6 +88,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     marginRight: 10,
+    elevation: 8,
   },
   primaryText: {
     color: "#3b5bfd",
@@ -94,6 +100,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
+    elevation: 8,
   },
   secondaryText: {
     color: "#fff",
