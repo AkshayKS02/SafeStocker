@@ -10,39 +10,8 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
-
-
-function CustomHeader() {
-  const insets = useSafeAreaInsets();
-  
-  return (
-    <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
-      
-      <TouchableOpacity style={styles.menuButton}>
-        <Ionicons name="menu-outline" size={28} color="#333" />
-      </TouchableOpacity>
-
-      <MaskedView
-        style={styles.maskedView}
-        maskElement={<Text style={styles.headerTitle}>SafeStocker</Text>}
-      >
-        <LinearGradient
-          colors={['#000000', '#4F6EEB']} // Cyan to deep blue
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Text style={[styles.headerTitle, { opacity: 0 }]}>SafeStocker</Text>
-        </LinearGradient>
-      </MaskedView>
-
-      {/* 3. Profile Icon Button */}
-      <TouchableOpacity style={styles.profileButton}>
-        <Ionicons name="person-outline" size={24} color="#3b5bfd" />
-      </TouchableOpacity>
-      
-    </View>
-  );
-}
+import { useState } from 'react';
+import { useRouter } from 'expo-router';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -52,7 +21,6 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         
-        // Inject the custom header here
         header: () => <CustomHeader />,
         headerShown: true, 
         
@@ -66,13 +34,118 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="scan"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Scan',
+          tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="track"
+        options={{
+          title: 'Track',
+          tabBarIcon: ({ color }) => <Ionicons name="location" size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: 'Dashboard',
+          tabBarIcon: ({ color }) => <Ionicons name="bar-chart" size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="billing"
+        options={{
+          title: 'Billing',
+          tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} />,
+        }}
+      />
+      
     </Tabs>
+  );
+}
+
+// Add state management to CustomHeader
+function CustomHeader() {
+  const insets = useSafeAreaInsets();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const router = useRouter();
+
+  const tabs = [
+    { name: 'Home', route: 'index' },
+    { name: 'Scan', route: 'scan' },
+    { name: 'Track', route: 'track' },
+    { name: 'Dashboard', route: 'dashboard' },
+    { name: 'Billing', route: 'billing' },
+  ];
+
+  const handleTabPress = (route: string) => {
+    router.push(`/(tabs)/${route}` as any);
+    setSidebarOpen(false);
+  };
+
+  return (
+    <>
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={() => setSidebarOpen(!sidebarOpen)}
+        >
+          <Ionicons name="menu-outline" size={28} color="#333" />
+        </TouchableOpacity>
+
+        <MaskedView
+          style={styles.maskedView}
+          maskElement={<Text style={styles.headerTitle}>SafeStocker</Text>}
+        >
+          <LinearGradient
+            colors={['#000000', '#4F6EEB']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={[styles.headerTitle, { opacity: 0 }]}>SafeStocker</Text>
+          </LinearGradient>
+        </MaskedView>
+
+        <TouchableOpacity 
+          style={styles.profileButton}
+          onPress={() => setShowLoginModal(true)}
+        >
+          <Ionicons name="person-outline" size={24} color="#3b5bfd" />
+        </TouchableOpacity>
+      </View>
+
+      {sidebarOpen && (
+        <View style={styles.sidebar}>
+          {tabs.map((tab) => (
+            <TouchableOpacity
+              key={tab.route}
+              style={styles.sidebarItem}
+              onPress={() => handleTabPress(tab.route)}
+            >
+              <Text style={styles.sidebarText}>{tab.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {showLoginModal && (
+        <View style={styles.modal}>
+          <View style={styles.loginContainer}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setShowLoginModal(false)}
+            >
+              <Ionicons name="close" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.loginTitle}>Login</Text>
+            {/* Add your login form here */}
+          </View>
+        </View>
+      )}
+    </>
   );
 }
 
@@ -112,5 +185,53 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
      // Adjust for better centering with the menu button
+  },
+  sidebar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+  },
+  sidebarItem: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sidebarText: {
+    fontSize: 18,
+    color: '#333',
+  },
+  modal: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1001,
+  },
+  loginContainer: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: '80%',
+    maxWidth: 400,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    padding: 8,
+  },
+  loginTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
   },
 });
