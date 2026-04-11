@@ -17,10 +17,11 @@ export default function HeroCarousel() {
       <Carousel
         loop
         width={width}
-        height={300}
+        height={400}
         autoPlay
         data={data}
         scrollAnimationDuration={1000}
+        
         renderItem={({ item }) => (
           <Image source={item} style={styles.image} />
         )}
@@ -49,11 +50,12 @@ const styles = StyleSheet.create({
   
   container: {
     position: "relative",
-    height: 300,
+    height: 400,
+    
   },
   image: {
     width: "100%",
-    height: 300,
+    height: 400,
   },
   overlay: {
     position: "absolute", 
