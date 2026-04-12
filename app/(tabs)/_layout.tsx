@@ -1,29 +1,43 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
-
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsSplashVisible(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+  if (isSplashVisible) {
+    return (
+      <View style={styles.splashContainer}>
+        <Image 
+          source={require('../../assets/images/logo.png')} 
+          style={styles.splashLogo}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        
         header: () => <CustomHeader />,
         headerShown: true, 
-        
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
@@ -61,12 +75,11 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} />,
         }}
       />
-      
     </Tabs>
   );
 }
 
-// Add state management to CustomHeader
+// Custom Header component
 function CustomHeader() {
   const insets = useSafeAreaInsets();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -176,7 +189,7 @@ const styles = StyleSheet.create({
   },
   maskedView: {
     flex: 1,
-    height: 32, // Important: must have a fixed height for MaskedView
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -184,7 +197,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
-     // Adjust for better centering with the menu button
   },
   sidebar: {
     position: 'absolute',
@@ -233,5 +245,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     color: '#333',
+  },
+  // Splash Screen Styles
+  splashContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5', 
+  },
+  splashLogo: {
+    width: '80%', 
+    height: 150,  
   },
 });
