@@ -27,7 +27,7 @@ export default function RootIndex() {
   }
 
   // Once the timer ends, move automatically to the login page
-  return <Redirect href="/login" />;
+  return <Redirect href="/(tabs)/home" />;
 }
 
 const styles = StyleSheet.create({

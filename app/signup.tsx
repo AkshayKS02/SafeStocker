@@ -1,15 +1,21 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router'; // <-- Added useLocalSearchParams
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SignUpScreen() {
   const router = useRouter();
+  // Catch the breadcrumb passed from the login screen
+  const { returnTo } = useLocalSearchParams<{ returnTo: string }>();
 
   const handleSignUp = () => {
-    // Replaces the screen to drop them into the main app
-    router.replace('/(tabs)/home');
+    if (returnTo) {
+      // Send them exactly back to where they started the journey
+      router.replace(returnTo as any);
+    } else {
+      router.replace('/(tabs)/home');
+    }
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.blob} />

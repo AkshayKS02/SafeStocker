@@ -1,4 +1,4 @@
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, useRouter, usePathname } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,42 +28,22 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      <Tabs.Screen 
-      name="scan" 
-      options={{ 
-        title: 'Scan', 
-        tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} /> 
-        }} 
-        />
-      <Tabs.Screen 
-      name="track" 
-      options={{ 
-        title: 'Track', 
-        tabBarIcon: ({ color }) => <Ionicons name="location" size={28} color={color} /> 
-        }} 
-        />
-      <Tabs.Screen 
-      name="dashboard" 
-      options={{ 
-        title: 'Dashboard', 
-        tabBarIcon: ({ color }) => <Ionicons name="bar-chart" size={28} color={color} /> 
-        }} 
-        />
-      <Tabs.Screen 
-      name="billing" 
-      options={{ 
-        title: 'Billing', 
-        tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} /> 
-        }} 
-        />
+      <Tabs.Screen name="scan" options={{ title: 'Scan', tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} /> }} />
+      <Tabs.Screen name="track" options={{ title: 'Track', tabBarIcon: ({ color }) => <Ionicons name="location" size={28} color={color} /> }} />
+      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard', tabBarIcon: ({ color }) => <Ionicons name="bar-chart" size={28} color={color} /> }} />
+      <Tabs.Screen name="billing" options={{ title: 'Billing', tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} /> }} />
     </Tabs>
   );
 }
 
+// Custom Header Component
 function CustomHeader() {
   const insets = useSafeAreaInsets();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  
+  // Grab the current URL to pass as a breadcrumb
+  const pathname = usePathname(); 
 
   const tabs = [
     { name: 'Home', route: 'home' },
@@ -78,88 +58,43 @@ function CustomHeader() {
     setSidebarOpen(false);
   };
 
-  const handleLogout = () => {
-    // Replaces the tabs with the login screen so they can't swipe back in
-    router.replace('/login');
+  // Navigates to login but passes the current page URL so it can return here
+  const handleProfileClick = () => {
+    router.push({
+      pathname: '/login',
+      params: { returnTo: pathname }
+    });
   }
 
-return (
-  <>
-    {/* Header */}
-    <View
-      style={[
-        styles.headerContainer,
-        { paddingTop: insets.top + 10 },
-      ]}
-    >
-      {/* Menu Button */}
-      <TouchableOpacity
-        style={styles.menuButton}
-        onPress={() => setSidebarOpen(!sidebarOpen)}
-      >
-        <Ionicons
-          name="menu-outline"
-          size={28}
-          color="#333"
-        />
-      </TouchableOpacity>
+  return (
+    <>
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => setSidebarOpen(!sidebarOpen)}>
+          <Ionicons name="menu-outline" size={28} color="#333" />
+        </TouchableOpacity>
 
-      {/* Title with Gradient */}
-      <MaskedView
-        style={styles.maskedView}
-        maskElement={
-          <Text style={styles.headerTitle}>
-            SafeStocker
-          </Text>
-        }
-      >
-        <LinearGradient
-          colors={['#000000', '#4F6EEB']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-        >
-          <Text
-            style={[
-              styles.headerTitle,
-              { opacity: 0 },
-            ]}
-          >
-            SafeStocker
-          </Text>
-        </LinearGradient>
-      </MaskedView>
+        <MaskedView style={styles.maskedView} maskElement={<Text style={styles.headerTitle}>SafeStocker</Text>}>
+          <LinearGradient colors={['#000000', '#4F6EEB']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+            <Text style={[styles.headerTitle, { opacity: 0 }]}>SafeStocker</Text>
+          </LinearGradient>
+        </MaskedView>
 
-      {/* Logout Button */}
-      <TouchableOpacity
-        style={styles.profileButton}
-        onPress={handleLogout}
-      >
-        <Ionicons
-          name="log-out-outline"
-          size={24}
-          color="#FF4D4D"
-        />
-      </TouchableOpacity>
-    </View>
-
-    {/* Sidebar */}
-    {sidebarOpen && (
-      <View style={styles.sidebar}>
-        {tabs.map((tab) => (
-          <TouchableOpacity
-            key={tab.route}
-            style={styles.sidebarItem}
-            onPress={() => handleTabPress(tab.route)}
-          >
-            <Text style={styles.sidebarText}>
-              {tab.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        <TouchableOpacity style={styles.profileButton} onPress={handleProfileClick}>
+          <Ionicons name="person-outline" size={24} color="#3b5bfd" />
+        </TouchableOpacity>
       </View>
-    )}
-  </>
-);
+
+      {sidebarOpen && (
+        <View style={styles.sidebar}>
+          {tabs.map((tab) => (
+            <TouchableOpacity key={tab.route} style={styles.sidebarItem} onPress={() => handleTabPress(tab.route)}>
+              <Text style={styles.sidebarText}>{tab.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -183,7 +118,7 @@ const styles = StyleSheet.create({
     width: 44, 
     height: 44, 
     borderRadius: 22, 
-    backgroundColor: '#FFEBEB', 
+    backgroundColor: '#DDE8FF', 
     alignItems: 'center', 
     justifyContent: 'center' 
   },

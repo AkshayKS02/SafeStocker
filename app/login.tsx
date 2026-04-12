@@ -1,23 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet} from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router'; // <-- Added useLocalSearchParams
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
   const router = useRouter();
+  // Catch the breadcrumb URL
+  const { returnTo } = useLocalSearchParams<{ returnTo: string }>();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // Replace prevents the user from going "back" to the login screen
-    router.replace('/(tabs)/home');
+    if (returnTo) {
+      // Send them exactly back to where they came from
+      router.replace(returnTo as any); 
+    } else {
+      router.replace('/(tabs)/home'); 
+    }
   };
 
   const handleSignUpNavigation = () => {
-    // Push adds the signup screen to the stack so they CAN go back to login
-    router.push('/signup');
+    // Pass the breadcrumb forward to the Sign Up screen so it isn't lost!
+    router.push({
+      pathname: '/signup',
+      params: { returnTo }
+    });
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.blob} />
