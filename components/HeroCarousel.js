@@ -1,5 +1,6 @@
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Linking } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
+import { useRouter } from "expo-router"; // Import useRouter for internal navigation
 
 const { width } = Dimensions.get("window");
 
@@ -10,8 +11,14 @@ const data = [
 ];
 
 export default function HeroCarousel() {
+  const router = useRouter(); // Initialize the router
+
+  // Function to handle the Rick Roll
+  const handleLearnMore = () => {
+    Linking.openURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  };
+
   return (
-   
     <View style={styles.container}> 
       
       <Carousel
@@ -21,7 +28,6 @@ export default function HeroCarousel() {
         autoPlay
         data={data}
         scrollAnimationDuration={1000}
-        
         renderItem={({ item }) => (
           <Image source={item} style={styles.image} />
         )}
@@ -32,11 +38,19 @@ export default function HeroCarousel() {
         <Text style={styles.subtitle}>Never miss an expiry again.</Text>
 
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.primaryBtn}>
+          {/* Get Started -> Navigates to /scan */}
+          <TouchableOpacity 
+            style={styles.primaryBtn} 
+            onPress={() => router.push('/scan')}
+          >
             <Text style={styles.primaryText}>Get Started</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.secondaryBtn}>
+          {/* Learn More -> Opens YouTube Link */}
+          <TouchableOpacity 
+            style={styles.secondaryBtn} 
+            onPress={handleLearnMore}
+          >
             <Text style={styles.secondaryText}>Learn More</Text>
           </TouchableOpacity>
         </View>
@@ -47,11 +61,9 @@ export default function HeroCarousel() {
 }
 
 const styles = StyleSheet.create({
-  
   container: {
     position: "relative",
     height: 400,
-    
   },
   image: {
     width: "100%",

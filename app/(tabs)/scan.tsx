@@ -90,8 +90,8 @@ export default function ScanScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8F9FA' },
-  container: { flex: 1, backgroundColor: '#F8F9FA', paddingTop: 20 },
+  safeArea: { flex: 1, backgroundColor: '#ffffff' },
+  container: { flex: 1, backgroundColor: '#ffffff', paddingTop: 20 },
   tabsContainer: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20, gap: 10 },
   tabButton: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20 },
   activeTabButton: { backgroundColor: '#4285F4' },
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   activeTabText: { color: '#FFF' },
   inactiveTabText: { color: '#4285F4' },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
-  scanCard: { backgroundColor: '#EAF0F0', borderRadius: 16, paddingTop: 24, alignItems: 'center', marginBottom: 20 },
+  scanCard: { backgroundColor: '#ffffff', borderRadius: 16, paddingTop: 24, alignItems: 'center', marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2  },
   cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#000', marginBottom: 16 },
   cardSubtitle: { fontSize: 12, color: '#5F6368', marginBottom: 8 },
   inputWrapper: { width: '80%', backgroundColor: '#D1D9D9', borderRadius: 8, marginBottom: 24 },

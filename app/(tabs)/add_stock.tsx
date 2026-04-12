@@ -130,11 +130,11 @@ export default function AddStockScreen() {
 const styles = StyleSheet.create({
   safeArea: { 
     flex: 1, 
-    backgroundColor: '#F8F9FA' 
+    backgroundColor: '#ffffff' 
   },
   container: { 
     flex: 1, 
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#ffffff',
     paddingTop: 20, 
   },
   
@@ -183,13 +183,18 @@ const styles = StyleSheet.create({
 
   // --- Main Card ---
   card: { 
-    backgroundColor: '#EAF0F0', 
+    backgroundColor: '#ffffff', 
     borderRadius: 16, 
     paddingTop: 24,
     paddingBottom: 30,
     alignItems: 'center', 
     borderWidth: 1,
     borderColor: '#D1D9D9',
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4, 
+    elevation: 2,
   },
   
   // --- Inputs ---
