@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router'; // <-- Added useLocalSearchParams
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -18,7 +19,12 @@ export default function SignUpScreen() {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.blob} />
+      <LinearGradient
+        colors={['#3E82FF', '#F5F5F5']} // darker → lighter like your image
+        start={{ x: 1, y: 0 }}
+        end={{ x: 1, y: 1}}
+        style={styles.blob}
+      />
       
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.headerTitle}>Sign Up</Text>
@@ -51,13 +57,12 @@ const styles = StyleSheet.create({
 
   blob: {
     position: 'absolute',
-    top: -120,
-    left: -100,
-    width: 350,
-    height: 350,
-    borderRadius: 175,
-    backgroundColor: '#89b4f8',
-    opacity: 0.6,
+    zIndex: -1,
+    top: -250,
+    left: -200,
+    width: 600,
+    height: 600,
+    borderRadius: 300,
   },
 
   content: {
