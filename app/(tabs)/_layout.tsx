@@ -1,6 +1,6 @@
 import { Tabs, useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
@@ -12,25 +12,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const [isSplashVisible, setIsSplashVisible] = useState(true);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsSplashVisible(false);
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, []);
-  if (isSplashVisible) {
-    return (
-      <View style={styles.splashContainer}>
-        <Image 
-          source={require('../../assets/images/logo.png')} 
-          style={styles.splashLogo}
-          resizeMode="contain"
-        />
-      </View>
-    );
-  }
 
   return (
     <Tabs
@@ -41,53 +22,51 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="index"
+        name="home" 
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="scan"
-        options={{
-          title: 'Scan',
-          tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="track"
-        options={{
-          title: 'Track',
-          tabBarIcon: ({ color }) => <Ionicons name="location" size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color }) => <Ionicons name="bar-chart" size={28} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="billing"
-        options={{
-          title: 'Billing',
-          tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} />,
-        }}
-      />
+      <Tabs.Screen 
+      name="scan" 
+      options={{ 
+        title: 'Scan', 
+        tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} /> 
+        }} 
+        />
+      <Tabs.Screen 
+      name="track" 
+      options={{ 
+        title: 'Track', 
+        tabBarIcon: ({ color }) => <Ionicons name="location" size={28} color={color} /> 
+        }} 
+        />
+      <Tabs.Screen 
+      name="dashboard" 
+      options={{ 
+        title: 'Dashboard', 
+        tabBarIcon: ({ color }) => <Ionicons name="bar-chart" size={28} color={color} /> 
+        }} 
+        />
+      <Tabs.Screen 
+      name="billing" 
+      options={{ 
+        title: 'Billing', 
+        tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} /> 
+        }} 
+        />
     </Tabs>
   );
 }
 
-// Custom Header component
 function CustomHeader() {
   const insets = useSafeAreaInsets();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
 
   const tabs = [
-    { name: 'Home', route: 'index' },
+    { name: 'Home', route: 'home' },
     { name: 'Scan', route: 'scan' },
     { name: 'Track', route: 'track' },
     { name: 'Dashboard', route: 'dashboard' },
@@ -99,162 +78,143 @@ function CustomHeader() {
     setSidebarOpen(false);
   };
 
-  return (
-    <>
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity 
-          style={styles.menuButton}
-          onPress={() => setSidebarOpen(!sidebarOpen)}
-        >
-          <Ionicons name="menu-outline" size={28} color="#333" />
-        </TouchableOpacity>
+  const handleLogout = () => {
+    // Replaces the tabs with the login screen so they can't swipe back in
+    router.replace('/login');
+  }
 
-        <MaskedView
-          style={styles.maskedView}
-          maskElement={<Text style={styles.headerTitle}>SafeStocker</Text>}
+return (
+  <>
+    {/* Header */}
+    <View
+      style={[
+        styles.headerContainer,
+        { paddingTop: insets.top + 10 },
+      ]}
+    >
+      {/* Menu Button */}
+      <TouchableOpacity
+        style={styles.menuButton}
+        onPress={() => setSidebarOpen(!sidebarOpen)}
+      >
+        <Ionicons
+          name="menu-outline"
+          size={28}
+          color="#333"
+        />
+      </TouchableOpacity>
+
+      {/* Title with Gradient */}
+      <MaskedView
+        style={styles.maskedView}
+        maskElement={
+          <Text style={styles.headerTitle}>
+            SafeStocker
+          </Text>
+        }
+      >
+        <LinearGradient
+          colors={['#000000', '#4F6EEB']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
         >
-          <LinearGradient
-            colors={['#000000', '#4F6EEB']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+          <Text
+            style={[
+              styles.headerTitle,
+              { opacity: 0 },
+            ]}
           >
-            <Text style={[styles.headerTitle, { opacity: 0 }]}>SafeStocker</Text>
-          </LinearGradient>
-        </MaskedView>
+            SafeStocker
+          </Text>
+        </LinearGradient>
+      </MaskedView>
 
-        <TouchableOpacity 
-          style={styles.profileButton}
-          onPress={() => setShowLoginModal(true)}
-        >
-          <Ionicons name="person-outline" size={24} color="#3b5bfd" />
-        </TouchableOpacity>
+      {/* Logout Button */}
+      <TouchableOpacity
+        style={styles.profileButton}
+        onPress={handleLogout}
+      >
+        <Ionicons
+          name="log-out-outline"
+          size={24}
+          color="#FF4D4D"
+        />
+      </TouchableOpacity>
+    </View>
+
+    {/* Sidebar */}
+    {sidebarOpen && (
+      <View style={styles.sidebar}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.route}
+            style={styles.sidebarItem}
+            onPress={() => handleTabPress(tab.route)}
+          >
+            <Text style={styles.sidebarText}>
+              {tab.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
-
-      {sidebarOpen && (
-        <View style={styles.sidebar}>
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab.route}
-              style={styles.sidebarItem}
-              onPress={() => handleTabPress(tab.route)}
-            >
-              <Text style={styles.sidebarText}>{tab.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      {showLoginModal && (
-        <View style={styles.modal}>
-          <View style={styles.loginContainer}>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={() => setShowLoginModal(false)}
-            >
-              <Ionicons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.loginTitle}>Login</Text>
-            {/* Add your login form here */}
-          </View>
-        </View>
-      )}
-    </>
-  );
+    )}
+  </>
+);
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    backgroundColor: '#fff',
+  headerContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    paddingHorizontal: 16, 
+    paddingBottom: 12, 
+    backgroundColor: '#fff' 
   },
-  menuButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#F2F2F2',
-    alignItems: 'center',
-    justifyContent: 'center',
+  menuButton: { 
+    width: 44, 
+    height: 44, 
+    borderRadius: 22, 
+    backgroundColor: '#F2F2F2', 
+    alignItems: 'center', 
+    justifyContent: 'center' 
   },
-  profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#DDE8FF',
-    alignItems: 'center',
-    justifyContent: 'center',
+  profileButton: { 
+    width: 44, 
+    height: 44, 
+    borderRadius: 22, 
+    backgroundColor: '#FFEBEB', 
+    alignItems: 'center', 
+    justifyContent: 'center' 
   },
-  maskedView: {
-    flex: 1,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
+  maskedView: { 
+    flex: 1, 
+    height: 32, 
+    justifyContent: 'center', 
+    alignItems: 'center' 
   },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    textAlign: 'center',
+  headerTitle: { 
+    fontSize: 24, 
+    fontWeight: '600', 
+    textAlign: 'center' 
   },
-  sidebar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 1000,
+  sidebar: { 
+    position: 'absolute', 
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    bottom: 0, 
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    zIndex: 1000 
   },
-  sidebarItem: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+  sidebarItem: { 
+    backgroundColor: '#fff', 
+    padding: 16, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#eee' 
   },
-  sidebarText: {
-    fontSize: 18,
-    color: '#333',
-  },
-  modal: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1001,
-  },
-  loginContainer: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: '80%',
-    maxWidth: 400,
-  },
-  closeButton: {
-    alignSelf: 'flex-end',
-    padding: 8,
-  },
-  loginTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
-  // Splash Screen Styles
-  splashContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5', 
-  },
-  splashLogo: {
-    width: '80%', 
-    height: 150,  
+  sidebarText: { 
+    fontSize: 18, 
+    color: '#333' 
   },
 });
