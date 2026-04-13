@@ -1,272 +1,245 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
+  FlatList,
   TextInput,
-  SafeAreaView,
+  Text,
+  TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router'; // Import useRouter
+
+import { useInventory } from '../../context/InventoryContext';
+import BillingProductCard from '../../components/BillingProductCard';
 
 export default function BillingScreen() {
-  const router = useRouter(); // Initialize router
-  const [searchQuery, setSearchQuery] = useState('');
+  const { inventory } = useInventory();
 
-  // Dummy data for the product list
-  const products = [
-    { id: '1', name: 'Potato Chips', barcode: '8901491101837', price: '20', stock: 12 },
-    { id: '2', name: 'Potato Chips', barcode: '8901491101837', price: '20', stock: 12 },
-    { id: '3', name: 'Potato Chips', barcode: '8901491101837', price: '20', stock: 12 },
-    { id: '4', name: 'Potato Chips', barcode: '8901491101837', price: '20', stock: 12 },
-  ];
+  const [search, setSearch] = useState('');
+  const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [isTyping, setIsTyping] = useState(false);
+
+  // ✅ Keyboard listener (FIXED)
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setIsTyping(true);
+    });
+
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setIsTyping(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  // ✅ only non-expired
+  const validItems = inventory.filter(item => item.daysLeft > 0);
+
+  // ✅ search
+  const filteredItems = validItems.filter(item =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // ✅ quantity logic with stock limit
+  const updateQty = (id: string, type: 'add' | 'remove') => {
+    setCart(prev => {
+      const current = prev[id] || 0;
+      const item = inventory.find(p => p.id === id);
+      if (!item) return prev;
+
+      if (type === 'add') {
+        if (current >= item.stock) return prev;
+        return { ...prev, [id]: current + 1 };
+      }
+
+      if (type === 'remove') {
+        return { ...prev, [id]: Math.max(0, current - 1) };
+      }
+
+      return prev;
+    });
+  };
+
+  // ✅ cart items
+  const cartItems = Object.keys(cart)
+    .map(id => {
+      const item = inventory.find(p => p.id === id);
+      return item && cart[id] > 0
+        ? { ...item, qty: cart[id] }
+        : null;
+    })
+    .filter(Boolean) as any[];
+
+  // ✅ total
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0
+  );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View style={styles.container}>
-        
-        {/* Fixed Top Section: Title & Search */}
-        <View style={styles.topSection}>
-          <Text style={styles.pageTitle}>Billing</Text>
-          
-          <View style={styles.searchRow}>
-            <View style={styles.searchWrapper}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search product or scan barcode..."
-                placeholderTextColor="#9AA0A6"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </View>
-            <TouchableOpacity style={styles.scanButton}>
-              <Ionicons name="scan-outline" size={24} color="#FFF" />
-            </TouchableOpacity>
-          </View>
-        </View>
 
-        {/* Scrollable Products List */}
-        <View style={styles.productsContainer}>
-          <Text style={styles.sectionTitle}>Products</Text>
-          
-          <ScrollView 
-            showsVerticalScrollIndicator={false} 
-            contentContainerStyle={styles.scrollContent}
-          >
-            {products.map((item) => (
-              <View key={item.id} style={styles.productCard}>
-                
-                {/* Left Side: Product Details */}
-                <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{item.name}</Text>
-                  <Text style={styles.productBarcode}>{item.barcode}</Text>
-                  <Text style={styles.productPrice}>₹{item.price}</Text>
-                </View>
+        {/* 🔍 Search */}
+        <TextInput
+          placeholder="Search products..."
+          value={search}
+          onChangeText={setSearch}
+          style={styles.search}
+        />
 
-                {/* Right Side: Action & Stock */}
-                <View style={styles.productAction}>
-                  <TouchableOpacity style={styles.addButton}>
-                    <Text style={styles.addButtonText}>+Add</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.stockText}>In Stock : {item.stock}</Text>
+        {/* 🧾 Product List */}
+        <FlatList
+          data={filteredItems}
+          keyExtractor={item => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 10 }}
+          renderItem={({ item }) => (
+            <BillingProductCard
+              item={{ ...item, qty: cart[item.id] || 0 }}
+              onAdd={() => updateQty(item.id, 'add')}
+              onRemove={() => updateQty(item.id, 'remove')}
+            />
+          )}
+        />
+
+        {/* 🛒 Cart Section (hidden ONLY when keyboard open) */}
+        {cartItems.length > 0 && !isTyping && (
+          <View style={styles.cartSection}>
+            <Text style={styles.cartTitle}>Cart</Text>
+
+            <ScrollView
+              style={styles.cartList}
+              showsVerticalScrollIndicator={false}
+            >
+              {cartItems.map(item => (
+                <View key={item.id} style={styles.cartItem}>
+                  <Text style={styles.cartName}>{item.name}</Text>
+                  <Text style={styles.cartQty}>x{item.qty}</Text>
+                  <Text style={styles.cartPrice}>
+                    ₹ {item.price * item.qty}
+                  </Text>
                 </View>
-                
+              ))}
+            </ScrollView>
+
+            {/* 🔹 Separator */}
+            <View style={styles.separator} />
+
+            {/* 💰 Bottom */}
+            <View style={styles.bottomBar}>
+              <View>
+                <Text style={styles.totalText}>Total</Text>
+                <Text style={styles.totalAmount}>₹ {total}</Text>
               </View>
-            ))}
-          </ScrollView>
-        </View>
 
-        {/* Fixed Bottom Section: Current Bill */}
-        <View style={styles.billCard}>
-          <Text style={styles.billTitle}>Current Bill</Text>
-          
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>₹0</Text>
+              <TouchableOpacity style={styles.billBtn}>
+                <Text style={styles.billBtnText}>Generate Bill</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          {/* Generate Bill Button -> Routes to generate_bill */}
-          <TouchableOpacity 
-            style={styles.generateButton}
-            onPress={() => router.push('/generate_bill')}
-          >
-            <Text style={styles.generateButtonText}>Generate Bill</Text>
-          </TouchableOpacity>
-        </View>
+        )}
 
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#EEF3F4', // Light teal/grey background
-  },
   container: {
     flex: 1,
-  },
-  
-  // --- Top Section ---
-  topSection: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  pageTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 16,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  searchWrapper: {
-    flex: 1,
-    backgroundColor: '#DDE4E4', // Slightly darker input background
-    borderRadius: 24,
-    height: 48,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  searchInput: {
-    fontSize: 14,
-    color: '#333',
-    height: '100%',
-  },
-  scanButton: {
-    backgroundColor: '#111',
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#F8F9FA',
   },
 
-  // --- Products Section ---
-  productsContainer: {
+  search: {
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 12,
+    elevation: 2,
+  },
+
+  cartSection: {
+    marginTop: 10,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+
+  cartTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+
+  cartList: {
+    maxHeight: 150,
+  },
+
+  cartItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  cartName: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    fontSize: 14,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#111',
-    marginBottom: 16,
+
+  cartQty: {
+    width: 40,
+    textAlign: 'center',
   },
-  scrollContent: {
-    paddingBottom: 20,
-    gap: 12,
+
+  cartPrice: {
+    fontWeight: '600',
   },
-  productCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
+
+  separator: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginVertical: 10,
+  },
+
+  bottomBar: {
+    marginTop: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#D1D9D9',
-  },
-  productInfo: {
-    flex: 1,
-  },
-  productName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#111',
-    marginBottom: 4,
-  },
-  productBarcode: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-  },
-  productPrice: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111',
-  },
-  productAction: {
-    alignItems: 'flex-end',
-  },
-  addButton: {
-    backgroundColor: '#4F6EEB', // Blue accent color
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginBottom: 8,
-  },
-  addButtonText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  stockText: {
-    fontSize: 11,
-    color: '#4F6EEB',
-    fontWeight: '600',
-    backgroundColor: '#E8F0FE', // Light blue background pill
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    overflow: 'hidden',
   },
 
-  // --- Bottom Bill Card ---
-  billCard: {
-    backgroundColor: '#EAF0F0', // Matches the teal/grey theme
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#D1D9D9',
-    borderBottomWidth: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 10, // For Android shadow
+  totalText: {
+    color: '#666',
+    fontSize: 13,
   },
-  billTitle: {
+
+  totalAmount: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#111',
-    marginBottom: 16,
   },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+
+  billBtn: {
+    backgroundColor: '#4B7BFF',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 12,
   },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
-  },
-  generateButton: {
-    backgroundColor: '#61BC6D', // Green button
-    borderRadius: 24,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  generateButtonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '500',
-    letterSpacing: 0.5,
+
+  billBtnText: {
+    color: '#fff',
+    fontWeight: '600',
   },
 });
