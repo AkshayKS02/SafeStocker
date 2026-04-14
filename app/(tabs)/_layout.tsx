@@ -42,8 +42,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
-      <Tabs.Screen name="scan" options={{ title: 'Scan', tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} /> }} />
-      <Tabs.Screen name="track" options={{ title: 'Track', tabBarIcon: ({ color }) => <Ionicons name="location" size={28} color={color} /> }} />
+      <Tabs.Screen name="scan" options={{ title: 'Add',tabBarLabel: 'Add', tabBarIcon: ({ color }) => <Ionicons name="camera" size={28} color={color} /> }} />
+      <Tabs.Screen name="track" options={{ title: 'Track', tabBarIcon: ({ color }) => <Ionicons name="briefcase" size={28} color={color} /> }} />
       <Tabs.Screen name="dashboard" options={{ title: 'Dashboard', tabBarIcon: ({ color }) => <Ionicons name="bar-chart" size={28} color={color} /> }} />
       <Tabs.Screen name="billing" options={{ title: 'Billing', tabBarIcon: ({ color }) => <Ionicons name="wallet" size={28} color={color} /> }} />
 
@@ -68,7 +68,7 @@ function CustomHeader() {
   // Richer tab data including icons for the sidebar UI
   const sidebarItems = [
     { name: 'Home', route: 'home', icon: 'home-outline' as const },
-    { name: 'Scan Items', route: 'scan', icon: 'camera-outline' as const },
+    { name: 'Add Items', route: 'scan', icon: 'camera-outline' as const },
     { name: 'Track Inventory', route: 'track', icon: 'location-outline' as const },
     { name: 'Dashboard', route: 'dashboard', icon: 'bar-chart-outline' as const },
     { name: 'Billing', route: 'billing', icon: 'wallet-outline' as const },

@@ -7,8 +7,11 @@ import {
   TextInput,
   SafeAreaView,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function AddStockScreen() {
   const router = useRouter();
@@ -16,8 +19,44 @@ export default function AddStockScreen() {
   // Form State
   const [item, setItem] = useState('');
   const [quantity, setQuantity] = useState('');
-  const [mfgDate, setMfgDate] = useState('');
-  const [expDate, setExpDate] = useState('');
+
+  // Item Labels Map (Moved inside the component, out of styles)
+  const ITEM_LABELS = {
+    paracetamol: 'Paracetamol',
+    ibuprofen: 'Ibuprofen',
+    amoxicillin: 'Amoxicillin',
+  };
+
+  // Date Picker States
+  const [mfgDate, setMfgDate] = useState(new Date());
+  const [showMfgPicker, setShowMfgPicker] = useState(false);
+  const [mfgDateSelected, setMfgDateSelected] = useState(false);
+
+  const [expDate, setExpDate] = useState(new Date());
+  const [showExpPicker, setShowExpPicker] = useState(false);
+  const [expDateSelected, setExpDateSelected] = useState(false);
+
+  // Date Handlers
+  const onChangeMfg = (event, selectedDate) => {
+    setShowMfgPicker(Platform.OS === 'ios'); // Keep open on iOS, close on Android
+    if (selectedDate) {
+      setMfgDate(selectedDate);
+      setMfgDateSelected(true);
+    }
+  };
+
+  const onChangeExp = (event, selectedDate) => {
+    setShowExpPicker(Platform.OS === 'ios');
+    if (selectedDate) {
+      setExpDate(selectedDate);
+      setExpDateSelected(true);
+    }
+  };
+
+  // Helper to format date cleanly
+  const formatDate = (date) => {
+    return date.toLocaleDateString();
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -25,7 +64,6 @@ export default function AddStockScreen() {
         
         {/* Top 3 Buttons / Tabs */}
         <View style={styles.tabsContainer}>
-          {/* Standard Button (Routes back to Scan page) */}
           <TouchableOpacity
             style={[styles.tabButton, styles.inactiveTabButton]}
             onPress={() => router.push('/scan')}
@@ -35,7 +73,6 @@ export default function AddStockScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Custom Button (Routes to custom.tsx) */}
           <TouchableOpacity
             style={[styles.tabButton, styles.inactiveTabButton]}
             onPress={() => router.push('/custom')}
@@ -45,7 +82,6 @@ export default function AddStockScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Add Stock Button (Active - Current Screen) */}
           <TouchableOpacity
             style={[styles.tabButton, styles.activeTabButton]}
           >
@@ -63,17 +99,30 @@ export default function AddStockScreen() {
           {/* Main Form Card */}
           <View style={styles.card}>
             
-            {/* Item Input */}
+            {/* Item Dropdown */}
             <Text style={styles.inputLabel}>Item</Text>
             <View style={styles.inputWrapper}>
-              {/* Note: In a production app, you might swap this TextInput for a Dropdown/Select component */}
-              <TextInput
-                style={styles.input}
-                placeholder="Select Item"
-                placeholderTextColor="#9AA0A6"
-                value={item}
-                onChangeText={setItem}
-              />
+              
+              {/* Visually Centered Text (Matches your Date format) */}
+              <View style={styles.centeredTextContainer} pointerEvents="none">
+                <Text style={[styles.dateText, !item && styles.placeholderText]}>
+                  {item ? ITEM_LABELS[item] : 'Select Item'}
+                </Text>
+              </View>
+
+              {/* Invisible Clickable Picker */}
+              <Picker
+                selectedValue={item}
+                onValueChange={(itemValue) => setItem(itemValue)}
+                style={styles.hiddenPicker}
+                mode="dropdown" 
+              >
+                <Picker.Item label="Select Item" value="" />
+                <Picker.Item label="Paracetamol" value="paracetamol" />
+                <Picker.Item label="Ibuprofen" value="ibuprofen" />
+                <Picker.Item label="Amoxicillin" value="amoxicillin" />
+              </Picker>
+              
             </View>
 
             {/* Quantity Input */}
@@ -89,29 +138,47 @@ export default function AddStockScreen() {
               />
             </View>
 
-            {/* Manufacturing Date Input */}
+            {/* Manufacturing Date Calendar Select */}
             <Text style={styles.inputLabel}>Manufacturing Date</Text>
             <View style={styles.inputWrapper}>
-              {/* Note: Swap for a DateTimePicker component for real date selection */}
-              <TextInput
-                style={styles.input}
-                placeholder="Select Date"
-                placeholderTextColor="#9AA0A6"
-                value={mfgDate}
-                onChangeText={setMfgDate}
-              />
+              <TouchableOpacity
+                style={styles.dateInputButton}
+                onPress={() => setShowMfgPicker(true)}
+              >
+                <Text style={[styles.dateText, !mfgDateSelected && styles.placeholderText]}>
+                  {mfgDateSelected ? formatDate(mfgDate) : 'Select Date'}
+                </Text>
+              </TouchableOpacity>
+              {showMfgPicker && (
+                <DateTimePicker
+                  value={mfgDate}
+                  mode="date"
+                  display="default"
+                  onChange={onChangeMfg}
+                />
+              )}
             </View>
 
-            {/* Expiry Date Input */}
+            {/* Expiry Date Calendar Select */}
             <Text style={styles.inputLabel}>Expiry Date</Text>
             <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.input}
-                placeholder="Select Date"
-                placeholderTextColor="#9AA0A6"
-                value={expDate}
-                onChangeText={setExpDate}
-              />
+              <TouchableOpacity
+                style={styles.dateInputButton}
+                onPress={() => setShowExpPicker(true)}
+              >
+                <Text style={[styles.dateText, !expDateSelected && styles.placeholderText]}>
+                  {expDateSelected ? formatDate(expDate) : 'Select Date'}
+                </Text>
+              </TouchableOpacity>
+              {showExpPicker && (
+                <DateTimePicker
+                  value={expDate}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()} // Optional: Prevents selecting past dates for expiry
+                  onChange={onChangeExp}
+                />
+              )}
             </View>
 
             {/* Update Stock Button */}
@@ -197,7 +264,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   
-  // --- Inputs ---
+  // --- Inputs & Wrappers ---
   inputLabel: { 
     fontSize: 13, 
     color: '#5F6368', 
@@ -208,7 +275,9 @@ const styles = StyleSheet.create({
     width: '85%', 
     backgroundColor: '#D1D9D9', 
     borderRadius: 12, 
-    marginBottom: 20 
+    marginBottom: 20,
+    overflow: 'hidden', 
+    position: 'relative', // Added to ensure absolute positioning works correctly
   },
   input: { 
     height: 48, 
@@ -216,6 +285,36 @@ const styles = StyleSheet.create({
     color: '#333', 
     fontWeight: '500',
     fontSize: 15
+  },
+  
+  // --- Custom Picker Styles ---
+  centeredTextContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1, 
+  },
+  hiddenPicker: {
+    height: 48,
+    width: '100%',
+    opacity: 0, 
+    zIndex: 2,
+  },
+
+  dateInputButton: {
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dateText: {
+    color: '#333',
+    fontWeight: '500',
+    fontSize: 15,
+  },
+  placeholderText: {
+    color: '#9AA0A6',
   },
   
   // --- Action Button ---
