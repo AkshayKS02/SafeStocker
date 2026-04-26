@@ -160,7 +160,10 @@ function CustomHeader() {
   };
 
   const handleProfileClick = () => {
-    router.push({ pathname: "/auth/login", params: { returnTo: pathname } });
+    router.push({
+      pathname: "/auth/login" as any,
+      params: { returnTo: pathname },
+    });
   };
 
   return (

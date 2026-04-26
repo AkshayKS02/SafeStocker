@@ -17,18 +17,8 @@ export default function RootLayout() {
     <InventoryProvider>
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
           <Stack.Screen name="login" />
           <Stack.Screen name="signup" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="modal"
-            options={{
-              presentation: "modal",
-              title: "Modal",
-              headerShown: true,
-            }}
-          />
         </Stack>
 
         <StatusBar style="auto" />

@@ -15,6 +15,16 @@ import {
 import BillingProductCard from "../../components/BillingProductCard";
 import { useInventory } from "../../context/InventoryContext";
 
+// Define the structure of your inventory item for TypeScript
+interface InventoryItem {
+  id: string;
+  name: string;
+  stock: number;
+  price: number;
+  daysLeft: number;
+  barcode?: string;
+}
+
 interface CartState {
   [itemId: string]: number;
 }
@@ -43,16 +53,19 @@ export default function BillingScreen() {
     };
   }, []);
 
-  const validItems = inventory.filter((item) => item.daysLeft > 0);
+  // Fix: Added explicit type to 'item'
+  const validItems = inventory.filter((item: InventoryItem) => item.daysLeft > 0);
 
-  const filteredItems = validItems.filter((item) =>
+  // Fix: Added explicit type to 'item'
+  const filteredItems = validItems.filter((item: InventoryItem) =>
     item.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const updateQty = (id: string, type: "add" | "remove"): void => {
     setCart((prev) => {
       const current = prev[id] || 0;
-      const item = inventory.find((p) => p.id === id);
+      // Fix: Added explicit type to 'p'
+      const item = inventory.find((p: InventoryItem) => p.id === id);
       if (!item) return prev;
 
       if (type === "add") {
@@ -68,12 +81,13 @@ export default function BillingScreen() {
     });
   };
 
+  // Fix: Explicitly typed 'id' and 'p', and used a type guard for the filter
   const cartItems = Object.keys(cart)
-    .map((id) => {
-      const item = inventory.find((p) => p.id === id);
+    .map((id: string) => {
+      const item = inventory.find((p: InventoryItem) => p.id === id);
       return item && cart[id] > 0 ? { ...item, qty: cart[id] } : null;
     })
-    .filter((item): item is { qty: number } & any => item !== null);
+    .filter((item): item is InventoryItem & { qty: number } => item !== null);
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
 
@@ -184,7 +198,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#F8F9FA",
   },
-
   search: {
     backgroundColor: "#fff",
     padding: 14,
@@ -192,7 +205,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     elevation: 2,
   },
-
   cartSection: {
     marginTop: 10,
     backgroundColor: "#fff",
@@ -201,78 +213,64 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-
   cartTitle: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
   },
-
   cartList: {
     maxHeight: 150,
   },
-
   cartItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8,
   },
-
   cartName: {
     flex: 1,
     fontSize: 14,
   },
-
   cartQty: {
     width: 40,
     textAlign: "center",
   },
-
   cartPrice: {
     fontWeight: "600",
   },
-
   separator: {
     height: 1,
     backgroundColor: "#E5E7EB",
     marginVertical: 10,
   },
-
   errorText: {
     color: "#E24B4A",
     fontSize: 12,
     marginBottom: 10,
     textAlign: "center",
   },
-
   bottomBar: {
     marginTop: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-
   totalText: {
     color: "#666",
     fontSize: 13,
   },
-
   totalAmount: {
     fontSize: 20,
     fontWeight: "bold",
   },
-
   billBtn: {
     backgroundColor: "#4B7BFF",
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 12,
   },
-
   billBtnDisabled: {
     opacity: 0.6,
   },
-
   billBtnText: {
     color: "#fff",
     fontWeight: "600",
