@@ -1,51 +1,117 @@
-import React, { useState } from 'react';
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
   SafeAreaView,
   ScrollView,
-} from 'react-native';
-import { useRouter } from 'expo-router';
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+interface CustomItemFormData {
+  name: string;
+  price: string;
+}
 
 export default function CustomScreen() {
   const router = useRouter();
-  
-  // State for the form inputs
-  const [itemName, setItemName] = useState('');
-  const [itemPrice, setItemPrice] = useState('');
+
+  const [formData, setFormData] = useState<CustomItemFormData>({
+    name: "",
+    price: "",
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [barcodeData, setBarcodeData] = useState<string | null>(null);
+
+  const handleFormChange = (key: keyof CustomItemFormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    setError(null);
+  };
+
+  const handleGenerateBarcode = async () => {
+    if (!formData.name.trim()) {
+      setError("Item name is required");
+      return;
+    }
+
+    try {
+      setError(null);
+      // TODO: Integrate actual barcode generation library
+      // For now, generate a mock barcode
+      const mockBarcode = Math.random().toString().slice(2, 15);
+      setBarcodeData(mockBarcode);
+      console.log("Generated barcode:", mockBarcode);
+    } catch (err) {
+      setError("Failed to generate barcode");
+    }
+  };
+
+  const validateForm = (): string | null => {
+    if (!formData.name.trim()) return "Item name is required";
+    if (!formData.price.trim()) return "Price is required";
+    if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
+      return "Price must be a valid number";
+    }
+    return null;
+  };
+
+  const handleSaveItem = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      // TODO: Replace with actual API call
+      console.log("Saving custom item:", {
+        ...formData,
+        price: parseFloat(formData.price),
+        barcode: barcodeData,
+      });
+
+      // Simulated API delay
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Reset on success
+      setFormData({ name: "", price: "" });
+      setBarcodeData(null);
+      console.log("Item saved successfully");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save item");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
         {/* Top 3 Buttons / Tabs */}
         <View style={styles.tabsContainer}>
-          {/* Standard Button (Routes back to Scan page) */}
           <TouchableOpacity
             style={[styles.tabButton, styles.inactiveTabButton]}
-            onPress={() => router.push('/scan')}
+            onPress={() => router.push("/(tabs)/scan")}
           >
             <Text style={[styles.tabText, styles.inactiveTabText]}>
               Standard
             </Text>
           </TouchableOpacity>
 
-          {/* Custom Button (Active - Current Screen) */}
-          <TouchableOpacity
-            style={[styles.tabButton, styles.activeTabButton]}
-          >
-            <Text style={[styles.tabText, styles.activeTabText]}>
-              Custom
-            </Text>
+          <TouchableOpacity style={[styles.tabButton, styles.activeTabButton]}>
+            <Text style={[styles.tabText, styles.activeTabText]}>Custom</Text>
           </TouchableOpacity>
 
-          {/* Add Stock Button (Routes to add_stock.tsx) */}
           <TouchableOpacity
             style={[styles.tabButton, styles.inactiveTabButton]}
-            onPress={() => router.push('/add_stock')}
+            onPress={() => router.push("/(tabs)/add_stock")}
           >
             <Text style={[styles.tabText, styles.inactiveTabText]}>
               Add stock
@@ -53,12 +119,17 @@ export default function CustomScreen() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Error Message */}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
           {/* Main Custom Items Card */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Custom Items</Text>
-            
+
             {/* Name Input */}
             <Text style={styles.inputLabel}>Name</Text>
             <View style={styles.inputWrapper}>
@@ -66,8 +137,8 @@ export default function CustomScreen() {
                 style={styles.input}
                 placeholder="Enter Name"
                 placeholderTextColor="#9AA0A6"
-                value={itemName}
-                onChangeText={setItemName}
+                value={formData.name}
+                onChangeText={(value) => handleFormChange("name", value)}
               />
             </View>
 
@@ -78,19 +149,31 @@ export default function CustomScreen() {
                 style={styles.input}
                 placeholder="Enter Price"
                 placeholderTextColor="#9AA0A6"
-                keyboardType="numeric"
-                value={itemPrice}
-                onChangeText={setItemPrice}
+                keyboardType="decimal-pad"
+                value={formData.price}
+                onChangeText={(value) => handleFormChange("price", value)}
               />
             </View>
 
             {/* Action Buttons */}
             <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity style={styles.primaryButton}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={handleGenerateBarcode}
+              >
                 <Text style={styles.primaryButtonText}>Generate Barcode</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Save Item</Text>
+              <TouchableOpacity
+                style={[
+                  styles.secondaryButton,
+                  isLoading && styles.secondaryButtonDisabled,
+                ]}
+                onPress={handleSaveItem}
+                disabled={isLoading}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {isLoading ? "Saving..." : "Save Item"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -98,17 +181,18 @@ export default function CustomScreen() {
           {/* Barcode Preview Card */}
           <View style={styles.previewCard}>
             <Text style={styles.previewLabel}>Barcode Preview</Text>
-            
-            <View style={styles.barcodePlaceholder}>
-              {/* This is a visual mock of a barcode. 
-                  Replace this whole view with a real barcode image or library like 'react-native-svg-barcode' later */}
-              <Text style={styles.barcodeMockText}>
-                ||||| || ||||| 
-              </Text>
-              <Text style={styles.barcodeNumbers}>0 76950 45047 9</Text>
-            </View>
-          </View>
 
+            {barcodeData ? (
+              <View style={styles.barcodePlaceholder}>
+                <Text style={styles.barcodeMockText}>||||| || ||||</Text>
+                <Text style={styles.barcodeNumbers}>{barcodeData}</Text>
+              </View>
+            ) : (
+              <Text style={styles.placeholderText}>
+                Generate a barcode to see preview
+              </Text>
+            )}
+          </View>
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -116,165 +200,168 @@ export default function CustomScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { 
-    flex: 1, 
-    backgroundColor: '#ffffff' 
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#ffffff",
   },
-  container: { 
-    flex: 1, 
-    backgroundColor: '#ffffff',
-    paddingTop: 20, 
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    paddingTop: 20,
   },
-  
-  // --- Top Tabs ---
-  tabsContainer: { 
-    flexDirection: 'row', 
-    paddingHorizontal: 20, 
-    marginBottom: 20, 
-    gap: 10 
+  tabsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    gap: 10,
   },
-  tabButton: { 
-    paddingVertical: 8, 
-    paddingHorizontal: 16, 
-    borderRadius: 20 
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
-  activeTabButton: { 
-    backgroundColor: '#4285F4' 
+  activeTabButton: {
+    backgroundColor: "#4285F4",
   },
-  inactiveTabButton: { 
-    backgroundColor: '#E8F0FE' 
+  inactiveTabButton: {
+    backgroundColor: "#E8F0FE",
   },
-  tabText: { 
-    fontSize: 14, 
-    fontWeight: '500' 
+  tabText: {
+    fontSize: 14,
+    fontWeight: "500",
   },
-  activeTabText: { 
-    color: '#FFF' 
+  activeTabText: {
+    color: "#FFF",
   },
-  inactiveTabText: { 
-    color: '#4285F4' 
+  inactiveTabText: {
+    color: "#4285F4",
   },
-  
-  scrollContent: { 
-    paddingHorizontal: 20, 
-    paddingBottom: 40 
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
-
-  // --- Main Card ---
-  card: { 
-    backgroundColor: '#ffffff', 
-    borderRadius: 16, 
-    paddingTop: 24, 
-    alignItems: 'center', 
+  errorText: {
+    color: "#E24B4A",
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    paddingTop: 24,
+    paddingBottom: 30,
+    alignItems: "center",
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#D1D9D9',
-    shadowColor: '#000',
+    borderColor: "#D1D9D9",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
-  cardTitle: { 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    color: '#000', 
-    marginBottom: 20 
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 20,
   },
-  
-  // --- Inputs ---
-  inputLabel: { 
-    fontSize: 12, 
-    color: '#5F6368', 
+  inputLabel: {
+    fontSize: 12,
+    color: "#5F6368",
     marginBottom: 6,
-    fontWeight: '500'
+    fontWeight: "500",
   },
-  inputWrapper: { 
-    width: '85%', 
-    backgroundColor: '#D1D9D9', 
-    borderRadius: 8, 
-    marginBottom: 20 
+  inputWrapper: {
+    width: "85%",
+    backgroundColor: "#D1D9D9",
+    borderRadius: 8,
+    marginBottom: 20,
   },
-  input: { 
-    height: 44, 
-    textAlign: 'center', 
-    color: '#333', 
-    fontWeight: '500',
-    fontSize: 16
+  input: {
+    height: 44,
+    textAlign: "center",
+    color: "#333",
+    fontWeight: "500",
+    fontSize: 16,
   },
-  
-  // --- Action Buttons ---
-  actionButtonsContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'center', 
-    gap: 12, 
-    marginBottom: 24, 
+  actionButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 12,
+    marginBottom: 24,
     marginTop: 10,
-    width: '100%' 
+    width: "100%",
   },
-  primaryButton: { 
-    backgroundColor: '#4285F4', 
-    paddingVertical: 12, 
-    paddingHorizontal: 20, 
-    borderRadius: 24, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.1, 
-    shadowRadius: 4, 
-    elevation: 2 
+  primaryButton: {
+    backgroundColor: "#4285F4",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  primaryButtonText: { 
-    color: '#FFF', 
-    fontWeight: '600', 
-    fontSize: 14 
+  primaryButtonText: {
+    color: "#FFF",
+    fontWeight: "600",
+    fontSize: 14,
   },
-  secondaryButton: { 
-    backgroundColor: '#EAF0F0', // Matches card bg to blend in
-    paddingVertical: 12, 
-    paddingHorizontal: 20, 
-    borderRadius: 24, 
-    borderWidth: 1, 
-    borderColor: '#707070', // Darker border as seen in the image
+  secondaryButton: {
+    backgroundColor: "#EAF0F0",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#707070",
   },
-  secondaryButtonText: { 
-    color: '#333', 
-    fontWeight: '500', 
-    fontSize: 14 
+  secondaryButtonDisabled: {
+    opacity: 0.6,
   },
-
-  // --- Preview Card ---
+  secondaryButtonText: {
+    color: "#333",
+    fontWeight: "500",
+    fontSize: 14,
+  },
   previewCard: {
-    backgroundColor: '#EAF0F0',
+    backgroundColor: "#EAF0F0",
     borderRadius: 16,
     padding: 24,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
-    borderColor: '#D1D9D9',
+    borderColor: "#D1D9D9",
   },
-  previewLabel: { 
-    color: '#5F6368', 
-    fontSize: 18, 
-    fontWeight: '500',
+  previewLabel: {
+    color: "#5F6368",
+    fontSize: 18,
+    fontWeight: "500",
     marginBottom: 20,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
   },
   barcodePlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 10,
   },
   barcodeMockText: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     letterSpacing: 2,
-    transform: [{ scaleY: 1.5 }], // Stretches text vertically to look like a barcode
     marginBottom: 10,
   },
   barcodeNumbers: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: "500",
+    color: "#000",
     letterSpacing: 4,
-  }
+  },
+  placeholderText: {
+    color: "#9AA0A6",
+    fontSize: 14,
+    textAlign: "center",
+  },
 });

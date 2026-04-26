@@ -13,81 +13,148 @@ import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
+// Type definitions
+interface AddStockFormData {
+  item: string;
+  quantity: string;
+  mfgDate: Date;
+  expDate: Date;
+}
+
+interface PickerState {
+  mfg: { show: boolean; selected: boolean };
+  exp: { show: boolean; selected: boolean };
+}
+
+// Constants
+const ITEM_LABELS = {
+  paracetamol: 'Paracetamol',
+  ibuprofen: 'Ibuprofen',
+  amoxicillin: 'Amoxicillin',
+} as const;
+
+type ItemKey = keyof typeof ITEM_LABELS;
+
 export default function AddStockScreen() {
   const router = useRouter();
 
-  // Form State
-  const [item, setItem] = useState('');
-  const [quantity, setQuantity] = useState('');
+  // Form state
+  const [formData, setFormData] = useState<AddStockFormData>({
+    item: '',
+    quantity: '',
+    mfgDate: new Date(),
+    expDate: new Date(),
+  });
 
-  // Item Labels Map (Moved inside the component, out of styles)
-  const ITEM_LABELS = {
-    paracetamol: 'Paracetamol',
-    ibuprofen: 'Ibuprofen',
-    amoxicillin: 'Amoxicillin',
+  // UI state
+  const [pickerState, setPickerState] = useState<PickerState>({
+    mfg: { show: false, selected: false },
+    exp: { show: false, selected: false },
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Handlers
+  const handleFormChange = (key: keyof AddStockFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+    setError(null); // Clear error on input change
   };
 
-  // Date Picker States
-  const [mfgDate, setMfgDate] = useState(new Date());
-  const [showMfgPicker, setShowMfgPicker] = useState(false);
-  const [mfgDateSelected, setMfgDateSelected] = useState(false);
+  const formatDate = (date: Date) => date.toLocaleDateString();
 
-  const [expDate, setExpDate] = useState(new Date());
-  const [showExpPicker, setShowExpPicker] = useState(false);
-  const [expDateSelected, setExpDateSelected] = useState(false);
-
-  // Date Handlers
-  const onChangeMfg = (event, selectedDate) => {
-    setShowMfgPicker(Platform.OS === 'ios'); // Keep open on iOS, close on Android
+  const handleMfgDateChange = (event: any, selectedDate?: Date) => {
+    setPickerState(prev => ({
+      ...prev,
+      mfg: { show: Platform.OS === 'ios', selected: true },
+    }));
     if (selectedDate) {
-      setMfgDate(selectedDate);
-      setMfgDateSelected(true);
+      handleFormChange('mfgDate', selectedDate);
     }
   };
 
-  const onChangeExp = (event, selectedDate) => {
-    setShowExpPicker(Platform.OS === 'ios');
+  const handleExpDateChange = (event: any, selectedDate?: Date) => {
+    setPickerState(prev => ({
+      ...prev,
+      exp: { show: Platform.OS === 'ios', selected: true },
+    }));
     if (selectedDate) {
-      setExpDate(selectedDate);
-      setExpDateSelected(true);
+      handleFormChange('expDate', selectedDate);
     }
   };
 
-  // Helper to format date cleanly
-  const formatDate = (date) => {
-    return date.toLocaleDateString();
+  const validateForm = (): string | null => {
+    if (!formData.item) return 'Please select an item';
+    if (!formData.quantity || parseInt(formData.quantity) <= 0) {
+      return 'Please enter a valid quantity';
+    }
+    if (!pickerState.mfg.selected) return 'Please select manufacturing date';
+    if (!pickerState.exp.selected) return 'Please select expiry date';
+    if (formData.expDate <= formData.mfgDate) {
+      return 'Expiry date must be after manufacturing date';
+    }
+    return null;
+  };
+
+  const handleUpdateStock = async () => {
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      // TODO: Replace with actual API call
+      console.log('Submitting stock data:', formData);
+      
+      // Simulated API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Reset form on success
+      setFormData({
+        item: '',
+        quantity: '',
+        mfgDate: new Date(),
+        expDate: new Date(),
+      });
+      setPickerState({
+        mfg: { show: false, selected: false },
+        exp: { show: false, selected: false },
+      });
+      
+      // TODO: Show success toast
+      console.log('Stock updated successfully');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update stock');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
         {/* Top 3 Buttons / Tabs */}
         <View style={styles.tabsContainer}>
           <TouchableOpacity
             style={[styles.tabButton, styles.inactiveTabButton]}
-            onPress={() => router.push('/scan')}
+            onPress={() => router.push('/(tabs)/scan')}
           >
-            <Text style={[styles.tabText, styles.inactiveTabText]}>
-              Standard
-            </Text>
+            <Text style={[styles.tabText, styles.inactiveTabText]}>Standard</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.tabButton, styles.inactiveTabButton]}
-            onPress={() => router.push('/custom')}
+            onPress={() => router.push('/(tabs)/custom')}
           >
-            <Text style={[styles.tabText, styles.inactiveTabText]}>
-              Custom
-            </Text>
+            <Text style={[styles.tabText, styles.inactiveTabText]}>Custom</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.tabButton, styles.activeTabButton]}
-          >
-            <Text style={[styles.tabText, styles.activeTabText]}>
-              Add stock
-            </Text>
+          <TouchableOpacity style={[styles.tabButton, styles.activeTabButton]}>
+            <Text style={[styles.tabText, styles.activeTabText]}>Add stock</Text>
           </TouchableOpacity>
         </View>
 
@@ -95,34 +162,30 @@ export default function AddStockScreen() {
         <Text style={styles.pageTitle}>Update Stock</Text>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
+          {/* Error Message */}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
           {/* Main Form Card */}
           <View style={styles.card}>
-            
             {/* Item Dropdown */}
             <Text style={styles.inputLabel}>Item</Text>
             <View style={styles.inputWrapper}>
-              
-              {/* Visually Centered Text (Matches your Date format) */}
               <View style={styles.centeredTextContainer} pointerEvents="none">
-                <Text style={[styles.dateText, !item && styles.placeholderText]}>
-                  {item ? ITEM_LABELS[item] : 'Select Item'}
+                <Text style={[styles.dateText, !formData.item && styles.placeholderText]}>
+                  {formData.item ? ITEM_LABELS[formData.item as ItemKey] : 'Select Item'}
                 </Text>
               </View>
-
-              {/* Invisible Clickable Picker */}
               <Picker
-                selectedValue={item}
-                onValueChange={(itemValue) => setItem(itemValue)}
+                selectedValue={formData.item}
+                onValueChange={(value) => handleFormChange('item', value)}
                 style={styles.hiddenPicker}
-                mode="dropdown" 
+                mode="dropdown"
               >
                 <Picker.Item label="Select Item" value="" />
                 <Picker.Item label="Paracetamol" value="paracetamol" />
                 <Picker.Item label="Ibuprofen" value="ibuprofen" />
                 <Picker.Item label="Amoxicillin" value="amoxicillin" />
               </Picker>
-              
             </View>
 
             {/* Quantity Input */}
@@ -130,64 +193,68 @@ export default function AddStockScreen() {
             <View style={styles.inputWrapper}>
               <TextInput
                 style={styles.input}
-                placeholder="Select Quantity"
+                placeholder="Enter Quantity"
                 placeholderTextColor="#9AA0A6"
                 keyboardType="numeric"
-                value={quantity}
-                onChangeText={setQuantity}
+                value={formData.quantity}
+                onChangeText={(value) => handleFormChange('quantity', value)}
               />
             </View>
 
-            {/* Manufacturing Date Calendar Select */}
+            {/* Manufacturing Date */}
             <Text style={styles.inputLabel}>Manufacturing Date</Text>
             <View style={styles.inputWrapper}>
               <TouchableOpacity
                 style={styles.dateInputButton}
-                onPress={() => setShowMfgPicker(true)}
+                onPress={() => setPickerState(prev => ({ ...prev, mfg: { ...prev.mfg, show: true } }))}
               >
-                <Text style={[styles.dateText, !mfgDateSelected && styles.placeholderText]}>
-                  {mfgDateSelected ? formatDate(mfgDate) : 'Select Date'}
+                <Text style={[styles.dateText, !pickerState.mfg.selected && styles.placeholderText]}>
+                  {pickerState.mfg.selected ? formatDate(formData.mfgDate) : 'Select Date'}
                 </Text>
               </TouchableOpacity>
-              {showMfgPicker && (
+              {pickerState.mfg.show && (
                 <DateTimePicker
-                  value={mfgDate}
+                  value={formData.mfgDate}
                   mode="date"
                   display="default"
-                  onChange={onChangeMfg}
+                  onChange={handleMfgDateChange}
                 />
               )}
             </View>
 
-            {/* Expiry Date Calendar Select */}
+            {/* Expiry Date */}
             <Text style={styles.inputLabel}>Expiry Date</Text>
             <View style={styles.inputWrapper}>
               <TouchableOpacity
                 style={styles.dateInputButton}
-                onPress={() => setShowExpPicker(true)}
+                onPress={() => setPickerState(prev => ({ ...prev, exp: { ...prev.exp, show: true } }))}
               >
-                <Text style={[styles.dateText, !expDateSelected && styles.placeholderText]}>
-                  {expDateSelected ? formatDate(expDate) : 'Select Date'}
+                <Text style={[styles.dateText, !pickerState.exp.selected && styles.placeholderText]}>
+                  {pickerState.exp.selected ? formatDate(formData.expDate) : 'Select Date'}
                 </Text>
               </TouchableOpacity>
-              {showExpPicker && (
+              {pickerState.exp.show && (
                 <DateTimePicker
-                  value={expDate}
+                  value={formData.expDate}
                   mode="date"
                   display="default"
-                  minimumDate={new Date()} // Optional: Prevents selecting past dates for expiry
-                  onChange={onChangeExp}
+                  minimumDate={formData.mfgDate}
+                  onChange={handleExpDateChange}
                 />
               )}
             </View>
 
-            {/* Update Stock Button */}
-            <TouchableOpacity style={styles.primaryButton}>
-              <Text style={styles.primaryButtonText}>Update Stock</Text>
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={[styles.primaryButton, isLoading && styles.primaryButtonDisabled]}
+              onPress={handleUpdateStock}
+              disabled={isLoading}
+            >
+              <Text style={styles.primaryButtonText}>
+                {isLoading ? 'Updating...' : 'Update Stock'}
+              </Text>
             </TouchableOpacity>
-
           </View>
-
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -195,46 +262,42 @@ export default function AddStockScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { 
-    flex: 1, 
-    backgroundColor: '#ffffff' 
-  },
-  container: { 
-    flex: 1, 
+  safeArea: {
+    flex: 1,
     backgroundColor: '#ffffff',
-    paddingTop: 20, 
   },
-  
-  // --- Top Tabs ---
-  tabsContainer: { 
-    flexDirection: 'row', 
-    paddingHorizontal: 20, 
-    marginBottom: 24, 
-    gap: 10 
+  container: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    paddingTop: 20,
   },
-  tabButton: { 
-    paddingVertical: 8, 
-    paddingHorizontal: 16, 
-    borderRadius: 20 
+  tabsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 24,
+    gap: 10,
   },
-  activeTabButton: { 
-    backgroundColor: '#4285F4' 
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
   },
-  inactiveTabButton: { 
-    backgroundColor: '#E8F0FE' 
+  activeTabButton: {
+    backgroundColor: '#4285F4',
   },
-  tabText: { 
-    fontSize: 14, 
-    fontWeight: '500' 
+  inactiveTabButton: {
+    backgroundColor: '#E8F0FE',
   },
-  activeTabText: { 
-    color: '#FFF' 
+  tabText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
-  inactiveTabText: { 
-    color: '#4285F4' 
+  activeTabText: {
+    color: '#FFF',
   },
-  
-  // --- Page Title ---
+  inactiveTabText: {
+    color: '#4285F4',
+  },
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
@@ -242,67 +305,66 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 16,
   },
-
-  scrollContent: { 
-    paddingHorizontal: 20, 
-    paddingBottom: 40 
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
-
-  // --- Main Card ---
-  card: { 
-    backgroundColor: '#ffffff', 
-    borderRadius: 16, 
+  errorText: {
+    color: '#E24B4A',
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     paddingTop: 24,
     paddingBottom: 30,
-    alignItems: 'center', 
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#D1D9D9',
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.1, 
-    shadowRadius: 4, 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     elevation: 2,
   },
-  
-  // --- Inputs & Wrappers ---
-  inputLabel: { 
-    fontSize: 13, 
-    color: '#5F6368', 
+  inputLabel: {
+    fontSize: 13,
+    color: '#5F6368',
     marginBottom: 6,
-    fontWeight: '500'
-  },
-  inputWrapper: { 
-    width: '85%', 
-    backgroundColor: '#D1D9D9', 
-    borderRadius: 12, 
-    marginBottom: 20,
-    overflow: 'hidden', 
-    position: 'relative', // Added to ensure absolute positioning works correctly
-  },
-  input: { 
-    height: 48, 
-    textAlign: 'center', 
-    color: '#333', 
     fontWeight: '500',
-    fontSize: 15
   },
-  
-  // --- Custom Picker Styles ---
+  inputWrapper: {
+    width: '85%',
+    backgroundColor: '#D1D9D9',
+    borderRadius: 12,
+    marginBottom: 20,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  input: {
+    height: 48,
+    textAlign: 'center',
+    color: '#333',
+    fontWeight: '500',
+    fontSize: 15,
+  },
   centeredTextContainer: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1, 
+    zIndex: 1,
   },
   hiddenPicker: {
     height: 48,
     width: '100%',
-    opacity: 0, 
+    opacity: 0,
     zIndex: 2,
   },
-
   dateInputButton: {
     height: 48,
     justifyContent: 'center',
@@ -316,23 +378,24 @@ const styles = StyleSheet.create({
   placeholderText: {
     color: '#9AA0A6',
   },
-  
-  // --- Action Button ---
-  primaryButton: { 
-    backgroundColor: '#4285F4', 
-    paddingVertical: 14, 
-    paddingHorizontal: 32, 
-    borderRadius: 24, 
+  primaryButton: {
+    backgroundColor: '#4285F4',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 24,
     marginTop: 10,
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.15, 
-    shadowRadius: 4, 
-    elevation: 3 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  primaryButtonText: { 
-    color: '#FFF', 
-    fontWeight: '600', 
-    fontSize: 16 
-  }
+  primaryButtonDisabled: {
+    opacity: 0.6,
+  },
+  primaryButtonText: {
+    color: '#FFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
 });

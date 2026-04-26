@@ -9,7 +9,7 @@ export default function ExpiryCard({
   daysLeft,
   onDelete
 }) {
-  // 🎯 Status Logic
+  // Status Logic
   let status = 'Fresh';
   let color = '#2ECC71';
 
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 10,
 
-    // Shadow (soft like your image)
+    // Shadow 
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 10,

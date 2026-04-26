@@ -1,6 +1,13 @@
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Linking } from "react-native";
-import Carousel from "react-native-reanimated-carousel";
 import { useRouter } from "expo-router"; // Import useRouter for internal navigation
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import Carousel from "react-native-reanimated-carousel";
 
 const { width } = Dimensions.get("window");
 
@@ -13,14 +20,8 @@ const data = [
 export default function HeroCarousel() {
   const router = useRouter(); // Initialize the router
 
-  // Function to handle the Rick Roll
-  const handleLearnMore = () => {
-    Linking.openURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-  };
-
   return (
-    <View style={styles.container}> 
-      
+    <View style={styles.container}>
       <Carousel
         loop
         width={width}
@@ -28,9 +29,7 @@ export default function HeroCarousel() {
         autoPlay
         data={data}
         scrollAnimationDuration={1000}
-        renderItem={({ item }) => (
-          <Image source={item} style={styles.image} />
-        )}
+        renderItem={({ item }) => <Image source={item} style={styles.image} />}
       />
 
       <View style={styles.overlay}>
@@ -39,23 +38,14 @@ export default function HeroCarousel() {
 
         <View style={styles.buttonRow}>
           {/* Get Started -> Navigates to /scan */}
-          <TouchableOpacity 
-            style={styles.primaryBtn} 
-            onPress={() => router.push('/scan')}
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={() => router.push("/scan")}
           >
             <Text style={styles.primaryText}>Get Started</Text>
           </TouchableOpacity>
-
-          {/* Learn More -> Opens YouTube Link */}
-          <TouchableOpacity 
-            style={styles.secondaryBtn} 
-            onPress={handleLearnMore}
-          >
-            <Text style={styles.secondaryText}>Learn More</Text>
-          </TouchableOpacity>
         </View>
       </View>
-      
     </View>
   );
 }
@@ -70,24 +60,24 @@ const styles = StyleSheet.create({
     height: 400,
   },
   overlay: {
-    position: "absolute", 
+    position: "absolute",
     bottom: 20,
     left: 20,
-    zIndex: 10, 
+    zIndex: 10,
   },
   title: {
     color: "#f1f2f3",
     fontSize: 24,
     fontWeight: "bold",
-    textShadowColor: 'rgba(0, 0, 0, 0.75)', 
-    textShadowOffset: { width: -1, height: 1 }, 
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
   },
   subtitle: {
     color: "#dddde0",
     marginVertical: 5,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)', 
-    textShadowOffset: { width: -1, height: 1 }, 
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
   },
   buttonRow: {

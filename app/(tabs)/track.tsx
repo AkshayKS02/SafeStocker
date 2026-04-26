@@ -1,84 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  View,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
   Text,
   TextInput,
-} from 'react-native';
-import ExpiryCard from '../../components/ExpiryCard';
-import { useInventory } from '../../context/InventoryContext';
+  TouchableOpacity,
+  View,
+} from "react-native";
+import ExpiryCard from "../../components/ExpiryCard";
+import { useInventory } from "../../context/InventoryContext";
 
-export default function TrackScreen() {
-  const [sortBy, setSortBy] = useState('date');
-  const [search, setSearch] = useState('');
-
-  const { inventory } = useInventory();
-
-  // ✅ Sorting
-  const sortedData = [...inventory].sort((a, b) => {
-    if (sortBy === 'name') return a.name.localeCompare(b.name);
-    if (sortBy === 'quantity') return b.stock - a.stock;
-    if (sortBy === 'date') return a.daysLeft - b.daysLeft;
-    return 0;
-  });
-
-  // ✅ Search (after sorting)
-  const filteredData = sortedData.filter(item =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <View style={styles.container}>
-
-      {/* 🔍 Search Bar */}
-      <TextInput
-        placeholder="Search items..."
-        value={search}
-        onChangeText={setSearch}
-        style={styles.search}
-      />
-
-      {/* 🔽 Sort Buttons */}
-      <View style={styles.sortContainer}>
-        <SortButton
-          title="Name"
-          active={sortBy === 'name'}
-          onPress={() => setSortBy('name')}
-        />
-        <SortButton
-          title="Quantity"
-          active={sortBy === 'quantity'}
-          onPress={() => setSortBy('quantity')}
-        />
-        <SortButton
-          title="Expiry"
-          active={sortBy === 'date'}
-          onPress={() => setSortBy('date')}
-        />
-      </View>
-
-      {/* 📦 List */}
-      <FlatList
-        data={filteredData}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <ExpiryCard
-            name={item.name}
-            barcode={item.barcode}
-            stock={item.stock}
-            daysLeft={item.daysLeft}
-            onDelete={() => console.log('Delete:', item.id)}
-          />
-        )}
-      />
-    </View>
-  );
+interface SortButtonProps {
+  title: string;
+  active: boolean;
+  onPress: () => void;
 }
 
-// 🔘 Sort Button Component
-function SortButton({ title, active, onPress }: any) {
+function SortButton({ title, active, onPress }: SortButtonProps) {
   return (
     <TouchableOpacity
       style={[styles.sortButton, active && styles.sortButtonActive]}
@@ -91,16 +29,84 @@ function SortButton({ title, active, onPress }: any) {
   );
 }
 
-// 🎨 Styles
+export default function TrackScreen() {
+  const [sortBy, setSortBy] = useState("date");
+  const [search, setSearch] = useState("");
+
+  const { inventory } = useInventory();
+
+  const sortedData = [...inventory].sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    if (sortBy === "quantity") return b.stock - a.stock;
+    if (sortBy === "date") return a.daysLeft - b.daysLeft;
+    return 0;
+  });
+
+  const filteredData = sortedData.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const handleDelete = async (itemId: string) => {
+    try {
+      console.log("Would delete item:", itemId);
+    } catch (err) {
+      console.error("Failed to delete:", err);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        placeholder="Search items..."
+        value={search}
+        onChangeText={setSearch}
+        style={styles.search}
+      />
+
+      <View style={styles.sortContainer}>
+        <SortButton
+          title="Name"
+          active={sortBy === "name"}
+          onPress={() => setSortBy("name")}
+        />
+        <SortButton
+          title="Quantity"
+          active={sortBy === "quantity"}
+          onPress={() => setSortBy("quantity")}
+        />
+        <SortButton
+          title="Expiry"
+          active={sortBy === "date"}
+          onPress={() => setSortBy("date")}
+        />
+      </View>
+
+      <FlatList
+        data={filteredData}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <ExpiryCard
+            name={item.name}
+            barcode={item.barcode}
+            stock={item.stock}
+            daysLeft={item.daysLeft}
+            onDelete={() => handleDelete(item.id)}
+          />
+        )}
+      />
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
 
   search: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 14,
     borderRadius: 14,
     marginBottom: 12,
@@ -108,7 +114,7 @@ const styles = StyleSheet.create({
   },
 
   sortContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 12,
     gap: 10,
   },
@@ -118,19 +124,19 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#4B7BFF',
+    borderColor: "#4B7BFF",
   },
 
   sortButtonActive: {
-    backgroundColor: '#4B7BFF',
+    backgroundColor: "#4B7BFF",
   },
 
   sortText: {
-    color: '#4B7BFF',
-    fontWeight: '500',
+    color: "#4B7BFF",
+    fontWeight: "500",
   },
 
   sortTextActive: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
 });
