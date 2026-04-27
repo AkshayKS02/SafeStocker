@@ -13,7 +13,6 @@ export default function RootLayout() {
     <InventoryProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
-          {/* Changed name to match folder structure */}
           <Stack.Screen name="index" />
           <Stack.Screen name="auth" /> 
           <Stack.Screen name="(tabs)" />
