@@ -2,13 +2,21 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
+interface ExpiryCardProps {
+  name: string;
+  barcode: string;
+  stock: number | string;
+  daysLeft: number;
+  onDelete: () => void;
+}
+
 export default function ExpiryCard({
   name,
   barcode,
   stock,
   daysLeft,
   onDelete
-}) {
+}: ExpiryCardProps) {
   // Status Logic
   let status = 'Fresh';
   let color = '#2ECC71';
@@ -55,6 +63,7 @@ export default function ExpiryCard({
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#F2F4F7',
@@ -62,7 +71,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 10,
 
-    // Shadow 
+    // Shadow (soft like your image)
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 10,

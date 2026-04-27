@@ -6,9 +6,11 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons"; // <-- Added icon import
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -23,14 +25,20 @@ export default function SignUpScreen() {
       router.replace("/(tabs)/home");
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <LinearGradient
-        colors={["#3E82FF", "#F5F5F5"]} // darker → lighter like your image
+        colors={["#3E82FF", "#F5F5F5"]}
         start={{ x: 1, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.blob}
       />
+
+      {/* Top Right Back Arrow */}
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={28} color="#000" />
+      </TouchableOpacity>
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -75,7 +83,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F9FA",
   },
-
   blob: {
     position: "absolute",
     zIndex: -1,
@@ -85,28 +92,30 @@ const styles = StyleSheet.create({
     height: 600,
     borderRadius: 300,
   },
-
+  backButton: {
+    position: 'absolute',
+    top: 30,  
+    right: 20,  
+    zIndex: 10,
+  },
   content: {
     flexGrow: 1,
     padding: 24,
     paddingBottom: 50,
     justifyContent: "center",
   },
-
   headerTitle: {
     fontSize: 36,
     fontWeight: "bold",
     marginTop: 40,
     marginBottom: 30,
   },
-
   label: {
     fontSize: 16,
     fontWeight: "600",
     marginTop: 16,
     marginBottom: 8,
   },
-
   input: {
     backgroundColor: "#FFF",
     borderWidth: 1,
@@ -115,7 +124,6 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
   },
-
   signUpButton: {
     backgroundColor: "#4B7BFF",
     padding: 16,
@@ -125,7 +133,6 @@ const styles = StyleSheet.create({
     width: "50%",
     alignSelf: "center",
   },
-
   signUpButtonText: {
     color: "#FFF",
     fontSize: 18,

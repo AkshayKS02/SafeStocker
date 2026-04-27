@@ -1,6 +1,13 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { Image, StyleSheet, Text, View, ImageSourcePropType } from "react-native";
 
-export default function FeatureCard({ title, desc, icon }) {
+interface FeatureCardProps {
+  title: string;
+  desc: string;
+  icon: ImageSourcePropType;
+}
+
+export default function FeatureCard({ title, desc, icon }: FeatureCardProps) {
   return (
     <View style={styles.card}>
       <Image source={icon} style={styles.icon} />

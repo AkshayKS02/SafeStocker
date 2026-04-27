@@ -1,145 +1,180 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-interface LoginParams {
-  returnTo?: string;
-  [key: string]: string | string[] | undefined;
-}
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons'; // <-- Added icon import
 
 export default function LoginScreen() {
   const router = useRouter();
 
-  const { returnTo } = useLocalSearchParams<LoginParams>();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleClose = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace("/(tabs)/home");
-    }
-  };
-
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      setError("Email and password are required");
-      return;
-    }
-
-    try {
-      setError(null);
-      setIsLoading(true);
-      // Logic for authentication goes here
-
-      if (returnTo) {
-        router.replace(returnTo as any);
-      } else {
-        router.replace("/(tabs)/home");
-      }
-    } catch (err) {
-      setError("Failed to login. Please check your credentials.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-        <Ionicons name="close" size={28} color="#333" />
+      <LinearGradient
+        colors={['#3E82FF', '#F5F5F5']} 
+        start={{ x: 1, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.blob}
+      />
+
+      {/* Top Right Back Arrow */}
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={28} color="#000" />
       </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Login</Text>
-        {error && <Text style={styles.errorText}>{error}</Text>}
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.headerTitle}>Login</Text>
 
         <Text style={styles.label}>Email</Text>
         <TextInput
           style={styles.input}
-          value={email}
-          onChangeText={setEmail}
           placeholder="Enter your email"
-          keyboardType="email-address"
           autoCapitalize="none"
         />
 
         <Text style={styles.label}>Password</Text>
         <TextInput
           style={styles.input}
-          value={password}
-          onChangeText={setPassword}
           placeholder="Enter your password"
           secureTextEntry
         />
 
-        <TouchableOpacity
-          style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#FFF" />
-          ) : (
-            <Text style={styles.loginButtonText}>Login</Text>
-          )}
+        <TouchableOpacity>
+          <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/auth/signup" as any,
-              params: { returnTo },
-            })
-          }
-        >
-          <Text style={styles.footerText}>
-            Don't have an account?{" "}
-            <Text style={styles.footerLink}>Sign Up</Text>
-          </Text>
+        <TouchableOpacity style={styles.loginButton} onPress={() => router.replace('/(tabs)/home')}>
+          <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
-      </View>
+
+        <View style={styles.dividerContainer}>
+          <View style={styles.divider} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.divider} />
+        </View>
+
+        <TouchableOpacity style={styles.googleButton}>
+          <Text style={styles.googleButtonText}>Sign in with Google</Text>
+        </TouchableOpacity>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+            <Text style={styles.signUpText}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8F9FA" },
-  closeButton: { padding: 16 },
-  content: { padding: 24, justifyContent: "center", flex: 1 },
-  title: { fontSize: 32, fontWeight: "bold", marginBottom: 24 },
-  label: { fontSize: 16, fontWeight: "600", marginTop: 16, marginBottom: 8 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  blob: {
+    position: 'absolute',
+    zIndex: -1,
+    top: -250,
+    left: -200,
+    width: 600,
+    height: 600,
+    borderRadius: 300,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 30,
+    right: 20,   
+    zIndex: 10,
+  },
+  content: {
+    flexGrow: 1,
+    padding: 24,
+    paddingBottom: 50,
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginTop: 40,
+    marginBottom: 30,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
   input: {
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: "#CCC",
+    borderColor: '#CCC',
     borderRadius: 8,
     padding: 16,
     fontSize: 16,
   },
-  errorText: { color: "red", marginBottom: 10 },
+  forgotPassword: {
+    color: '#FF4D4D',
+    textAlign: 'right',
+    marginTop: 12,
+    fontWeight: '600',
+  },
   loginButton: {
-    backgroundColor: "#4B7BFF",
+    backgroundColor: '#4B7BFF',
     padding: 16,
     borderRadius: 30,
-    alignItems: "center",
+    alignItems: 'center',
+    marginTop: 30,
+    width: '50%',
+    alignSelf: 'center',
+  },
+  loginButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#CCC',
+  },
+  dividerText: {
+    marginHorizontal: 10,
+    color: '#888',
+  },
+  googleButton: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#CCC',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  googleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginTop: 30,
   },
-  loginButtonDisabled: { opacity: 0.6 },
-  loginButtonText: { color: "#FFF", fontSize: 18, fontWeight: "bold" },
-  footerText: { textAlign: "center", marginTop: 20, color: "#666" },
-  footerLink: { color: "#4B7BFF", fontWeight: "bold" },
+  footerText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  signUpText: {
+    color: '#FF4D4D',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });
