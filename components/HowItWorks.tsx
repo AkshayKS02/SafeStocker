@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function HowItWorks() {
-  const steps = [
+  const steps: string[] = [
     "Add\nproducts",
     "Track stock\nand expiry",
     "Get\nnotifications",
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   connectingLine: {
     position: "absolute",
-    top: 25, // Exactly half of circleWrapper height (50) to center the line
+    top: 25, 
     left: "18%", 
     right: "18%", 
     height: 2,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   circleWrapper: {
-    height: 50, // Matches the circle height perfectly
+    height: 50, 
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,

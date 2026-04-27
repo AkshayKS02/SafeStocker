@@ -1,6 +1,20 @@
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-export default function BillingProductCard({ item, onAdd, onRemove }) {
+interface ProductItem {
+  name: string;
+  barcode: string;
+  price: number | string;
+  qty: number;
+}
+
+interface BillingProductCardProps {
+  item: ProductItem;
+  onAdd: () => void;
+  onRemove: () => void;
+}
+
+export default function BillingProductCard({ item, onAdd, onRemove }: BillingProductCardProps) {
   return (
     <View style={styles.card}>
       <View style={{ flex: 1 }}>

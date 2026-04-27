@@ -1,27 +1,26 @@
-import { useRouter } from "expo-router"; // Import useRouter for internal navigation
-import {
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import React from "react";
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Linking, ImageSourcePropType } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
+import { useRouter } from "expo-router"; 
 
 const { width } = Dimensions.get("window");
 
-const data = [
+const data: ImageSourcePropType[] = [
   require("../assets/images/store1.png"),
   require("../assets/images/store2.png"),
   require("../assets/images/store3.png"),
 ];
 
 export default function HeroCarousel() {
-  const router = useRouter(); // Initialize the router
+  const router = useRouter(); 
+
+  const handleLearnMore = () => {
+    Linking.openURL("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
+      
       <Carousel
         loop
         width={width}
@@ -29,7 +28,9 @@ export default function HeroCarousel() {
         autoPlay
         data={data}
         scrollAnimationDuration={1000}
-        renderItem={({ item }) => <Image source={item} style={styles.image} />}
+        renderItem={({ item }) => (
+          <Image source={item as ImageSourcePropType} style={styles.image} />
+        )}
       />
 
       <View style={styles.overlay}>
@@ -37,15 +38,22 @@ export default function HeroCarousel() {
         <Text style={styles.subtitle}>Never miss an expiry again.</Text>
 
         <View style={styles.buttonRow}>
-          {/* Get Started -> Navigates to /scan */}
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={() => router.push("/scan")}
+          <TouchableOpacity 
+            style={styles.primaryBtn} 
+            onPress={() => router.push('/scan')}
           >
             <Text style={styles.primaryText}>Get Started</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.secondaryBtn} 
+            onPress={handleLearnMore}
+          >
+            <Text style={styles.secondaryText}>Learn More</Text>
+          </TouchableOpacity>
         </View>
       </View>
+      
     </View>
   );
 }
@@ -60,24 +68,24 @@ const styles = StyleSheet.create({
     height: 400,
   },
   overlay: {
-    position: "absolute",
+    position: "absolute", 
     bottom: 20,
     left: 20,
-    zIndex: 10,
+    zIndex: 10, 
   },
   title: {
     color: "#f1f2f3",
     fontSize: 24,
     fontWeight: "bold",
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: -1, height: 1 },
+    textShadowColor: 'rgba(0, 0, 0, 0.75)', 
+    textShadowOffset: { width: -1, height: 1 }, 
     textShadowRadius: 10,
   },
   subtitle: {
     color: "#dddde0",
     marginVertical: 5,
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: -1, height: 1 },
+    textShadowColor: 'rgba(0, 0, 0, 0.75)', 
+    textShadowOffset: { width: -1, height: 1 }, 
     textShadowRadius: 10,
   },
   buttonRow: {
