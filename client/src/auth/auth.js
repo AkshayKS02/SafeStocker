@@ -1,4 +1,3 @@
-// src/auth/auth.js
 import { setShopID, loadStock } from "../stock.js";
 import { closeLogin } from "./auth.ui.js";
 import { disablePreLoginClick } from "./auth.events.js";
@@ -13,6 +12,9 @@ export const currentUser = {
 
 let outsideClickBound = false;
 
+// ======================
+// 🔹 APPLY USER UI
+// ======================
 export async function applyUserUI(shop) {
     if (!shop) return;
 
@@ -27,7 +29,6 @@ export async function applyUserUI(shop) {
     setShopID(shop.ShopID);
     await loadStock();
 
-    // Initialize stock UI AFTER login
     import("../events/stock.events.js").then(m => m.initStockView());
 
     const userBtn = document.getElementById("user-button");
@@ -39,16 +40,16 @@ export async function applyUserUI(shop) {
     if (userName) userName.textContent = shop.OwnerName;
 
     if (userIcon) {
-    userIcon.referrerPolicy = "no-referrer"; // MUST be before src
+        userIcon.referrerPolicy = "no-referrer";
 
-    userIcon.onerror = () => {
-        userIcon.onerror = null; // prevent loop
-        userIcon.src = "/images/user.png";
-        userIcon.className = "";
-    };
+        userIcon.onerror = () => {
+            userIcon.onerror = null;
+            userIcon.src = "/images/user.png";
+            userIcon.className = "";
+        };
 
-    userIcon.src = shop.picture || "/images/user.png";
-    userIcon.className = shop.picture ? "google-profile-pic" : "";
+        userIcon.src = shop.picture || "/images/user.png";
+        userIcon.className = shop.picture ? "google-profile-pic" : "";
     }
 
     if (userBtn && userCard) {
@@ -76,39 +77,35 @@ export async function applyUserUI(shop) {
     }
 }
 
-export async function manualLogin(phone, ownerName) {
-    const res = await fetch("/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ phone, ownerName })
-    });
+// ======================
+// 🔹 CHECK AUTH (JWT)
+// ======================
+export async function checkAuthOnLoad() {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return;
 
-    const data = await res.json();
-    if (!data.success) {
-        alert(data.message || "Login failed");
-        return;
+    try {
+        const res = await fetch("/auth/me", {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) throw new Error();
+
+        const shop = await res.json();
+        await applyUserUI(shop);
+
+    } catch (err) {
+        console.error("Auth failed", err);
+        localStorage.removeItem("auth_token");
     }
-
-    closeLogin();
-    await applyUserUI(data.shop);
 }
 
-export async function logoutUser() {
-    await fetch("/auth/logout", { method: "GET" });
+// ======================
+// 🔹 LOGOUT
+// ======================
+export function logoutUser() {
+    localStorage.removeItem("auth_token");
     window.location.reload();
-}
-
-export async function checkGoogleLogin() {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("google_login") !== "1") return;
-
-    const res = await fetch("/auth/google/user", {
-        credentials: "include"
-    });
-
-    const data = await res.json();
-    if (data.loggedIn && data.shopFound) {
-        await applyUserUI(data.shop);
-    }
 }
