@@ -138,6 +138,14 @@ app.get("/auth/google/callback",
   }
 );
 
+app.get("/auth/me", auth, (req, res) => {
+  res.json({
+    ShopID: req.user.ShopID,
+    OwnerName: req.user.OwnerName,
+    Email: req.user.Email
+  });
+});
+
 // ======================
 // 🔹 PROTECTED ROUTES
 // ======================
