@@ -9,10 +9,12 @@ export async function handleBarcode(req, res) {
     if (!ShopID) return res.status(401).json({ error: "Unauthorized" });
 
     try {
-        const [rows] = await db.query(
-            "SELECT ItemID, ItemName, Barcode, CategoryID, Source FROM items WHERE ShopID = ? AND Barcode = ?",
-            [ShopID, barcode]
+        const result = await db.query(
+        "SELECT ItemID, ItemName, Barcode, CategoryID, Source FROM items WHERE ShopID = $1 AND Barcode = $2",
+        [ShopID, barcode]
         );
+
+        const rows = result.rows;
 
         if (rows.length > 0) {
             return res.json({
