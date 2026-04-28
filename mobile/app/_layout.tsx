@@ -5,20 +5,23 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { InventoryProvider } from '../context/InventoryContext';
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <InventoryProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="auth" /> 
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </InventoryProvider>
+    <AuthProvider>
+      <InventoryProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="auth" /> 
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </InventoryProvider>
+    </AuthProvider>
   );
 }

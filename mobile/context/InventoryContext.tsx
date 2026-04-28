@@ -1,87 +1,56 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import API from '@/app/services/api';
 
-// 1. Define the exact shape of a single inventory item
-export interface InventoryItem {
-  id: string;
-  name: string;
-  barcode: string;
-  stock: number;
-  daysLeft: number;
-  price: number;
+interface Item {
+  ItemID: number;
+  ItemName: string;
+  Quantity: number;
+  Price: number;
+  Category?: string;
+  ExpiryDate?: string;
 }
 
 interface InventoryContextType {
-  inventory: InventoryItem[];
-  setInventory: React.Dispatch<React.SetStateAction<InventoryItem[]>>;
+  items: Item[];
+  loading: boolean;
+  error: string | null;
+  refreshStock: () => Promise<void>;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
-interface InventoryProviderProps {
-  children: ReactNode;
-}
 
-export const InventoryProvider: React.FC<InventoryProviderProps> = ({ children }) => {
-  const [inventory, setInventory] = useState<InventoryItem[]>([
-    {
-      id: "1",
-      name: "Potato Chips",
-      barcode: "8901491101837",
-      stock: 12,
-      daysLeft: 0,
-      price: 20,
-    },
-    {
-      id: "2",
-      name: "Milk",
-      barcode: "123456789",
-      stock: 5,
-      daysLeft: 9,
-      price: 330,
-    },
-    {
-      id: "3",
-      name: "Bread",
-      barcode: "987654321",
-      stock: 12,
-      daysLeft: 10,
-      price: 25,
-    },
-    {
-      id: "4",
-      name: "Eggs",
-      barcode: "456789123",
-      stock: 24,
-      daysLeft: 1,
-      price: 10,
-    },
-    {
-      id: "5",
-      name: "5star",
-      barcode: "12312456789",
-      stock: 50,
-      daysLeft: 9,
-      price: 330,
-    },
-    {
-      id: "6",
-      name: "Miilk",
-      barcode: "12345116789",
-      stock: 5,
-      daysLeft: 9,
-      price: 30,
-    },
-  ]);
+export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshStock = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await API.get('/stock');
+      setItems(response.data);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch stock');
+      console.error('Inventory Fetch Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshStock();
+  }, [refreshStock]);
 
   return (
-    <InventoryContext.Provider value={{ inventory, setInventory }}>
+    <InventoryContext.Provider value={{ items, loading, error, refreshStock }}>
       {children}
     </InventoryContext.Provider>
   );
 };
-export const useInventory = (): InventoryContextType => {
+
+export const useInventory = () => {
   const context = useContext(InventoryContext);
-  if (context === undefined) {
-    throw new Error("useInventory must be used within an InventoryProvider");
-  }
+  if (!context) throw new Error('useInventory must be used within an InventoryProvider');
   return context;
 };
