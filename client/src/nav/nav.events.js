@@ -4,6 +4,7 @@ import { showView } from "./nav.ui.js";
 import { loadStock, stockItems } from "../stock.js";
 import { renderTrackCards } from "../views/track.view.js";
 import { renderBillingProducts } from "../views/billing.view.js";
+import { attachTrackEvents } from "../events/track.events.js";
 
 function attachViewListener(btn, viewName) {
     if (!btn) return;
@@ -16,6 +17,7 @@ function attachViewListener(btn, viewName) {
 
             if (viewName === "track") {
                 renderTrackCards();
+                attachTrackEvents();
             }
 
             if (viewName === "billing") {

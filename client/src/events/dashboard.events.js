@@ -5,16 +5,14 @@ import {
     renderExpiryList,
     renderOrderList
 } from "../views/dashboard.view.js";
+import { apiFetch } from "../services/api.js";
 
 let currentChartType = "Hours";
 
-// 🔹 Load chart data from backend
 async function loadChartData(type) {
     try {
-        const res = await fetch(
-            `/dashboard/graph?type=${type.toLowerCase()}`,
-            { credentials: "include" }
-        );
+        const res = await apiFetch(`/dashboard/graph?type=${type.toLowerCase()}`);
+        if (!res) return;
 
         const data = await res.json();
 
@@ -32,21 +30,18 @@ async function loadChartData(type) {
         const revenueValues = labels.map(l => revenueMap[l] || 0);
         const lossValues = labels.map(l => lossMap[l] || 0);
 
-        // Now pass BOTH revenue & loss
-        renderSalesChart(labels, revenueValues, lossValues, data.label);
+        renderSalesChart(labels, revenueValues, lossValues);
 
     } catch (err) {
         console.error("Chart load failed:", err);
     }
 }
 
-// 🔹 Chart filter buttons
 function initChartButtons() {
     const buttons = document.querySelectorAll(".chart-btn");
 
     buttons.forEach(btn => {
         btn.addEventListener("click", () => {
-
             const type = btn.textContent.trim();
             if (type === currentChartType) return;
 
@@ -62,12 +57,9 @@ function initChartButtons() {
 
 async function initDashboardData() {
     try {
+        const overviewRes = await apiFetch("/dashboard/overview");
+        if (!overviewRes) return;
 
-        // 🔹 Overview
-        const overviewRes = await fetch(
-            "/dashboard/overview",
-            { credentials: "include" }
-        );
         const overview = await overviewRes.json();
 
         renderDashboardSummary({
@@ -77,35 +69,34 @@ async function initDashboardData() {
             nearExpiry: overview.nearExpiry
         });
 
-        // 🔹 Biggest Revenue Days
-        const daysRes = await fetch(
-            "/dashboard/biggest-days",
-            { credentials: "include" }
-        );
+        const daysRes = await apiFetch("/dashboard/biggest-days");
+        if (!daysRes) return;
+
         const biggestDays = await daysRes.json();
 
         renderExpiryList(
-            biggestDays.map(d => ({
-                name: new Date(d.day).toLocaleDateString(),
-                daysLeft: `₹${d.revenue}`
-            }))
+            Array.isArray(biggestDays)
+                ? biggestDays.map(d => ({
+                    name: new Date(d.day).toLocaleDateString(),
+                    daysLeft: `₹${d.revenue}`
+                }))
+                : []
         );
 
-        // 🔹 Recent Orders
-        const ordersRes = await fetch(
-            "/dashboard/orders",
-            { credentials: "include" }
-        );
+        const ordersRes = await apiFetch("/dashboard/orders");
+        if (!ordersRes) return;
+
         const orders = await ordersRes.json();
 
         renderOrderList(
-            orders.map(o => ({
-                id: o.ReceiptID,
-                amount: o.TotalAmount
-            }))
+            Array.isArray(orders)
+                ? orders.map(o => ({
+                    id: o.ReceiptID,
+                    amount: o.TotalAmount
+                }))
+                : []
         );
 
-        // 🔹 Load default chart (Hours)
         loadChartData(currentChartType);
 
     } catch (err) {
@@ -121,4 +112,3 @@ function initDashboard() {
 }
 
 initDashboard();
-

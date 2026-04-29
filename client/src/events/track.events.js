@@ -1,7 +1,7 @@
-// src/events/track.events.js
 import { DOM } from "../core/dom.js";
-import { stockItems } from "../stock.js";
+import { stockItems, loadStock } from "../stock.js";
 import { renderTrackCards } from "../views/track.view.js";
+import { apiFetch } from "../services/api.js";
 
 function sortByName() {
     stockItems.sort((a, b) => a.name.localeCompare(b.name));
@@ -25,13 +25,11 @@ function sortByExpiry() {
 
 async function handleDelete(stockID) {
     try {
-        const response = await fetch(
-            `/stock/expire/${stockID}`,
-            {
-                method: "DELETE",
-                credentials: "include"
-            }
-        );
+        const response = await apiFetch(`/stock/expire/${stockID}`, {
+            method: "DELETE"
+        });
+
+        if (!response) return;
 
         const data = await response.json();
 
@@ -40,9 +38,7 @@ async function handleDelete(stockID) {
             return;
         }
 
-        // Refetch updated stock list from backend
-        await loadStockFromServer();
-
+        await loadStock();
         renderTrackCards();
 
         alert("Expired stock cleared. Loss recorded.");
@@ -53,20 +49,11 @@ async function handleDelete(stockID) {
     }
 }
 
-function attachTrackEvents() {
-    if (DOM.track.sortName) {
-        DOM.track.sortName.addEventListener("click", sortByName);
-    }
+export function attachTrackEvents() {
+    if (DOM.track.sortName) DOM.track.sortName.onclick = sortByName;
+    if (DOM.track.sortQty) DOM.track.sortQty.onclick = sortByQuantity;
+    if (DOM.track.sortDate) DOM.track.sortDate.onclick = sortByExpiry;
 
-    if (DOM.track.sortQty) {
-        DOM.track.sortQty.addEventListener("click", sortByQuantity);
-    }
-
-    if (DOM.track.sortDate) {
-        DOM.track.sortDate.addEventListener("click", sortByExpiry);
-    }
-
-    // DELETE EVENT (event delegation)
     if (DOM.track.container) {
         DOM.track.container.addEventListener("click", (e) => {
             const btn = e.target.closest(".delete-btn");
@@ -80,6 +67,3 @@ function attachTrackEvents() {
         });
     }
 }
-
-
-attachTrackEvents();
