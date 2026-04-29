@@ -1,8 +1,8 @@
-// src/barcode/barcode.events.js
 import { DOM } from "../core/dom.js";
 import { state } from "../core/state.js";
 import { updateScanPreview } from "./barcode.ui.js";
 import { attachCustomBarcodeGenerator } from "./customBarcode.js";
+import { apiFetch } from "../services/api.js";
 
 function handleScannedProduct(data) {
     const p = data.product;
@@ -27,21 +27,25 @@ function attachEntryScanListener() {
 
     DOM.entry.scanBtn.addEventListener("click", async () => {
         try {
-            const scanRes = await fetch("/run-scanner");
+            const scanRes = await apiFetch("/run-scanner");
+            if (!scanRes) return;
+
             const { barcode } = await scanRes.json();
             if (!barcode) {
                 alert("Scanner failed");
                 return;
             }
 
-            const res = await fetch("/barcode", {
+            const res = await apiFetch("/barcode", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
                 body: JSON.stringify({ barcode })
             });
 
+            if (!res) return;
+
             const data = await res.json();
+
             if (!data.found) {
                 alert("Product not found");
                 return;

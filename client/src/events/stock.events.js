@@ -1,12 +1,11 @@
-// src/events/stock.events.js
 import { DOM } from "../core/dom.js";
 import { fetchItemOptions } from "../services/stockService.js";
 import { loadStock } from "../stock.js";
 import { resetStockForm, setItemOptions } from "../views/stock.view.js";
+import { apiFetch } from "../services/api.js";
 
 let initialized = false;
 
-// Initialize stock dropdown (call AFTER login)
 export async function initStockView() {
     if (initialized) return;
 
@@ -16,12 +15,9 @@ export async function initStockView() {
 
         setItemOptions(items);
         initialized = true;
-    } catch {
-        // silent fail
-    }
+    } catch {}
 }
 
-// Attach form submit (safe at startup)
 function attachStockEvents() {
     if (!DOM.stock.form) return;
 
@@ -39,10 +35,9 @@ function attachStockEvents() {
         }
 
         try {
-            const res = await fetch("/stock", {
+            const res = await apiFetch("/stock", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
                 body: JSON.stringify({
                     ItemID: itemID,
                     Quantity: qty,
@@ -50,6 +45,8 @@ function attachStockEvents() {
                     ExpiryDate: exp
                 })
             });
+
+            if (!res) return;
 
             if (!res.ok) {
                 const err = await res.json();
