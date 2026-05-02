@@ -2,7 +2,7 @@ import { showView } from "../nav/nav.ui.js";
 import { DOM } from "../core/dom.js";
 import { renderTrackCards } from "../views/track.view.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+function attachAlertEvents() {
   const bell = document.getElementById("alert-bell");
   const dropdown = document.getElementById("alert-dropdown");
 
@@ -51,4 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("click", () => {
     dropdown.classList.add("hidden");
   });
-});
+}
+
+attachAlertEvents();

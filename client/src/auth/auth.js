@@ -84,10 +84,10 @@ export async function applyUserUI(shop) {
 // ======================
 export async function checkAuthOnLoad() {
     const token = localStorage.getItem("auth_token");
-    if (!token) return;
+    if (!token) return false;
 
     try {
-        const res = await fetch("/auth/me", {
+        const res = await fetch("/auth/user", {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -97,10 +97,12 @@ export async function checkAuthOnLoad() {
 
         const shop = await res.json();
         await applyUserUI(shop);
+        return true;
 
     } catch (err) {
         console.error("Auth failed", err);
         localStorage.removeItem("auth_token");
+        return false;
     }
 }
 

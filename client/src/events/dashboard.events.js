@@ -8,6 +8,7 @@ import {
 import { apiFetch } from "../services/api.js";
 
 let currentChartType = "Hours";
+let chartButtonsInitialized = false;
 
 async function loadChartData(type) {
     try {
@@ -38,6 +39,8 @@ async function loadChartData(type) {
 }
 
 function initChartButtons() {
+    if (chartButtonsInitialized) return;
+
     const buttons = document.querySelectorAll(".chart-btn");
 
     buttons.forEach(btn => {
@@ -53,6 +56,8 @@ function initChartButtons() {
             loadChartData(type);
         });
     });
+
+    chartButtonsInitialized = true;
 }
 
 async function initDashboardData() {
@@ -104,11 +109,9 @@ async function initDashboardData() {
     }
 }
 
-function initDashboard() {
+export function initDashboard() {
     if (!DOM.views.dashboard) return;
 
     initDashboardData();
     initChartButtons();
 }
-
-initDashboard();

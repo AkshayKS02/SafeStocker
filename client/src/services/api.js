@@ -15,10 +15,10 @@ export async function apiFetch(url, options = {}) {
         headers
     });
 
-    if (res.status === 401) {
-        console.warn("Unauthorized → logging out");
+    if (res.status === 401 && token) {
+        console.warn("Unauthorized - clearing stored auth token");
         localStorage.removeItem("auth_token");
-        window.location.reload();
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
         return null;
     }
 
