@@ -15,14 +15,15 @@ import {
 import BillingProductCard from "../../components/BillingProductCard";
 import { useInventory } from "../../context/InventoryContext";
 
-// Define the structure of your inventory item for TypeScript
+// Updated interface to match your InventoryContext.tsx structure 
 interface InventoryItem {
-  id: string;
-  name: string;
-  stock: number;
-  price: number;
-  daysLeft: number;
-  barcode?: string;
+  ItemID: number;
+  ItemName: string;
+  Quantity: number;
+  Price: number;
+  DaysLeft?: number;
+  Category?: string;
+  Barcode?: string;
 }
 
 interface CartState {
@@ -53,43 +54,44 @@ export default function BillingScreen() {
     };
   }, []);
 
-  // Fix: Added explicit type to 'item'
-  const validItems = inventory.filter((item: InventoryItem) => item.daysLeft > 0);
+  // Filter items that haven't expired [cite: 1520]
+  const validItems = inventory.filter((item: InventoryItem) => item.DaysLeft == null || item.DaysLeft > 0);
 
-  // Fix: Added explicit type to 'item'
+  // Search filter with safety check 
   const filteredItems = validItems.filter((item: InventoryItem) =>
-    item.name.toLowerCase().includes(search.toLowerCase()),
+    (item.ItemName || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const updateQty = (id: string, type: "add" | "remove"): void => {
+  const updateQty = (id: number, type: "add" | "remove"): void => {
+    const itemKey = String(id);
+
     setCart((prev) => {
-      const current = prev[id] || 0;
-      // Fix: Added explicit type to 'p'
-      const item = inventory.find((p: InventoryItem) => p.id === id);
+      const current = prev[itemKey] || 0;
+      const item = inventory.find((p: InventoryItem) => p.ItemID === id);
       if (!item) return prev;
 
       if (type === "add") {
-        if (current >= item.stock) return prev;
-        return { ...prev, [id]: current + 1 };
+        if (current >= item.Quantity) return prev;
+        return { ...prev, [itemKey]: current + 1 };
       }
 
       if (type === "remove") {
-        return { ...prev, [id]: Math.max(0, current - 1) };
+        return { ...prev, [itemKey]: Math.max(0, current - 1) };
       }
 
       return prev;
     });
   };
 
-  // Fix: Explicitly typed 'id' and 'p', and used a type guard for the filter
+  // Type Guard to safely handle cart items 
   const cartItems = Object.keys(cart)
     .map((id: string) => {
-      const item = inventory.find((p: InventoryItem) => p.id === id);
+      const item = inventory.find((p: InventoryItem) => String(p.ItemID) === id);
       return item && cart[id] > 0 ? { ...item, qty: cart[id] } : null;
     })
     .filter((item): item is InventoryItem & { qty: number } => item !== null);
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const total = cartItems.reduce((sum, item) => sum + (item.Price || 0) * item.qty, 0);
 
   const handleGenerateBill = async () => {
     try {
@@ -103,6 +105,7 @@ export default function BillingScreen() {
 
       console.log("Generating bill for items:", cartItems);
 
+      // Simulating API call
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       setCart({});
@@ -131,14 +134,19 @@ export default function BillingScreen() {
 
         <FlatList
           data={filteredItems}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.ItemID)} // Uses ItemID from context 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 10 }}
           renderItem={({ item }) => (
             <BillingProductCard
-              item={{ ...item, qty: cart[item.id] || 0 }}
-              onAdd={() => updateQty(item.id, "add")}
-              onRemove={() => updateQty(item.id, "remove")}
+              item={{ 
+                name: item.ItemName,
+                barcode: item.Barcode || String(item.ItemID),
+                price: item.Price,
+                qty: cart[String(item.ItemID)] || 0 
+              }}
+              onAdd={() => updateQty(item.ItemID, "add")}
+              onRemove={() => updateQty(item.ItemID, "remove")}
             />
           )}
         />
@@ -152,11 +160,11 @@ export default function BillingScreen() {
               showsVerticalScrollIndicator={false}
             >
               {cartItems.map((item) => (
-                <View key={item.id} style={styles.cartItem}>
-                  <Text style={styles.cartName}>{item.name}</Text>
+                <View key={item.ItemID} style={styles.cartItem}>
+                  <Text style={styles.cartName}>{item.ItemName}</Text>
                   <Text style={styles.cartQty}>x{item.qty}</Text>
                   <Text style={styles.cartPrice}>
-                    ₹ {item.price * item.qty}
+                    ₹ { (item.Price || 0) * item.qty}
                   </Text>
                 </View>
               ))}

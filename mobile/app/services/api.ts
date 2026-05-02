@@ -1,12 +1,11 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.100:5000';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safestocker.onrender.com';
 
 const API = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
-  timeout: 10000,
+  timeout: 15000,
 });
 
 API.interceptors.request.use(
@@ -22,9 +21,10 @@ API.interceptors.request.use(
 
 API.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      SecureStore.deleteItemAsync('auth_token');
+      await SecureStore.deleteItemAsync('auth_token');
+      await SecureStore.deleteItemAsync('user_data');
     }
     return Promise.reject(error);
   }

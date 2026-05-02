@@ -12,17 +12,27 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as AuthSession from 'expo-auth-session';
+import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { useAuth } from '@/context/AuthContext';
 import API from '@/app/services/api';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.100:5000';
+const BACKEND_URL = process.env.EXPO_PUBLIC_API_URL || 'https://safestocker.onrender.com';
+
+function getSingleParam(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, loginWithToken } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,7 +56,7 @@ export default function LoginScreen() {
     } catch (error: any) {
       Alert.alert(
         'Login Failed',
-        error.response?.data?.message || 'An error occurred during login'
+        error.response?.data?.message || 'Invalid email or password'
       );
     } finally {
       setLoading(false);
@@ -56,14 +66,33 @@ export default function LoginScreen() {
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
-      const redirectUrl = `${BACKEND_URL}/auth/google/callback`;
-      
-      const result = await WebBrowser.openBrowserAsync(
-        `${BACKEND_URL}/auth/google?redirectUrl=${encodeURIComponent(redirectUrl)}`
-      );
+
+      const redirectUri = AuthSession.makeRedirectUri({
+        scheme: 'safestocker',
+        path: 'login',
+      });
+      const authUrl = `${BACKEND_URL}/auth/google?platform=mobile`;
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+
+      if (result.type !== 'success') {
+        return;
+      }
+
+      const parsedUrl = Linking.parse(result.url);
+      const token =
+        getSingleParam(parsedUrl.queryParams?.token) ??
+        getSingleParam(parsedUrl.queryParams?.auth_token);
+
+      if (!token) {
+        Alert.alert('Login Failed', 'Google did not return a login token.');
+        return;
+      }
+
+      await loginWithToken(token);
+      router.replace('/(tabs)/home' as any);
     } catch (error) {
       console.error('Auth Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred during login');
+      Alert.alert('Error', 'Failed to complete Google login');
     } finally {
       setLoading(false);
     }
@@ -85,6 +114,7 @@ export default function LoginScreen() {
             onChangeText={setEmail}
             editable={!loading}
             keyboardType="email-address"
+            autoCapitalize="none"
           />
 
           <Text style={styles.label}>Password</Text>

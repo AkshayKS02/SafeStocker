@@ -1,24 +1,23 @@
 import { useEffect, useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RootIndex() {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (!isLoading) {
       setIsSplashVisible(false);
-    }, 3000); 
+    }
+  }, [isLoading]);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isSplashVisible) {
+  if (isSplashVisible || isLoading) {
     return (
       <View style={styles.splashContainer}>
-        {/* Verify this path matches where your logo is stored! */}
-        <Image 
-          source={require('../assets/images/logo.png')} 
+        <Image
+          source={require('../assets/images/icon.png')}
           style={styles.splashLogo}
           resizeMode="contain"
         />
@@ -26,8 +25,11 @@ export default function RootIndex() {
     );
   }
 
-  // Once the timer ends, move automatically to the login page
-  return <Redirect href="/(tabs)/home" />;
+  if (user) {
+    return <Redirect href="/(tabs)/home" />;
+  }
+
+  return <Redirect href="/auth/login" />;
 }
 
 const styles = StyleSheet.create({
@@ -35,10 +37,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5', 
+    backgroundColor: '#F5F5F5',
   },
   splashLogo: {
-    width: '80%', 
-    height: 150,  
+    width: '80%',
+    height: 150,
   },
 });

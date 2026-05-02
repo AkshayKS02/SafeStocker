@@ -1,19 +1,21 @@
+import { useAuth } from "@/context/AuthContext";
 import { Redirect } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
 
 export default function RootIndex() {
   const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false);
-    }, 3000);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
 
-  if (isSplashVisible) {
+  if (isSplashVisible || isLoading) {
     return (
       <View style={styles.splashContainer}>
         <Image
@@ -25,7 +27,11 @@ export default function RootIndex() {
     );
   }
 
-  return <Redirect href="/(tabs)/home" />;
+  if (user) {
+    return <Redirect href="/(tabs)/home" />;
+  }
+
+  return <Redirect href="/auth/login" />;
 }
 
 const styles = StyleSheet.create({
