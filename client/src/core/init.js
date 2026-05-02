@@ -1,18 +1,22 @@
-// Navigation & global events
-import "../nav/nav.events.js";
-import "../auth/auth.events.js";
+let initialized = false;
 
-// Feature-level events
-import "../events/track.events.js";
-import "../events/entry.events.js";
-import "../events/billing.events.js";
-import "../events/stock.events.js";
-import "../events/dashboard.events.js";
+export async function initApp({ authenticated = false } = {}) {
+    if (initialized) return;
+    initialized = true;
 
-// Barcode / scanner events
-import "../barcode/barcode.events.js";
-import "../alerts/alerts.events.js";
+    await Promise.all([
+        import("../nav/nav.events.js"),
+        import("../auth/auth.events.js"),
+        import("../events/track.events.js"),
+        import("../events/entry.events.js"),
+        import("../events/billing.events.js"),
+        import("../events/stock.events.js"),
+        import("../barcode/barcode.events.js"),
+        import("../alerts/alerts.events.js")
+    ]);
 
-export function initApp() {
-    // App bootstrapping happens via imports
+    if (authenticated) {
+        const { initDashboard } = await import("../events/dashboard.events.js");
+        initDashboard();
+    }
 }
