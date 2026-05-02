@@ -40,7 +40,7 @@ export default function HeroCarousel() {
         <View style={styles.buttonRow}>
           <TouchableOpacity 
             style={styles.primaryBtn} 
-            onPress={() => router.push('/scan')}
+            onPress={() => router.push('/(tabs)/dashboard')}
           >
             <Text style={styles.primaryText}>Get Started</Text>
           </TouchableOpacity>
