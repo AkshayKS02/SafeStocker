@@ -13,7 +13,8 @@ export function toAuthUser(user) {
   return {
     ShopID: user.ShopID,
     OwnerName: user.OwnerName,
-    Email: user.Email
+    Email: user.Email,
+    picture: user.picture || ""
   };
 }
 
@@ -21,6 +22,7 @@ export async function findOrCreateGoogleShop(profile) {
   const email = profile.emails[0].value;
   const name = profile.displayName;
   const picture = profile.photos?.[0]?.value || "";
+  console.log('[userService] Picture extracted:', picture ? 'yes' : 'no');
 
   const result = await db.query(
     `SELECT "ShopID","OwnerName","Email"

@@ -48,8 +48,6 @@ export async function applyUserUI(shop) {
             userIcon.className = "";
         };
 
-        console.log(shop.picture);
-
         userIcon.src = shop.picture || "/images/user.png";
         userIcon.className = shop.picture ? "google-profile-pic" : "";
     }
