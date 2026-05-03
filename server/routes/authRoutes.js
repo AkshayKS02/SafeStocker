@@ -15,7 +15,8 @@ function signAuthToken(user) {
     {
       ShopID: user.ShopID,
       OwnerName: user.OwnerName,
-      Email: user.Email
+      Email: user.Email,
+      picture: user.picture || ""
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
@@ -57,7 +58,9 @@ router.get("/google/callback",
     })(req, res, next);
   },
   (req, res) => {
-    const token = signAuthToken(toAuthUser(req.user));
+    const authUser = toAuthUser(req.user);
+    console.log('[Google Callback] Token payload picture:', authUser.picture ? 'included' : 'missing');
+    const token = signAuthToken(authUser);
     const isMobile = req.query.state === "mobile";
 
     if (isMobile) {

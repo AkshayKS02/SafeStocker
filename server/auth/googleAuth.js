@@ -15,6 +15,8 @@ export default function configureGoogleAuth(passport) {
     proxy: true
   }, async (accessToken, refreshToken, profile, done) => {
     try {
+      const picture = profile.photos?.[0]?.value;
+      console.log('[Google OAuth] Picture from profile:', picture ? 'found' : 'not found');
       const user = await findOrCreateGoogleShop(profile);
       return done(null, user);
     } catch (err) {
