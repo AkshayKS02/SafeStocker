@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   View,
   Text,
   StyleSheet,
@@ -7,11 +8,15 @@ import {
   TouchableOpacity,
   Switch,
   FlatList,
+  Image,
   Modal,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 
 interface Supplier {
   id: string;
@@ -20,8 +25,12 @@ interface Supplier {
 }
 
 export default function Profile() {
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  const profilePicture = user?.picture?.trim();
   const [profile, setProfile] = useState({
-    name: "",
+    name: user?.OwnerName || "",
+    email: user?.Email || "",
     address: "",
   });
 
@@ -32,7 +41,54 @@ export default function Profile() {
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
 
-  const addSupplier = () => {
+  const supplierStorageKey = user?.ShopID ? `suppliers_${user.ShopID}` : null;
+
+  useEffect(() => {
+    setProfile((prev) => ({
+      ...prev,
+      name: user?.OwnerName || "",
+      email: user?.Email || "",
+    }));
+  }, [user?.Email, user?.OwnerName]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadSuppliers = async () => {
+      if (!supplierStorageKey) {
+        setSuppliers([]);
+        return;
+      }
+
+      const saved = await SecureStore.getItemAsync(supplierStorageKey);
+      if (mounted) {
+        setSuppliers(saved ? JSON.parse(saved) : []);
+      }
+    };
+
+    loadSuppliers().catch(() => {
+      if (mounted) setSuppliers([]);
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [supplierStorageKey]);
+
+  const saveSuppliers = useCallback(
+    async (nextSuppliers: Supplier[]) => {
+      setSuppliers(nextSuppliers);
+      if (supplierStorageKey) {
+        await SecureStore.setItemAsync(
+          supplierStorageKey,
+          JSON.stringify(nextSuppliers)
+        );
+      }
+    },
+    [supplierStorageKey]
+  );
+
+  const addSupplier = async () => {
     if (!newName || !newPhone) return;
     if (suppliers.length >= 10) return;
 
@@ -42,20 +98,32 @@ export default function Profile() {
       phone: newPhone,
     };
 
-    setSuppliers((prev) => [...prev, newSupplier]);
+    await saveSuppliers([...suppliers, newSupplier]);
     setNewName("");
     setNewPhone("");
     setModalVisible(false);
   };
 
-  const deleteSupplier = (id: string) => {
-    setSuppliers((prev) => prev.filter((s) => s.id !== id));
+  const deleteSupplier = async (id: string) => {
+    await saveSuppliers(suppliers.filter((s) => s.id !== id));
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/auth/login");
   };
   const ListHeader = () => (
     <View>
       <View style={styles.avatarContainer}>
         <View style={styles.defaultAvatarCircle}>
-          <Ionicons name="person" size={54} color="#9CA3AF" />
+          {profilePicture ? (
+            <Image
+              source={{ uri: profilePicture }}
+              style={styles.profileAvatarImage}
+            />
+          ) : (
+            <Ionicons name="person" size={54} color="#9CA3AF" />
+          )}
         </View>
       </View>
 
@@ -64,8 +132,14 @@ export default function Profile() {
         <TextInput
           placeholder="Name"
           value={profile.name}
-          onChangeText={(text) => setProfile((prev) => ({ ...prev, name: text }))}
           style={styles.input}
+          editable={false}
+        />
+        <TextInput
+          placeholder="Email"
+          value={profile.email}
+          style={styles.input}
+          editable={false}
         />
         <TextInput
           placeholder="Address"
@@ -89,7 +163,15 @@ export default function Profile() {
       </View>
 
       {/* Logout Button moved above Suppliers */}
-      <TouchableOpacity style={styles.logoutBtn}>
+      <TouchableOpacity
+        style={styles.logoutBtn}
+        onPress={() => {
+          Alert.alert("Log Out", "Are you sure you want to log out?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Log Out", style: "destructive", onPress: handleLogout },
+          ]);
+        }}
+      >
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
 
@@ -213,6 +295,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    overflow: "hidden",
+  },
+  profileAvatarImage: {
+    width: "100%",
+    height: "100%",
   },
   section: {
     marginBottom: 20,

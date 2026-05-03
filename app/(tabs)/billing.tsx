@@ -21,7 +21,7 @@ interface InventoryItem {
   ItemName: string;
   Quantity: number;
   Price: number;
-  DaysLeft?: number;
+  DaysLeft?: number | null;
   Category?: string;
   Barcode?: string;
 }
@@ -31,7 +31,7 @@ interface CartState {
 }
 
 export default function BillingScreen() {
-  const { inventory } = useInventory();
+  const { inventory, generateInvoice } = useInventory();
 
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartState>({});
@@ -54,8 +54,24 @@ export default function BillingScreen() {
     };
   }, []);
 
-  // Filter items that haven't expired [cite: 1520]
-  const validItems = inventory.filter((item: InventoryItem) => item.DaysLeft == null || item.DaysLeft > 0);
+  const productMap = new Map<number, InventoryItem>();
+
+  inventory
+    .filter((item: InventoryItem) => item.DaysLeft == null || item.DaysLeft > 0)
+    .forEach((item: InventoryItem) => {
+      const current = productMap.get(item.ItemID);
+
+      if (current) {
+        productMap.set(item.ItemID, {
+          ...current,
+          Quantity: current.Quantity + item.Quantity,
+        });
+      } else {
+        productMap.set(item.ItemID, { ...item });
+      }
+    });
+
+  const validItems = Array.from(productMap.values());
 
   // Search filter with safety check 
   const filteredItems = validItems.filter((item: InventoryItem) =>
@@ -67,7 +83,7 @@ export default function BillingScreen() {
 
     setCart((prev) => {
       const current = prev[itemKey] || 0;
-      const item = inventory.find((p: InventoryItem) => p.ItemID === id);
+      const item = validItems.find((p: InventoryItem) => p.ItemID === id);
       if (!item) return prev;
 
       if (type === "add") {
@@ -86,7 +102,7 @@ export default function BillingScreen() {
   // Type Guard to safely handle cart items 
   const cartItems = Object.keys(cart)
     .map((id: string) => {
-      const item = inventory.find((p: InventoryItem) => String(p.ItemID) === id);
+      const item = validItems.find((p: InventoryItem) => String(p.ItemID) === id);
       return item && cart[id] > 0 ? { ...item, qty: cart[id] } : null;
     })
     .filter((item): item is InventoryItem & { qty: number } => item !== null);
@@ -103,16 +119,18 @@ export default function BillingScreen() {
       setBillError(null);
       setIsGeneratingBill(true);
 
-      console.log("Generating bill for items:", cartItems);
-
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await generateInvoice(
+        cartItems.map((item) => ({
+          itemID: item.ItemID,
+          qty: item.qty,
+        }))
+      );
 
       setCart({});
-      console.log("Bill generated successfully");
     } catch (err) {
       setBillError(
-        err instanceof Error ? err.message : "Failed to generate bill",
+        (err as any)?.response?.data?.error ||
+          (err instanceof Error ? err.message : "Failed to generate bill"),
       );
     } finally {
       setIsGeneratingBill(false);

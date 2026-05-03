@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { SvgXml } from 'react-native-svg';
 import JsBarcode from 'jsbarcode';
 import { DOMImplementation, XMLSerializer } from 'xmldom';
+import { useInventory } from '@/context/InventoryContext';
 
 // Pure-JS barcode generator — no ART, no native deps
 function generateBarcodeSvg(value: string): string {
@@ -28,11 +29,13 @@ function generateBarcodeSvg(value: string): string {
 
 export default function CustomScreen() {
   const router = useRouter();
+  const { createItem } = useInventory();
 
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
   const [barcodeSvg, setBarcodeSvg] = useState('');
   const [barcodeNumber, setBarcodeNumber] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleGenerateBarcode = () => {
     if (!itemName.trim() || !itemPrice.trim()) {
@@ -43,6 +46,49 @@ export default function CustomScreen() {
     const svg = generateBarcodeSvg(randomCode);
     setBarcodeSvg(svg);
     setBarcodeNumber(randomCode);
+  };
+
+  const handleSaveItem = async () => {
+    const price = Number(itemPrice);
+
+    if (!itemName.trim()) {
+      Alert.alert("Missing Details", "Please enter an item name.");
+      return;
+    }
+
+    if (!Number.isFinite(price) || price <= 0) {
+      Alert.alert("Invalid Price", "Please enter a valid price.");
+      return;
+    }
+
+    if (!barcodeNumber) {
+      Alert.alert("Missing Barcode", "Please generate a barcode before saving.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await createItem({
+        ItemName: itemName.trim(),
+        Barcode: barcodeNumber,
+        CategoryID: 1,
+        Source: 'CUSTOM',
+        Price: price,
+      });
+
+      Alert.alert("Saved", "Item registered. Add stock to make it available.");
+      setItemName('');
+      setItemPrice('');
+      setBarcodeSvg('');
+      setBarcodeNumber('');
+    } catch (error: any) {
+      Alert.alert(
+        "Save Failed",
+        error.response?.data?.error || error.message || "Failed to save item."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -93,8 +139,14 @@ export default function CustomScreen() {
               <TouchableOpacity style={styles.primaryButton} onPress={handleGenerateBarcode}>
                 <Text style={styles.primaryButtonText}>Generate Barcode</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Save Item</Text>
+              <TouchableOpacity
+                style={[styles.secondaryButton, isSaving && styles.disabledButton]}
+                onPress={handleSaveItem}
+                disabled={isSaving}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {isSaving ? 'Saving...' : 'Save Item'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -142,6 +194,7 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#FFF', fontWeight: '600', fontSize: 14 },
   secondaryButton: { backgroundColor: '#EAF0F0', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, borderWidth: 1, borderColor: '#707070' },
   secondaryButtonText: { color: '#333', fontWeight: '500', fontSize: 14 },
+  disabledButton: { opacity: 0.6 },
   previewCard: { backgroundColor: '#EAF0F0', borderRadius: 16, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: '#D1D9D9' },
   previewLabel: { color: '#5F6368', fontSize: 18, fontWeight: '500', marginBottom: 20, letterSpacing: 0.5 },
   barcodePlaceholder: { alignItems: 'center', justifyContent: 'center', paddingVertical: 10, width: '100%' },

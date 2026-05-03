@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import API from "@/app/services/api";
 
 interface DashboardStats {
   totalProducts: number;
@@ -51,29 +52,42 @@ export default function DashboardScreen() {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        console.log("Fetching stats for:", activeFilter);
+        const [overviewRes, ordersRes, revenueDaysRes] = await Promise.all([
+          API.get("/dashboard/overview"),
+          API.get("/dashboard/orders"),
+          API.get("/dashboard/biggest-days"),
+        ]);
 
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
+        const overview = overviewRes.data || {};
         setStats({
-          totalProducts: 8,
-          totalStockUnits: 30,
-          todaysSales: 0,
-          nearExpiry: 12,
-          recentOrders: [
-            { id: "A98412", price: 250 },
-            { id: "B12345", price: 180 },
-            { id: "C67890", price: 320 },
-            { id: "D54321", price: 250 },
-          ],
-          biggestRevenueDays: [
-            { rank: 1, date: "21/02/2025", price: 900 },
-            { rank: 2, date: "20/02/2025", price: 850 },
-            { rank: 3, date: "19/02/2025", price: 720 },
-          ],
+          totalProducts: Number(overview.totalProducts) || 0,
+          totalStockUnits: Number(overview.totalStockUnits) || 0,
+          todaysSales: Number(overview.todaysSales) || 0,
+          nearExpiry: Number(overview.nearExpiry) || 0,
+          recentOrders: Array.isArray(ordersRes.data)
+            ? ordersRes.data.map((order: any) => ({
+                id: String(order.ReceiptID),
+                price: Number(order.TotalAmount) || 0,
+              }))
+            : [],
+          biggestRevenueDays: Array.isArray(revenueDaysRes.data)
+            ? revenueDaysRes.data.map((item: any, index: number) => ({
+                rank: index + 1,
+                date: item.day ? new Date(item.day).toLocaleDateString() : "-",
+                price: Number(item.revenue) || 0,
+              }))
+            : [],
         });
       } catch (err) {
         console.error("Failed to fetch stats:", err);
+        setStats({
+          totalProducts: 0,
+          totalStockUnits: 0,
+          todaysSales: 0,
+          nearExpiry: 0,
+          recentOrders: [],
+          biggestRevenueDays: [],
+        });
       } finally {
         setIsLoading(false);
       }

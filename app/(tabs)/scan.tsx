@@ -6,14 +6,19 @@ import {
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
+import API from '@/app/services/api';
+import { useInventory } from '@/context/InventoryContext';
 
 export default function ScanScreen() {
   const router = useRouter();
+  const { createItem } = useInventory();
   
   const [permission, requestPermission] = useCameraPermissions();
   const [isScanning, setIsScanning] = useState(false);
   const [scannedCode, setScannedCode] = useState('');
+  const [scannedName, setScannedName] = useState('');
   const [price, setPrice] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const openScanner = async () => {
     if (!permission?.granted) {
@@ -26,10 +31,62 @@ export default function ScanScreen() {
     setIsScanning(true);
   };
 
-  const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarcodeScanned = async ({ type, data }: { type: string; data: string }) => {
     setIsScanning(false);
     setScannedCode(data);
-    Alert.alert("Item Scanned!", `Barcode: ${data}`);
+
+    try {
+      const response = await API.post('/barcode', { barcode: data });
+      const product = response.data?.product;
+      setScannedName(product?.name || product?.ItemName || '');
+      Alert.alert(
+        "Item Scanned!",
+        product?.name ? `${product.name}\nBarcode: ${data}` : `Barcode: ${data}`
+      );
+    } catch (error: any) {
+      setScannedName('');
+      Alert.alert(
+        "Item Scanned!",
+        `Barcode: ${data}\nProduct lookup failed, but you can still save it.`
+      );
+    }
+  };
+
+  const handleSaveItem = async () => {
+    const numericPrice = Number(price);
+
+    if (!scannedCode) {
+      Alert.alert("Missing Barcode", "Please scan a barcode first.");
+      return;
+    }
+
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      Alert.alert("Invalid Price", "Please enter a valid price.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await createItem({
+        ItemName: scannedName || `Product ${scannedCode}`,
+        Barcode: scannedCode,
+        CategoryID: 1,
+        Source: scannedName ? 'API' : 'BARCODE',
+        Price: numericPrice,
+      });
+
+      Alert.alert("Saved", "Item registered. Add stock to make it available.");
+      setScannedCode('');
+      setScannedName('');
+      setPrice('');
+    } catch (error: any) {
+      Alert.alert(
+        "Save Failed",
+        error.response?.data?.error || error.message || "Failed to save item."
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -67,15 +124,23 @@ export default function ScanScreen() {
             </View>
 
             {scannedCode ? (
-               <Text style={styles.scannedText}>Scanned Code: {scannedCode}</Text>
+               <Text style={styles.scannedText}>
+                 {scannedName ? `${scannedName}\n` : ''}Scanned Code: {scannedCode}
+               </Text>
             ) : null}
 
             <View style={styles.actionButtonsContainer}>
               <TouchableOpacity style={styles.primaryButton} onPress={openScanner}>
                 <Text style={styles.primaryButtonText}>Scan Barcode</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Save Item</Text>
+              <TouchableOpacity
+                style={[styles.secondaryButton, isSaving && styles.disabledButton]}
+                onPress={handleSaveItem}
+                disabled={isSaving}
+              >
+                <Text style={styles.secondaryButtonText}>
+                  {isSaving ? 'Saving...' : 'Save Item'}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -134,6 +199,7 @@ const styles = StyleSheet.create({
   primaryButtonText: { color: '#FFF', fontWeight: '600', fontSize: 14 },
   secondaryButton: { backgroundColor: '#FFF', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, borderWidth: 1, borderColor: '#DADCE0' },
   secondaryButtonText: { color: '#3C4043', fontWeight: '600', fontSize: 14 },
+  disabledButton: { opacity: 0.6 },
   divider: { width: '100%', height: 1, backgroundColor: '#C4CFCF', marginBottom: 20 },
   previewLabel: { color: '#5F6368', fontSize: 18, fontWeight: '500', marginBottom: 10 },
   previewBox: { alignItems: 'center', justifyContent: 'center', opacity: 0.5 },

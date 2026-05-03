@@ -12,6 +12,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useInventory } from '@/context/InventoryContext';
 
 // Type definitions
 interface AddStockFormData {
@@ -26,17 +27,9 @@ interface PickerState {
   exp: { show: boolean; selected: boolean };
 }
 
-// Constants
-const ITEM_LABELS = {
-  paracetamol: 'Paracetamol',
-  ibuprofen: 'Ibuprofen',
-  amoxicillin: 'Amoxicillin',
-} as const;
-
-type ItemKey = keyof typeof ITEM_LABELS;
-
 export default function AddStockScreen() {
   const router = useRouter();
+  const { products, addStock, refreshItems } = useInventory();
 
   // Form state
   const [formData, setFormData] = useState<AddStockFormData>({
@@ -62,6 +55,11 @@ export default function AddStockScreen() {
   };
 
   const formatDate = (date: Date) => date.toLocaleDateString();
+  const toApiDate = (date: Date) => date.toISOString().split('T')[0];
+
+  React.useEffect(() => {
+    refreshItems().catch(() => {});
+  }, [refreshItems]);
 
   const handleMfgDateChange = (event: any, selectedDate?: Date) => {
     setPickerState(prev => ({
@@ -107,11 +105,12 @@ export default function AddStockScreen() {
       setError(null);
       setIsLoading(true);
 
-      // TODO: Replace with actual API call
-      console.log('Submitting stock data:', formData);
-      
-      // Simulated API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await addStock({
+        ItemID: Number(formData.item),
+        Quantity: Number(formData.quantity),
+        ManufactureDate: toApiDate(formData.mfgDate),
+        ExpiryDate: toApiDate(formData.expDate),
+      });
 
       // Reset form on success
       setFormData({
@@ -125,10 +124,12 @@ export default function AddStockScreen() {
         exp: { show: false, selected: false },
       });
       
-      // TODO: Show success toast
-      console.log('Stock updated successfully');
+      setError('Stock added successfully');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update stock');
+      setError(
+        (err as any)?.response?.data?.error ||
+          (err instanceof Error ? err.message : 'Failed to update stock')
+      );
     } finally {
       setIsLoading(false);
     }
@@ -172,7 +173,9 @@ export default function AddStockScreen() {
             <View style={styles.inputWrapper}>
               <View style={styles.centeredTextContainer} pointerEvents="none">
                 <Text style={[styles.dateText, !formData.item && styles.placeholderText]}>
-                  {formData.item ? ITEM_LABELS[formData.item as ItemKey] : 'Select Item'}
+                  {formData.item
+                    ? products.find((item) => String(item.ItemID) === formData.item)?.ItemName || 'Select Item'
+                    : 'Select Item'}
                 </Text>
               </View>
               <Picker
@@ -182,9 +185,13 @@ export default function AddStockScreen() {
                 mode="dropdown"
               >
                 <Picker.Item label="Select Item" value="" />
-                <Picker.Item label="Paracetamol" value="paracetamol" />
-                <Picker.Item label="Ibuprofen" value="ibuprofen" />
-                <Picker.Item label="Amoxicillin" value="amoxicillin" />
+                {products.map((item) => (
+                  <Picker.Item
+                    key={item.ItemID}
+                    label={item.ItemName}
+                    value={String(item.ItemID)}
+                  />
+                ))}
               </Picker>
             </View>
 

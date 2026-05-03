@@ -54,7 +54,9 @@ export default function SignUpScreen() {
     } catch (error: any) {
       Alert.alert(
         'Sign Up Failed',
-        error.response?.data?.message || 'Failed to create account'
+        error.response?.data?.error ||
+          error.response?.data?.message ||
+          'Failed to create account'
       );
     } finally {
       setLoading(false);

@@ -1,11 +1,14 @@
 import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity, Text, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, Text, View } from "react-native";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
+import { useAuth } from "@/context/AuthContext";
 
 export default function TabLayout() {
   const router = useRouter();
+  const { user } = useAuth();
+  const profilePicture = user?.picture?.trim();
 
   return (
     <Tabs
@@ -95,7 +98,16 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person" size={28} color={color} />
+            profilePicture ? (
+              <View style={[styles.profileTabAvatarFrame, { borderColor: color }]}>
+                <Image
+                  source={{ uri: profilePicture }}
+                  style={styles.profileTabAvatar}
+                />
+              </View>
+            ) : (
+              <Ionicons name="person" size={28} color={color} />
+            )
           ),
         }}
       />
@@ -106,3 +118,17 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  profileTabAvatarFrame: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2,
+    overflow: "hidden",
+  },
+  profileTabAvatar: {
+    width: "100%",
+    height: "100%",
+  },
+});

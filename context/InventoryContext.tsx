@@ -1,65 +1,226 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import API from '@/app/services/api';
+import { useAuth } from '@/context/AuthContext';
 
-interface Item {
+export interface ProductItem {
   ItemID: number;
   ItemName: string;
-  Quantity: number;
-  Price: number;
-  Category?: string;
-  ExpiryDate?: string;
-  DaysLeft?: number;
   Barcode?: string;
+  CategoryID?: number | null;
+  CategoryName?: string | null;
+  Source?: string;
+  Price: number;
 }
 
-// --- Fake Data for Development ---
-const MOCK_DATA: Item[] = [
-  { ItemID: 1, ItemName: 'Organic Bananas', Quantity: 150, Price: 0.99, Category: 'Produce', ExpiryDate: '2026-05-05' },
-  { ItemID: 2, ItemName: 'Whole Milk', Quantity: 40, Price: 3.49, Category: 'Dairy', ExpiryDate: '2026-05-10' },
-  { ItemID: 3, ItemName: 'Sourdough Bread', Quantity: 12, Price: 5.50, Category: 'Bakery', ExpiryDate: '2026-05-02' },
-  { ItemID: 4, ItemName: 'Greek Yogurt', Quantity: 0, Price: 1.25, Category: 'Dairy', ExpiryDate: '2026-05-15' },
-  { ItemID: 5, ItemName: 'Avocados', Quantity: 85, Price: 2.00, Category: 'Produce', ExpiryDate: '2026-05-07' },
-];
+export interface StockItem extends ProductItem {
+  StockID: number;
+  Quantity: number;
+  ManufactureDate?: string;
+  ExpiryDate?: string;
+  DaysLeft?: number | null;
+}
+
+interface CreateItemPayload {
+  ItemName: string;
+  Barcode: string;
+  CategoryID?: number | null;
+  Source?: string;
+  Price: number;
+}
+
+interface AddStockPayload {
+  ItemID: number;
+  SupplierID?: number | null;
+  Quantity: number;
+  ManufactureDate: string;
+  ExpiryDate: string;
+}
+
+interface InvoiceLine {
+  itemID: number;
+  qty: number;
+}
 
 interface InventoryContextType {
-  items: Item[];
-  inventory: Item[];
+  items: ProductItem[];
+  products: ProductItem[];
+  inventory: StockItem[];
   loading: boolean;
   error: string | null;
+  refreshItems: () => Promise<void>;
   refreshStock: () => Promise<void>;
+  refreshAll: () => Promise<void>;
+  createItem: (payload: CreateItemPayload) => Promise<ProductItem>;
+  addStock: (payload: AddStockPayload) => Promise<void>;
+  removeStock: (stockID: number) => Promise<void>;
+  updateStockQuantity: (stockID: number, quantity: number) => Promise<void>;
+  generateInvoice: (items: InvoiceLine[]) => Promise<{ receiptID?: number; totalAmount?: number }>;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
+function toNumber(value: unknown, fallback = 0) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function toDateOnly(date: string | undefined) {
+  if (!date) return undefined;
+  return date.split('T')[0];
+}
+
+function calcDaysLeft(date: string | undefined) {
+  if (!date) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const expiry = new Date(date);
+  expiry.setHours(0, 0, 0, 0);
+
+  return Math.ceil((expiry.getTime() - today.getTime()) / 86400000);
+}
+
+function normalizeProduct(row: any): ProductItem {
+  return {
+    ItemID: toNumber(row.ItemID),
+    ItemName: row.ItemName || 'Unnamed Product',
+    Barcode: row.Barcode || '',
+    CategoryID: row.CategoryID ?? null,
+    CategoryName: row.CategoryName ?? null,
+    Source: row.Source || 'API',
+    Price: toNumber(row.Price),
+  };
+}
+
+function normalizeStock(row: any): StockItem {
+  const expiryDate = toDateOnly(row.ExpiryDate);
+
+  return {
+    ...normalizeProduct(row),
+    StockID: toNumber(row.StockID),
+    Quantity: toNumber(row.Quantity),
+    ManufactureDate: toDateOnly(row.ManufactureDate),
+    ExpiryDate: expiryDate,
+    DaysLeft: calcDaysLeft(expiryDate),
+  };
+}
+
 export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize with MOCK_DATA instead of an empty array
-  const [items, setItems] = useState<Item[]>(MOCK_DATA);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { user, token } = useAuth();
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [inventory, setInventory] = useState<StockItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const refreshItems = useCallback(async () => {
+    if (!user?.ShopID || !token) {
+      setProducts([]);
+      return;
+    }
+
+    const response = await API.get('/items');
+    setProducts(Array.isArray(response.data) ? response.data.map(normalizeProduct) : []);
+  }, [token, user?.ShopID]);
+
   const refreshStock = useCallback(async () => {
+    if (!user?.ShopID || !token) {
+      setInventory([]);
+      return;
+    }
+
+    const response = await API.get(`/stock/${user.ShopID}`);
+    setInventory(Array.isArray(response.data) ? response.data.map(normalizeStock) : []);
+  }, [token, user?.ShopID]);
+
+  const refreshAll = useCallback(async () => {
+    if (!user?.ShopID || !token) {
+      setProducts([]);
+      setInventory([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await API.get('/stock');
-      if (response.data && response.data.length > 0) {
-        setItems(response.data);
-      }
+      await Promise.all([refreshItems(), refreshStock()]);
       setError(null);
     } catch (err: any) {
-      // Log the error but keep the mock data visible so you can keep working
-      console.warn('API Offline - Using Mock Data:', err.message);
-      setError('Running in Offline/Mock Mode');
+      setError(err.response?.data?.error || err.message || 'Failed to load inventory');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshItems, refreshStock, token, user?.ShopID]);
 
   useEffect(() => {
-    refreshStock();
-  }, [refreshStock]);
+    refreshAll();
+  }, [refreshAll]);
+
+  const createItem = useCallback(
+    async (payload: CreateItemPayload) => {
+      const response = await API.post('/items', payload);
+      const created: ProductItem = normalizeProduct({
+        ...payload,
+        ItemID: response.data?.ItemID,
+      });
+
+      await refreshItems();
+      return created;
+    },
+    [refreshItems]
+  );
+
+  const addStock = useCallback(
+    async (payload: AddStockPayload) => {
+      await API.post('/stock', payload);
+      await refreshStock();
+    },
+    [refreshStock]
+  );
+
+  const updateStockQuantity = useCallback(
+    async (stockID: number, quantity: number) => {
+      await API.put(`/stock/${stockID}`, { Quantity: quantity });
+      await refreshStock();
+    },
+    [refreshStock]
+  );
+
+  const removeStock = useCallback(
+    async (stockID: number) => {
+      await updateStockQuantity(stockID, 0);
+    },
+    [updateStockQuantity]
+  );
+
+  const generateInvoice = useCallback(
+    async (items: InvoiceLine[]) => {
+      const response = await API.post('/invoice', { items });
+      await refreshStock();
+      return response.data || {};
+    },
+    [refreshStock]
+  );
 
   return (
-    <InventoryContext.Provider value={{ items, inventory: items, loading, error, refreshStock }}>
+    <InventoryContext.Provider
+      value={{
+        items: products,
+        products,
+        inventory,
+        loading,
+        error,
+        refreshItems,
+        refreshStock,
+        refreshAll,
+        createItem,
+        addStock,
+        removeStock,
+        updateStockQuantity,
+        generateInvoice,
+      }}
+    >
       {children}
     </InventoryContext.Provider>
   );
