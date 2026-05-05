@@ -1,12 +1,15 @@
 export async function fetchFromOpenFoodFacts(barcode) {
-    const url = `https://world.openfoodfacts.net/api/v2/product/${barcode}.json`;
+    const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
 
-    const authHeader = "Basic " + Buffer.from("off:off").toString("base64");
+    const res = await fetch(url);
 
-    const res = await fetch(url, {
-        method: "GET",
-        headers: { "Authorization": authHeader }
-    });
+    const text = await res.text();
 
-    return res.json();
+    try {
+        return JSON.parse(text);
+    } catch (err) {
+        console.error("❌ OFF API returned non-JSON:");
+        console.error(text);
+        throw new Error("Invalid OFF API response");
+    }
 }
