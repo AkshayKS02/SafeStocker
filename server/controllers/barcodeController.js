@@ -10,8 +10,15 @@ export async function handleBarcode(req, res) {
 
     try {
         const result = await db.query(
-        "SELECT ItemID, ItemName, Barcode, CategoryID, Source FROM items WHERE ShopID = $1 AND Barcode = $2",
-        [ShopID, barcode]
+            `SELECT 
+                "ItemID", 
+                "ItemName", 
+                "Barcode", 
+                "CategoryID", 
+                "Source"
+            FROM items 
+            WHERE "ShopID" = $1 AND "Barcode" = $2`,
+            [ShopID, barcode]
         );
 
         const rows = result.rows;
@@ -21,7 +28,7 @@ export async function handleBarcode(req, res) {
                 found: true,
                 source: "database",
                 product: {
-                    ItemID: rows[0].ItemID,
+                    ItemID: rows[0].ItemID ?? rows[0].itemid,
                     name: rows[0].ItemName,
                     barcode: rows[0].Barcode,
                     CategoryID: rows[0].CategoryID
@@ -31,7 +38,7 @@ export async function handleBarcode(req, res) {
 
         const offData = await fetchFromOpenFoodFacts(barcode);
 
-        if (!offData?.product) {
+        if (!offData || offData.status === 0) {
             return res.json({ found: false });
         }
 
