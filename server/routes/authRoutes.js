@@ -23,78 +23,70 @@ function signAuthToken(user) {
   );
 }
 
-router.get("/google",
-  (req, res, next) => {
-    const platform = req.query.platform === "mobile" ? "mobile" : "web";
-
-    passport.authenticate("google", {
-      scope: ["profile", "email"],
-      session: false,
-      state: platform
-    })(req, res, next);
-  }
-);
+// ── Web Google OAuth ──────────────────────────────────────────────────────────
+router.get("/google", passport.authenticate("google-web", {
+  scope: ["profile", "email"],
+  session: false
+}));
 
 router.get("/google/callback",
   (req, res, next) => {
-    passport.authenticate("google", { session: false }, (err, user, info) => {
-      if (err) {
-        console.error("Google OAuth callback failed:", {
-          message: err.message,
-          oauthError: err.oauthError?.data,
-          statusCode: err.oauthError?.statusCode,
-          info
-        });
-        return res.status(401).send("Google sign-in failed. Check that GOOGLE_CALLBACK_URL exactly matches the Google OAuth redirect URI.");
-      }
-
-      if (!user) {
-        console.error("Google OAuth callback returned no user:", info);
+    passport.authenticate("google-web", { session: false }, (err, user) => {
+      if (err || !user) {
+        console.error("Web Google OAuth failed:", err?.message);
         return res.status(401).send("Google sign-in failed.");
       }
-
       req.user = user;
-      return next();
+      next();
     })(req, res, next);
   },
   (req, res) => {
-    const authUser = toAuthUser(req.user);
-    console.log('[Google Callback] Token payload picture:', authUser.picture ? 'included' : 'missing');
-    const token = signAuthToken(authUser);
-    const isMobile = req.query.state === "mobile";
-
-    if (isMobile) {
-      return res.send(`
-        <script>
-          window.location.href = "safestocker://login?token=${encodeURIComponent(token)}";
-        </script>
-      `);
-    }
-
+    const token = signAuthToken(toAuthUser(req.user));
     return res.redirect(`/login-success.html?token=${encodeURIComponent(token)}`);
   }
 );
 
+// ── Mobile Google OAuth ───────────────────────────────────────────────────────
+router.get("/google/mobile", passport.authenticate("google-mobile", {
+  scope: ["profile", "email"],
+  session: false
+}));
+
+router.get("/google/mobile/callback",
+  (req, res, next) => {
+    passport.authenticate("google-mobile", { session: false }, (err, user) => {
+      if (err || !user) {
+        console.error("Mobile Google OAuth failed:", err?.message);
+        return res.status(401).send("Google sign-in failed.");
+      }
+      req.user = user;
+      next();
+    })(req, res, next);
+  },
+  (req, res) => {
+    const token = signAuthToken(toAuthUser(req.user));
+    return res.send(`
+      <script>
+        window.location.href = "safestocker://login?token=${encodeURIComponent(token)}";
+      </script>
+    `);
+  }
+);
+
+// ── Email/Password ────────────────────────────────────────────────────────────
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password required" });
     }
 
     const user = await findShopByCredentials(email, password);
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    res.json({
-      user,
-      token: signAuthToken(user)
-    });
-  } catch (error) {
-    console.error("Login error:", error);
+    res.json({ user, token: signAuthToken(user) });
+  } catch (err) {
+    console.error("Login error:", err);
     res.status(500).json({ error: "Login failed" });
   }
 });
@@ -102,29 +94,19 @@ router.post("/login", async (req, res) => {
 router.post("/signup", async (req, res) => {
   try {
     const { OwnerName, Email, Password } = req.body;
-
     if (!OwnerName || !Email || !Password) {
       return res.status(400).json({ error: "All fields required" });
     }
 
     const user = await createShopWithPassword({ OwnerName, Email, Password });
-
-    res.status(201).json({
-      user,
-      token: signAuthToken(user)
-    });
-  } catch (error) {
-    if (error.statusCode) {
-      return res.status(error.statusCode).json({ error: error.message });
-    }
-
-    console.error("Signup error:", error);
+    res.status(201).json({ user, token: signAuthToken(user) });
+  } catch (err) {
+    if (err.statusCode) return res.status(err.statusCode).json({ error: err.message });
+    console.error("Signup error:", err);
     res.status(500).json({ error: "Signup failed" });
   }
 });
 
-router.get("/user", auth, (req, res) => {
-  res.json(req.user);
-});
+router.get("/user", auth, (req, res) => res.json(req.user));
 
 export default router;

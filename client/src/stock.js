@@ -7,16 +7,10 @@ import {
 } from "./alerts/alerts.service.js";
 import { renderAlerts } from "./alerts/alerts.ui.js";
 
-export let shopID = null;
 export let stockItems = [];
 
-export function setShopID(id) {
-    shopID = id;
-}
-
 export async function loadStock() {
-    if (!shopID) return [];
-    stockItems = await fetchStock(shopID);
+    stockItems = await fetchStock();
 
     if (shouldCheckAlerts()) {
         const alerts = generateAlerts(stockItems);
@@ -26,5 +20,3 @@ export async function loadStock() {
 
     return stockItems;
 }
-
-

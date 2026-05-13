@@ -17,7 +17,6 @@ function statusColor(days) {
 
 function normalizeStockRow(row) {
     const days = calcDays(row.ExpiryDate);
-
     return {
         stockID: row.StockID,
         itemID: row.ItemID,
@@ -31,16 +30,12 @@ function normalizeStockRow(row) {
     };
 }
 
-export async function fetchStock(shopID) {
-    if (!shopID) return [];
-
+export async function fetchStock() {
     try {
-        const res = await apiFetch(`/stock/${shopID}`);
+        const res = await apiFetch("/stock");
         if (!res) return [];
-
         const rows = await res.json();
         return rows.map(normalizeStockRow);
-
     } catch {
         return [];
     }
@@ -50,7 +45,6 @@ export async function fetchItemOptions() {
     try {
         const res = await apiFetch("/items");
         if (!res) return [];
-
         return await res.json();
     } catch {
         return [];
