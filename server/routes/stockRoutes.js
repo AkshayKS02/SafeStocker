@@ -8,15 +8,9 @@ import {
 
 const router = express.Router();
 
-// Add stock batch
 router.post("/", addStock);
-
-// Get stock for this merchant’s shop
-router.get("/:shopID", getStockByShop);
-
-// Update quantity in a batch
+router.get("/", getStockByShop);
 router.put("/:stockID", updateStockQuantity);
-
 router.delete("/expire/:stockID", deleteExpiredStock);
 
 export default router;

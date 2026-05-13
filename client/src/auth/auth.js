@@ -1,4 +1,4 @@
-import { setShopID, loadStock } from "../stock.js";
+import { loadStock } from "../stock.js";
 import { closeLogin } from "./auth.ui.js";
 import { disablePreLoginClick } from "./auth.events.js";
 
@@ -12,9 +12,6 @@ export const currentUser = {
 
 let outsideClickBound = false;
 
-// ======================
-// 🔹 APPLY USER UI
-// ======================
 export async function applyUserUI(shop) {
     if (!shop) return;
 
@@ -26,7 +23,6 @@ export async function applyUserUI(shop) {
     currentUser.Picture = shop.picture || "";
     currentUser.loggedIn = true;
 
-    setShopID(shop.ShopID);
     await loadStock();
 
     import("../events/stock.events.js").then(m => m.initStockView());
@@ -41,13 +37,11 @@ export async function applyUserUI(shop) {
 
     if (userIcon) {
         userIcon.referrerPolicy = "no-referrer";
-
         userIcon.onerror = () => {
             userIcon.onerror = null;
             userIcon.src = "/images/user.png";
             userIcon.className = "";
         };
-
         userIcon.src = shop.picture || "/images/user.png";
         userIcon.className = shop.picture ? "google-profile-pic" : "";
     }
@@ -77,18 +71,13 @@ export async function applyUserUI(shop) {
     }
 }
 
-// ======================
-// 🔹 CHECK AUTH (JWT)
-// ======================
 export async function checkAuthOnLoad() {
     const token = localStorage.getItem("auth_token");
     if (!token) return false;
 
     try {
         const res = await fetch("/auth/user", {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
         });
 
         if (!res.ok) throw new Error();
@@ -104,9 +93,6 @@ export async function checkAuthOnLoad() {
     }
 }
 
-// ======================
-// 🔹 LOGOUT
-// ======================
 export function logoutUser() {
     localStorage.removeItem("auth_token");
     window.location.reload();

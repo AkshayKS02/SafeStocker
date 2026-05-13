@@ -233,6 +233,45 @@ label {
   cursor: pointer;
 }
 
+.modal-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.modal-tab {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.modal-tab.active-tab {
+  color: var(--color-blue);
+  border-bottom-color: var(--color-blue);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  color: #aaa;
+  cursor: pointer;
+}
+
 /* Wrapper to center the button */
 .google-login-wrapper {
     text-align: center;
