@@ -2,281 +2,258 @@
 
 <div align="center">
 
-### Smart Inventory & Expiry Management System
+### Smart Inventory & Expiry Management Ecosystem
 
-Reduce stock wastage • Track expiry dates • Generate invoices • Manage inventory smarter
+Reduce stock wastage • Track expiry dates • Manage smarter billing • Monitor business insights
 
 </div>
 
 ---
 
-## 📌 Overview
+# 📌 Overview
 
-SafeStocker is a full-stack inventory management and expiry tracking platform designed for small retailers, grocery stores, pharmacies, and local businesses.
+SafeStocker is a full-stack inventory management and expiry tracking ecosystem designed for small retailers, grocery stores, pharmacies, warehouses, and local businesses.
 
-The system helps businesses:
+The project focuses on reducing inventory losses caused by expired products while simplifying stock management, billing workflows, and business analytics.
 
-* 📦 Manage inventory efficiently
-* ⏰ Track expiring products
-* 💸 Reduce stock losses
-* 🧾 Generate invoices instantly
-* 📊 Analyze sales & revenue trends
-* 🔍 Add products using barcode scanning
+SafeStocker currently consists of:
 
-Built using a modular frontend architecture with a Node.js + Express backend and PostgreSQL database.
+* 🌐 Web Dashboard (already deployed)
+* 📱 React Native Mobile Application (in development)
+* 🔗 Shared Node.js + PostgreSQL Backend APIs
+
+The platform combines barcode-based product onboarding, expiry-aware stock management, billing automation, analytics dashboards, and intelligent inventory workflows into a unified system.
+
+## 🌐 Deployment
+
+- Live Application: https://safestocker.onrender.com
+- Hosting Platform: Render
 
 ---
 
-## 🚨 Problem Statement
+# 🚨 Problem Statement
 
-Small businesses often face:
+Small businesses often struggle with:
 
-* Manual inventory management
+* Manual inventory tracking
 * Expired stock losses
-* No expiry alert systems
+* No automated expiry monitoring
 * Difficult billing workflows
-* Poor analytics visibility
-* Human errors in stock handling
+* Lack of real-time business analytics
+* Human errors during stock handling
+* Poor visibility into revenue vs losses
 
-SafeStocker solves these issues through an intelligent inventory workflow focused on automation, tracking, and usability.
-
----
-
-## ✨ Features
-
-> Smart inventory, expiry tracking, billing, and stock-loss management platform built for small retailers, grocery stores, pharmacies, and local businesses.
-
-## Overview
-
-SafeStocker is a full-stack inventory management and expiry tracking system designed to help small businesses manage products efficiently, reduce stock wastage, and simplify billing workflows.
-
-The platform combines:
-
-* Barcode-based product onboarding
-* Expiry-aware stock tracking
-* FIFO stock deduction during billing
-* Automated invoice generation
-* Real-time dashboard analytics
-* Google OAuth + JWT authentication
-* Expiry alerts and loss recording
-
-The project is built using a lightweight modular frontend architecture with a Node.js + Express backend and PostgreSQL database.
+SafeStocker addresses these issues through automation, expiry-focused inventory logic, and a scalable modular architecture.
 
 ---
 
-# Problem Statement
+# 🎯 Project Objective
 
-Small retailers and pharmacies often struggle with:
+The objective of SafeStocker is to build a scalable inventory ecosystem that helps businesses:
 
-* Manual stock tracking
-* Expired inventory losses
-* Lack of expiry notifications
-* Unorganized billing systems
-* Difficulty managing growing inventories
-* No real visibility into revenue vs losses
+* Reduce product wastage
+* Improve inventory visibility
+* Simplify billing operations
+* Track expiring stock efficiently
+* Analyze revenue and losses
+* Support both desktop and mobile workflows
 
-SafeStocker solves these problems through an intelligent inventory workflow focused on automation, tracking, and usability.
+The long-term vision is to evolve SafeStocker into a complete SaaS-ready inventory and retail management platform.
 
 ---
 
-# Key Features
+# ✨ Core Features
 
-## 1. Authentication System
+## 1. Authentication & Security
 
-### Google OAuth Login
+### Google OAuth Authentication
 
-* Secure Google authentication using Passport.js
+* Secure login using Passport.js
 * Separate web and mobile OAuth flows
-* JWT token-based session handling
-* Persistent login using localStorage
+* JWT token-based authentication
+* Persistent session handling
 
-### Email + Password Authentication
+### Email & Password Authentication
 
-* Manual signup/login system
-* Shop owner account creation
-* Token-based protected routes
+* Shop owner account registration
+* Secure login flow
+* Protected API access
 
-### Route Protection
+### Security Features
 
-All critical APIs are protected using JWT middleware:
-
-* Inventory routes
-* Barcode routes
-* Billing routes
-* Dashboard routes
-* Stock management routes
-
----
-
-# 2. Barcode-Based Product Entry
-
-## Real-Time Barcode Scanning
-
-SafeStocker supports camera-based barcode scanning directly in the browser.
-
-### Features
-
-* Uses device camera for scanning
-* Automatically detects barcode values
-* Mobile back-camera prioritization
-* Handles permission errors gracefully
-* Prevents duplicate scanners from opening
-
-### Barcode Lookup Workflow
-
-After scanning:
-
-1. System first checks local database
-2. If not found, product is fetched using OpenFoodFacts API
-3. Product preview is shown instantly
-4. User can directly add item into inventory
-
-### External API Integration
-
-Integrated with:
-
-* OpenFoodFacts API
-
-Used for:
-
-* Product names
-* Brands
-* Quantity information
+* JWT-protected routes
+* Authorization middleware
+* SQL parameterized queries
+* Duplicate inventory prevention
+* Transaction-safe billing workflows
+* Protected invoice generation
 
 ---
 
-# 3. Custom Product Registration
-
-For products unavailable in external APIs:
-
-### Custom Barcode Generator
-
-* Automatically generates unique barcode IDs using timestamps
-* Generates barcode preview images dynamically
-* Allows creation of completely custom products
-
-### Custom Item Entry
-
-Users can manually enter:
-
-* Product name
-* Price
-* Barcode
-* Category
-
-This is useful for:
-
-* Local products
-* Non-packaged goods
-* Medical inventory
-* Wholesale items
-
----
-
-# 4. Inventory Management
+# 📦 2. Inventory Management
 
 ## Product Management
 
 Users can:
 
 * Add products
-* Fetch all registered products
-* Prevent duplicate barcode entries
+* Fetch registered inventory
+* Categorize products
 * Store pricing information
-* Categorize inventory
+* Prevent duplicate barcode entries
 
-## Stock Management
+## Stock Batch Management
 
-Each product can have:
+Each item supports:
 
 * Multiple stock batches
-* Different expiry dates
-* Manufacture dates
 * Quantity tracking
+* Manufacture dates
+* Expiry dates
+* Batch-wise stock updates
 
-### Stock Features
+### Stock Operations
 
 * Add stock entries
 * Update quantities
 * View active stock only
-* Sort stock by expiry
-* Sort stock by quantity
-* Sort stock alphabetically
+* Sort inventory by:
+
+  * Expiry date
+  * Quantity
+  * Alphabetical order
 
 ---
 
-# 5. Expiry Tracking System
+# 🔍 3. Barcode-Based Product System
 
-One of the core features of SafeStocker.
+## Barcode Scanning Workflow
+
+SafeStocker supports camera-based barcode onboarding directly inside the browser.
+
+### Features
+
+* Real-time barcode scanning using device camera
+* Mobile back-camera prioritization
+* Duplicate scanner prevention
+* Graceful camera permission handling
+* Automatic barcode lookup workflow
+
+### Workflow
+
+1. Scan barcode using device camera
+2. Check local database first
+3. Fetch product details using external APIs if unavailable locally
+4. Display product preview
+5. Add directly into inventory
+
+### Integrations
+
+* OpenFoodFacts API
+* ZXing Barcode Scanner Library
+
+---
+
+# 🏷️ 4. Custom Product Registration
+
+For products unavailable in external APIs:
+
+### Custom Barcode Support
+
+* Timestamp-based barcode generation
+* Dynamic barcode preview generation
+* Fully custom product creation
+
+### Manual Product Entry
+
+Users can manually define:
+
+* Product name
+* Barcode
+* Category
+* Price
+
+Useful for:
+
+* Local products
+* Wholesale inventory
+* Medical supplies
+* Non-packaged goods
+
+---
+
+# ⏰ 5. Expiry Tracking System
+
+Expiry monitoring is one of the primary features of SafeStocker.
 
 ## Smart Expiry Monitoring
 
-Stock items are color coded based on freshness:
+Products are color-coded based on freshness:
 
-| Status | Meaning                 |
-| ------ | ----------------------- |
-| Green  | Fresh stock             |
-| Yellow | Expiring soon           |
-| Orange | Critical expiry warning |
-| Red    | Expired                 |
-| Gray   | No expiry information   |
+| Status    | Meaning                 |
+| --------- | ----------------------- |
+| 🟢 Green  | Fresh stock             |
+| 🟡 Yellow | Expiring soon           |
+| 🟠 Orange | Critical expiry warning |
+| 🔴 Red    | Expired                 |
+| ⚪ Gray    | No expiry information   |
 
-## Expiry Alerts
+## Expiry Alert System
 
 The application automatically:
 
 * Detects near-expiry products
-* Generates alert notifications
-* Displays alert dropdown UI
-* Highlights affected stock cards
-* Redirects users directly to affected inventory
+* Generates notifications
+* Highlights affected inventory
+* Displays alert dropdowns
+* Redirects users to affected stock entries
 
 ## Expired Stock Handling
 
-Expired stock can be:
+Expired inventory can:
 
-* Marked as lost
-* Automatically removed from usable inventory
-* Recorded inside losses table
+* Be marked as lost
+* Be removed from active inventory
+* Be recorded for analytics
 
-### Loss Recording
+### Loss Tracking
 
-The system calculates:
+The system records:
 
 * Quantity lost
 * Monetary loss amount
-* Loss history data
+* Historical loss analytics
 
 ---
 
-# 6. Billing & Invoice System
+# 🧾 6. Billing & Invoice System
 
-## Intelligent Billing Workflow
+## Billing Workflow
 
 Users can:
 
 * Add products to cart
-* Increase/decrease quantities
-* View live totals
-* Generate invoices instantly
+* Adjust quantities
+* View live billing totals
+* Generate invoices
 
 ## FIFO Stock Deduction
 
-SafeStocker implements:
+SafeStocker follows:
 
 ### First Expiry First Out (FIFO)
 
 During billing:
 
-* Oldest expiring stock gets deducted first
+* Oldest-expiring stock is deducted first
 * Multiple stock batches are handled automatically
-* Billing fails safely if stock is insufficient
+* Billing safely fails if stock is insufficient
 
-This minimizes:
+This helps minimize:
 
-* Expired inventory
 * Product wastage
 * Dead stock accumulation
+* Expired inventory losses
 
 ## PDF Invoice Generation
 
@@ -285,18 +262,18 @@ Invoices are generated dynamically using Puppeteer.
 ### Invoice Features
 
 * Professional invoice layout
-* Productized billing rows
-* Quantity & pricing breakdown
-* Grand totals
+* Quantity and pricing breakdown
 * Browser-streamed PDF download
+* Dynamic billing rows
+* Grand total calculations
 
 ---
 
-# 7. Dashboard Analytics
+# 📊 7. Dashboard Analytics
 
-SafeStocker includes a live analytics dashboard.
+SafeStocker provides real-time business insights.
 
-## Dashboard Overview Metrics
+## Dashboard Metrics
 
 Displays:
 
@@ -307,48 +284,54 @@ Displays:
 
 ## Revenue Analytics
 
-Graph visualization for:
-
-* Revenue trends
-* Loss trends
-* Time-based analytics
-
-### Supported Modes
+Supports:
 
 * Weekly analytics
 * Monthly analytics
 * Yearly analytics
 
-## Recent Orders Panel
+### Graph Visualizations
 
-Shows:
+* Revenue trends
+* Loss trends
+* Sales analytics
+
+## Order History
 
 * Recent receipts
 * Billing totals
-* Order history
+* Purchase history
 
-## Biggest Revenue Days
+## Revenue Insights
 
 Highlights:
 
 * Top-performing sales days
-* Highest revenue periods
+* High-revenue periods
 
 ---
 
-# 8. Responsive Frontend Architecture
+# 📱 Mobile Expansion (Work in Progress)
 
-The frontend follows a modular vanilla JavaScript architecture.
+A separate React Native mobile application is currently being explored as an extension of the SafeStocker ecosystem.
 
-## Frontend Modules
+The mobile application is being developed in a separate repository and is currently in early development stages.
+
+---
+
+# 🧱 9. Frontend Architecture
+
+The frontend follows a modular architecture for scalability and maintainability.
+
+## Core Modules
 
 ### Core Layer
 
 Handles:
 
-* DOM management
 * App initialization
-* Global state
+* Global state management
+* DOM utilities
 
 ### Services Layer
 
@@ -356,18 +339,17 @@ Handles:
 
 * API communication
 * Billing services
-* Item services
+* Inventory services
 * Stock services
 
 ### Events Layer
 
 Handles:
 
-* Billing interactions
+* Billing events
 * Dashboard interactions
-* Entry form logic
-* Stock events
-* Tracking events
+* Form logic
+* Stock operations
 
 ### Views Layer
 
@@ -375,37 +357,24 @@ Handles:
 
 * UI rendering
 * Dashboard rendering
-* Billing rendering
-* Tracking cards
-* Stock forms
+* Billing screens
+* Inventory cards
 
 ### Alerts Layer
 
 Handles:
 
-* Alert generation
-* Alert UI
 * Expiry notifications
+* Alert generation
+* Alert rendering
 
 ---
 
-# 9. Security Features
+# 🗄️ 10. Database Design
 
-* JWT authentication
-* Protected backend APIs
-* Authorization middleware
-* Duplicate inventory prevention
-* Transaction-safe billing operations
-* SQL parameterized queries
-* Protected invoice generation
+SafeStocker uses PostgreSQL for persistent storage.
 
----
-
-# 10. Database Design
-
-The backend uses PostgreSQL for persistent storage.
-
-## Main Entities
+## Main Database Entities
 
 * Shop
 * Items
@@ -416,9 +385,7 @@ The backend uses PostgreSQL for persistent storage.
 * Categories
 * Suppliers
 
-## Data Relationships
-
-The system supports:
+## Relationships
 
 * One shop → many items
 * One item → many stock batches
@@ -427,13 +394,13 @@ The system supports:
 
 ---
 
-# Tech Stack
+# ⚙️ Tech Stack
 
 ## Frontend
 
 * HTML5
 * CSS3
-* Vanilla JavaScript (Modular Architecture)
+* Vanilla JavaScript
 * ZXing Barcode Scanner
 * Chart.js
 
@@ -449,11 +416,6 @@ The system supports:
 
 * PostgreSQL
 
-## Authentication
-
-* Google OAuth 2.0
-* JWT
-
 ## APIs & Libraries
 
 * OpenFoodFacts API
@@ -462,7 +424,7 @@ The system supports:
 
 ---
 
-# Project Structure
+# 🧩 Project Structure
 
 ```bash
 SafeStocker/
@@ -479,6 +441,12 @@ SafeStocker/
 │       ├── services/
 │       └── views/
 │
+├── mobile/
+│   ├── src/
+│   ├── screens/
+│   ├── components/
+│   └── services/
+│
 ├── server/
 │   ├── auth/
 │   ├── config/
@@ -494,7 +462,7 @@ SafeStocker/
 
 ---
 
-# API Endpoints
+# 🔌 API Endpoints
 
 ## Authentication
 
@@ -535,21 +503,42 @@ SafeStocker/
 
 ## Dashboard
 
-| Method | Endpoint                  | Description         |
-| ------ | ------------------------- | ------------------- |
-| GET    | `/dashboard/overview`     | Dashboard summary   |
-| GET    | `/dashboard/biggest-days` | Top revenue days    |
-| GET    | `/dashboard/orders`       | Recent orders       |
-| GET    | `/dashboard/graph`        | Revenue/loss graphs |
+| Method | Endpoint                  | Description            |
+| ------ | ------------------------- | ---------------------- |
+| GET    | `/dashboard/overview`     | Dashboard summary      |
+| GET    | `/dashboard/biggest-days` | Top revenue days       |
+| GET    | `/dashboard/orders`       | Recent orders          |
+| GET    | `/dashboard/graph`        | Revenue/loss analytics |
 
 ---
 
-# Installation & Setup
+# 🌐 Deployment
+
+SafeStocker backend services are hosted on Render.
+
+### Deployment Features
+
+* Production-hosted Node.js backend
+* Live PostgreSQL integration
+* Shared API architecture
+* Cloud deployment workflow
+* Browser-accessible web dashboard
+
+### Platform Used
+
+* Render (Backend Hosting)
+
+### Live Application
+https://safestocker.onrender.com
+
+---
+
+# 🚀 Installation & Setup
 
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/SafeStocker.git
+git clone https://github.com/AkshayKS02/SafeStocker.git
 cd SafeStocker
 ```
 
@@ -578,17 +567,27 @@ npm install
 Create a `.env` file inside `/server`
 
 ```env
+# Server
 PORT=5000
-JWT_SECRET=your_secret_key
+
+# Authentication
+JWT_SECRET=your_jwt_secret
+
+# Database
 DATABASE_URL=your_postgresql_connection
+
+# Google OAuth
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:5000/auth/google/callback
+GOOGLE_WEB_CALLBACK_URL=http://localhost:5000/auth/google/web/callback
+GOOGLE_MOBILE_CALLBACK_URL=http://localhost:5000/auth/google/mobile/callback
 ```
+
+> Replace all placeholder values with your actual credentials before running the project.
 
 ---
 
-## 5. Start Server
+## 5. Start Backend Server
 
 ```bash
 cd server
@@ -597,81 +596,44 @@ npm start
 
 ---
 
-# Future Improvements
-
-* AI-based expiry prediction
-* Supplier management system
-* Sales forecasting
-* Mobile app version
-* QR-based billing
-* Multi-shop support
-* Cloud sync
-* SMS/Email expiry notifications
-* Role-based employee access
-* Advanced analytics dashboard
-
----
-
-# Use Cases
+# 🌍 Use Cases
 
 SafeStocker can be used in:
 
 * Grocery stores
 * Medical shops
-* Supermarkets
+* Retail chains
 * Warehouses
 * Cosmetic stores
-* Retail chains
-* Local kirana stores
+* Supermarkets
 * FMCG inventory systems
+* Local kirana stores
 
 ---
 
-# Hackathon Value Proposition
+# 🔮 Future Improvements
 
-## Why SafeStocker Stands Out
+Planned future features include:
 
-### Real-World Problem Solving
-
-Targets a genuine operational problem faced by small businesses.
-
-### Strong Technical Depth
-
-Combines:
-
-* Authentication
-* Computer vision/barcode scanning
-* Real-time inventory logic
-* Database transactions
-* Analytics
-* PDF generation
-* External API integrations
-
-### Business Impact
-
-Helps reduce:
-
-* Inventory loss
-* Human error
-* Manual management overhead
-* Revenue leakage
-
-### Scalability
-
-Architecture is modular and can evolve into:
-
-* SaaS inventory platform
-* Pharmacy management system
-* Enterprise warehouse solution
+* AI-based expiry prediction
+* Supplier management system
+* Sales forecasting
+* Multi-shop support
+* QR-based billing
+* Cloud synchronization
+* SMS/Email expiry notifications
+* Role-based employee access
+* Advanced analytics dashboards
+* Offline-first mobile support
 
 ---
 
-# Contributors
+# 👨‍💻 Contributors
 
-Built with passion for smarter inventory management and reduced stock wastage.
+Built with a focus on smarter inventory management, reduced stock wastage, and scalable business workflows.
 
 ---
 
-# License
+# 📄 License
 
 This project is licensed under the ISC License.
