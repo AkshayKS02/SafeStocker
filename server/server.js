@@ -1,8 +1,8 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv";
 import passport from "passport";
 import configureGoogleAuth from "./auth/googleAuth.js";
 
@@ -16,8 +16,6 @@ import auth from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, ".env"), quiet: true });
 
 const app = express();
 
