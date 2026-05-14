@@ -9,9 +9,13 @@ export default async function generateInvoice(invoiceData) {
 
   const templateUrl = `http://localhost:${process.env.PORT || 5000}/templates/invoice.html`;
 
-  const browser = await puppeteer.launch({
-    headless: "new"
-  });
+  let browser;
+
+  try {
+    browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
 
   const page = await browser.newPage();
   await page.goto(templateUrl, { waitUntil: "networkidle0" });
@@ -63,6 +67,10 @@ export default async function generateInvoice(invoiceData) {
     margin: { top: "20mm", right: "15mm", bottom: "20mm", left: "15mm" }
   });
 
-  await browser.close();
-  return outPath;
+    return outPath;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
 }
