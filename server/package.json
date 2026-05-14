@@ -5,7 +5,6 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "postinstall": "puppeteer browsers install chrome",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,7 +28,7 @@
     "mysql2": "^3.15.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "pg": "^8.20.0",
-    "puppeteer": "^24.32.0"
+    "pdfkit": "^0.18.0",
+    "pg": "^8.20.0"
   }
 }
