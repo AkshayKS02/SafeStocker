@@ -65,11 +65,7 @@ router.get("/google/mobile/callback",
   },
   (req, res) => {
     const token = signAuthToken(toAuthUser(req.user));
-    return res.send(`
-      <script>
-        window.location.href = "safestocker://login?token=${encodeURIComponent(token)}";
-      </script>
-    `);
+    return res.redirect(`safestocker://login?token=${encodeURIComponent(token)}`);
   }
 );
 
