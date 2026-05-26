@@ -16,6 +16,8 @@ interface DashboardStats {
   nearExpiry: number;
   recentOrders: Array<{ id: string; price: number }>;
   biggestRevenueDays: Array<{ rank: number; date: string; price: number }>;
+  graphRevenue: Array<{ label: number; value: number }>;
+  graphLoss: Array<{ label: number; value: number }>;
 }
 
 interface StatCardProps {
@@ -46,19 +48,30 @@ export default function DashboardScreen() {
     nearExpiry: 0,
     recentOrders: [],
     biggestRevenueDays: [],
+    graphRevenue: [],
+    graphLoss: [],
   });
+
+  const filterTypeMap: Record<string, string> = {
+    Hours: "hours",
+    Days: "days",
+    Months: "months",
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        const [overviewRes, ordersRes, revenueDaysRes] = await Promise.all([
+        const graphType = filterTypeMap[activeFilter];
+        const [overviewRes, ordersRes, revenueDaysRes, graphRes] = await Promise.all([
           API.get("/dashboard/overview"),
           API.get("/dashboard/orders"),
           API.get("/dashboard/biggest-days"),
+          API.get(`/dashboard/graph?type=${graphType}`),
         ]);
 
         const overview = overviewRes.data || {};
+        const graphData = graphRes.data || {};
         setStats({
           totalProducts: Number(overview.totalProducts) || 0,
           totalStockUnits: Number(overview.totalStockUnits) || 0,
@@ -77,6 +90,8 @@ export default function DashboardScreen() {
                 price: Number(item.revenue) || 0,
               }))
             : [],
+          graphRevenue: Array.isArray(graphData.revenue) ? graphData.revenue : [],
+          graphLoss: Array.isArray(graphData.loss) ? graphData.loss : [],
         });
       } catch (err) {
         console.error("Failed to fetch stats:", err);
@@ -87,6 +102,8 @@ export default function DashboardScreen() {
           nearExpiry: 0,
           recentOrders: [],
           biggestRevenueDays: [],
+          graphRevenue: [],
+          graphLoss: [],
         });
       } finally {
         setIsLoading(false);
@@ -135,19 +152,28 @@ export default function DashboardScreen() {
         </View>
 
         <View style={styles.chartCard}>
-          {[100, 200, 300, 400, 500, 600, 700, 800].reverse().map((val) => (
-            <View key={val} style={styles.chartRow}>
-              <Text style={styles.yAxisText}>{val}</Text>
-              <View style={styles.gridLine} />
-            </View>
-          ))}
-          <View style={styles.xAxisContainer}>
-            {["100", "200", "300", "400", "500", "600"].map((val) => (
-              <Text key={val} style={styles.xAxisText}>
-                {val}
-              </Text>
-            ))}
-          </View>
+          {stats.graphRevenue.length === 0 && stats.graphLoss.length === 0 ? (
+            <Text style={{ color: "#999", textAlign: "center", paddingVertical: 20 }}>
+              No graph data for this period
+            </Text>
+          ) : (
+            stats.graphRevenue.map((point, i) => (
+              <View key={i} style={styles.chartRow}>
+                <Text style={styles.yAxisText}>{point.label}</Text>
+                <View style={[styles.gridLine, { flex: 1 }]}>
+                  <View
+                    style={{
+                      height: 8,
+                      width: `${Math.min((point.value / Math.max(...stats.graphRevenue.map(p => p.value), 1)) * 100, 100)}%`,
+                      backgroundColor: "#4285F4",
+                      borderRadius: 4,
+                    }}
+                  />
+                </View>
+                <Text style={[styles.yAxisText, { textAlign: "right" }]}>₹{Number(point.value).toFixed(0)}</Text>
+              </View>
+            ))
+          )}
         </View>
 
         <View style={styles.gridContainer}>
@@ -264,16 +290,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: "#D1D9D9",
-  },
-  xAxisContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingLeft: 30,
-    marginTop: -10,
-  },
-  xAxisText: {
-    fontSize: 12,
-    color: "#666",
   },
   gridContainer: {
     flexDirection: "row",

@@ -20,9 +20,16 @@ API.interceptors.request.use(
 );
 
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`[API] ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`);
+    return response;
+  },
   async (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const url = error.config?.url;
+    const body = error.response?.data;
+    console.error(`[API] Error ${status} on ${url}:`, body);
+    if (status === 401) {
       await SecureStore.deleteItemAsync('auth_token');
       await SecureStore.deleteItemAsync('user_data');
     }
