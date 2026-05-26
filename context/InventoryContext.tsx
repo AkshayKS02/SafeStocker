@@ -129,7 +129,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const response = await API.get(`/stock/${user.ShopID}`);
+    const response = await API.get('/stock');
     setInventory(Array.isArray(response.data) ? response.data.map(normalizeStock) : []);
   }, [token, user?.ShopID]);
 
@@ -189,9 +189,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const removeStock = useCallback(
     async (stockID: number) => {
-      await updateStockQuantity(stockID, 0);
+      await API.delete(`/stock/expire/${stockID}`);
+      await refreshStock();
     },
-    [updateStockQuantity]
+    [refreshStock]
   );
 
   const generateInvoice = useCallback(

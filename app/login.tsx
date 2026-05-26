@@ -12,9 +12,10 @@ function getSingleParam(value: string | string[] | undefined) {
 }
 
 export default function LoginCallback() {
-  const { token, auth_token: authToken } = useLocalSearchParams<{
+  const { token, auth_token: authToken, error } = useLocalSearchParams<{
     token?: string | string[];
     auth_token?: string | string[];
+    error?: string | string[];
   }>();
   const { loginWithToken } = useAuth();
   const [redirectToHome, setRedirectToHome] = useState(false);
@@ -23,6 +24,13 @@ export default function LoginCallback() {
 
   useEffect(() => {
     const callbackToken = getSingleParam(token) ?? getSingleParam(authToken);
+    const callbackError = getSingleParam(error);
+
+    if (callbackError) {
+      console.error('[LoginCallback] OAuth error from server:', callbackError);
+      setRedirectToLogin(true);
+      return;
+    }
 
     if (!callbackToken) {
       setRedirectToLogin(true);
@@ -40,7 +48,7 @@ export default function LoginCallback() {
         console.error('Login callback error:', error);
         setRedirectToLogin(true);
       });
-  }, [authToken, loginWithToken, token]);
+  }, [authToken, error, loginWithToken, token]);
 
   if (redirectToHome) {
     return <Redirect href="/(tabs)/home" />;

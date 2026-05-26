@@ -69,17 +69,22 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      const redirectUri = AuthSession.makeRedirectUri({
-        scheme: 'safestocker',
-        path: 'login',
-      });
-      const authUrl = `${BACKEND_URL}/auth/google?platform=mobile`;
+      const redirectUri = AuthSession.makeRedirectUri({ scheme: 'safestocker', path: 'login' });
+      const authUrl = `${BACKEND_URL}/auth/google/mobile`;
+
+      console.log('[Google OAuth] Redirect URI:', redirectUri);
+      console.log('[Google OAuth] Auth URL:', authUrl);
+
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
+      console.log('[Google OAuth] Result type:', result.type);
+
       if (result.type !== 'success') {
+        console.log('[Google OAuth] Cancelled or failed:', result.type);
         return;
       }
 
+      console.log('[Google OAuth] Callback URL:', result.url);
       const parsedUrl = Linking.parse(result.url);
       const token =
         getSingleParam(parsedUrl.queryParams?.token) ??
@@ -93,7 +98,7 @@ export default function LoginScreen() {
       await loginWithToken(token);
       router.replace('/(tabs)/home' as any);
     } catch (error) {
-      console.error('Auth Error:', error);
+      console.error('[Google OAuth] Error:', error);
       Alert.alert('Error', 'Failed to complete Google login');
     } finally {
       setLoading(false);

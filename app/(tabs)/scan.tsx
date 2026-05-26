@@ -1,53 +1,71 @@
-import React, { useState } from 'react';
+import API from "@/app/services/api";
+import { useInventory } from "@/context/InventoryContext";
+import { Ionicons } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-  View, Text, StyleSheet, TouchableOpacity, TextInput,
-  SafeAreaView, ScrollView, Modal, Alert
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Ionicons } from '@expo/vector-icons';
-import API from '@/app/services/api';
-import { useInventory } from '@/context/InventoryContext';
+    Alert,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 export default function ScanScreen() {
   const router = useRouter();
   const { createItem } = useInventory();
-  
+
   const [permission, requestPermission] = useCameraPermissions();
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedCode, setScannedCode] = useState('');
-  const [scannedName, setScannedName] = useState('');
-  const [price, setPrice] = useState('');
+  const [scannedCode, setScannedCode] = useState("");
+  const [scannedName, setScannedName] = useState("");
+  const [price, setPrice] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const openScanner = async () => {
     if (!permission?.granted) {
       const { granted } = await requestPermission();
       if (!granted) {
-        Alert.alert("Permission Required", "Camera access is needed to scan barcodes.");
+        Alert.alert(
+          "Permission Required",
+          "Camera access is needed to scan barcodes.",
+        );
         return;
       }
     }
     setIsScanning(true);
   };
 
-  const handleBarcodeScanned = async ({ type, data }: { type: string; data: string }) => {
+  const handleBarcodeScanned = async ({
+    type,
+    data,
+  }: {
+    type: string;
+    data: string;
+  }) => {
     setIsScanning(false);
     setScannedCode(data);
 
     try {
-      const response = await API.post('/barcode', { barcode: data });
+      const response = await API.post("/barcode", { barcode: data });
       const product = response.data?.product;
-      setScannedName(product?.name || product?.ItemName || '');
+      setScannedName(product?.name || product?.ItemName || "");
       Alert.alert(
         "Item Scanned!",
-        product?.name ? `${product.name}\nBarcode: ${data}` : `Barcode: ${data}`
+        product?.name
+          ? `${product.name}\nBarcode: ${data}`
+          : `Barcode: ${data}`,
       );
     } catch (error: any) {
-      setScannedName('');
+      setScannedName("");
       Alert.alert(
         "Item Scanned!",
-        `Barcode: ${data}\nProduct lookup failed, but you can still save it.`
+        `Barcode: ${data}\nProduct lookup failed, but you can still save it.`,
       );
     }
   };
@@ -71,18 +89,18 @@ export default function ScanScreen() {
         ItemName: scannedName || `Product ${scannedCode}`,
         Barcode: scannedCode,
         CategoryID: 1,
-        Source: scannedName ? 'API' : 'BARCODE',
+        Source: scannedName ? "API" : "BARCODE",
         Price: numericPrice,
       });
 
       Alert.alert("Saved", "Item registered. Add stock to make it available.");
-      setScannedCode('');
-      setScannedName('');
-      setPrice('');
+      setScannedCode("");
+      setScannedName("");
+      setPrice("");
     } catch (error: any) {
       Alert.alert(
         "Save Failed",
-        error.response?.data?.error || error.message || "Failed to save item."
+        error.response?.data?.error || error.message || "Failed to save item.",
       );
     } finally {
       setIsSaving(false);
@@ -92,25 +110,35 @@ export default function ScanScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        
         {/* Top Navigation Tabs */}
         <View style={styles.tabsContainer}>
           <TouchableOpacity style={[styles.tabButton, styles.activeTabButton]}>
             <Text style={[styles.tabText, styles.activeTabText]}>Standard</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.tabButton, styles.inactiveTabButton]} onPress={() => router.push('/custom')}>
+          <TouchableOpacity
+            style={[styles.tabButton, styles.inactiveTabButton]}
+            onPress={() => router.push("/custom")}
+          >
             <Text style={[styles.tabText, styles.inactiveTabText]}>Custom</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.tabButton, styles.inactiveTabButton]} onPress={() => router.push('/add_stock')}>
-            <Text style={[styles.tabText, styles.inactiveTabText]}>Add stock</Text>
+          <TouchableOpacity
+            style={[styles.tabButton, styles.inactiveTabButton]}
+            onPress={() => router.push("/add_stock")}
+          >
+            <Text style={[styles.tabText, styles.inactiveTabText]}>
+              Add stock
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Main Card */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Scan Items</Text>
-            
+
             <Text style={styles.inputLabel}>Price</Text>
             <View style={styles.inputWrapper}>
               <TextInput
@@ -123,39 +151,53 @@ export default function ScanScreen() {
               />
             </View>
 
-            {scannedCode ? (
-               <Text style={styles.scannedText}>
-                 {scannedName ? `${scannedName}\n` : ''}Scanned Code: {scannedCode}
-               </Text>
-            ) : null}
-
             <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity style={styles.primaryButton} onPress={openScanner}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={openScanner}
+              >
                 <Text style={styles.primaryButtonText}>Scan Barcode</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.secondaryButton, isSaving && styles.disabledButton]}
+                style={[
+                  styles.secondaryButton,
+                  isSaving && styles.disabledButton,
+                ]}
                 onPress={handleSaveItem}
                 disabled={isSaving}
               >
                 <Text style={styles.secondaryButtonText}>
-                  {isSaving ? 'Saving...' : 'Save Item'}
+                  {isSaving ? "Saving..." : "Save Item"}
                 </Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.divider} />
-            <Text style={styles.previewLabel}>Scanner Preview</Text>
-            
+            <Text style={styles.previewLabel}>Scanned Item Details</Text>
+
             <View style={styles.previewBox}>
-              <Ionicons name="barcode-outline" size={80} color="#999" />
-              <Text style={{ color: '#999', marginTop: 10 }}>Tap 'Scan Barcode' to start</Text>
+              {scannedCode ? (
+                <>
+                  <Text style={styles.itemName}>
+                    {scannedName || `Product ${scannedCode}`}
+                  </Text>
+                  <Text style={styles.itemCode}>Code: {scannedCode}</Text>
+                </>
+              ) : (
+                <Text style={styles.placeholder}>
+                  Scan an item to see details here
+                </Text>
+              )}
             </View>
           </View>
         </ScrollView>
 
         {/* Full Screen Camera Modal */}
-        <Modal visible={isScanning} animationType="slide" onRequestClose={() => setIsScanning(false)}>
+        <Modal
+          visible={isScanning}
+          animationType="slide"
+          onRequestClose={() => setIsScanning(false)}
+        >
           <View style={styles.cameraContainer}>
             <CameraView
               style={StyleSheet.absoluteFillObject}
@@ -163,50 +205,163 @@ export default function ScanScreen() {
               onBarcodeScanned={isScanning ? handleBarcodeScanned : undefined}
             />
             <View style={styles.overlay}>
-              <View style={styles.scanTarget} /> 
-              <TouchableOpacity style={styles.closeCameraButton} onPress={() => setIsScanning(false)}>
+              <View style={styles.scanTarget} />
+              <TouchableOpacity
+                style={styles.closeCameraButton}
+                onPress={() => setIsScanning(false)}
+              >
                 <Ionicons name="close-circle" size={50} color="#FFF" />
-                <Text style={{color: '#FFF', marginTop: 8, fontWeight: 'bold'}}>Cancel</Text>
+                <Text
+                  style={{ color: "#FFF", marginTop: 8, fontWeight: "bold" }}
+                >
+                  Cancel
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </Modal>
-
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F8F9FA' },
-  container: { flex: 1, backgroundColor: '#F8F9FA', paddingTop: 20 },
-  tabsContainer: { flexDirection: 'row', paddingHorizontal: 20, marginBottom: 20, gap: 10 },
+  safeArea: { flex: 1, backgroundColor: "#F8F9FA" },
+  container: { flex: 1, backgroundColor: "#F8F9FA", paddingTop: 20 },
+  tabsContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    gap: 10,
+  },
   tabButton: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20 },
-  activeTabButton: { backgroundColor: '#4285F4' },
-  inactiveTabButton: { backgroundColor: '#E8F0FE' },
-  tabText: { fontSize: 14, fontWeight: '500' },
-  activeTabText: { color: '#FFF' },
-  inactiveTabText: { color: '#4285F4' },
+  activeTabButton: { backgroundColor: "#4285F4" },
+  inactiveTabButton: { backgroundColor: "#E8F0FE" },
+  tabText: { fontSize: 14, fontWeight: "500" },
+  activeTabText: { color: "#FFF" },
+  inactiveTabText: { color: "#4285F4" },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 20 },
-  card: { backgroundColor: '#EAF0F0', borderRadius: 16, paddingTop: 24, paddingBottom: 30, alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#D1D9D9' },
-  cardTitle: { fontSize: 20, fontWeight: 'bold', color: '#000', marginBottom: 16 },
-  inputLabel: { fontSize: 12, color: '#5F6368', marginBottom: 8, fontWeight: '500' },
-  inputWrapper: { width: '80%', backgroundColor: '#D1D9D9', borderRadius: 8, marginBottom: 24 },
-  input: { height: 44, textAlign: 'center', color: '#333', fontWeight: '500', fontSize: 16 },
-  scannedText: { color: '#4285F4', fontWeight: 'bold', marginBottom: 16, fontSize: 16 },
-  actionButtonsContainer: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 24, width: '100%' },
-  primaryButton: { backgroundColor: '#4285F4', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, elevation: 2 },
-  primaryButtonText: { color: '#FFF', fontWeight: '600', fontSize: 14 },
-  secondaryButton: { backgroundColor: '#FFF', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, borderWidth: 1, borderColor: '#DADCE0' },
-  secondaryButtonText: { color: '#3C4043', fontWeight: '600', fontSize: 14 },
+  card: {
+    backgroundColor: "#EAF0F0",
+    borderRadius: 16,
+    paddingTop: 24,
+    paddingBottom: 30,
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#D1D9D9",
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000",
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: "#5F6368",
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  inputWrapper: {
+    width: "80%",
+    backgroundColor: "#D1D9D9",
+    borderRadius: 8,
+    marginBottom: 24,
+  },
+  input: {
+    height: 44,
+    textAlign: "center",
+    color: "#333",
+    fontWeight: "500",
+    fontSize: 16,
+  },
+  scannedText: {
+    color: "#4285F4",
+    fontWeight: "bold",
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  actionButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 12,
+    marginBottom: 24,
+    width: "100%",
+  },
+  primaryButton: {
+    backgroundColor: "#4285F4",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    elevation: 2,
+  },
+  primaryButtonText: { color: "#FFF", fontWeight: "600", fontSize: 14 },
+  secondaryButton: {
+    backgroundColor: "#FFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#DADCE0",
+  },
+  secondaryButtonText: { color: "#3C4043", fontWeight: "600", fontSize: 14 },
   disabledButton: { opacity: 0.6 },
-  divider: { width: '100%', height: 1, backgroundColor: '#C4CFCF', marginBottom: 20 },
-  previewLabel: { color: '#5F6368', fontSize: 18, fontWeight: '500', marginBottom: 10 },
-  previewBox: { alignItems: 'center', justifyContent: 'center', opacity: 0.5 },
-  
+  divider: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "#C4CFCF",
+    marginBottom: 20,
+  },
+  previewLabel: {
+    color: "#5F6368",
+    fontSize: 18,
+    fontWeight: "500",
+    marginBottom: 10,
+  },
+  previewBox: {
+    marginTop: 16,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: "#f1f5f9",
+    alignItems: "center",
+    width: "100%",
+    minHeight: 100,
+    justifyContent: "center",
+  },
+  itemName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#2563eb",
+    textAlign: "center",
+  },
+  itemCode: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#64748b",
+    textAlign: "center",
+  },
+  placeholder: {
+    fontSize: 14,
+    color: "#94a3b8",
+  },
+
   // Camera Modal Styles
-  cameraContainer: { flex: 1, backgroundColor: '#000' },
-  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
-  scanTarget: { width: 250, height: 250, borderWidth: 2, borderColor: '#4285F4', backgroundColor: 'transparent', borderRadius: 20, marginBottom: 50 },
-  closeCameraButton: { position: 'absolute', bottom: 50, alignItems: 'center' }
+  cameraContainer: { flex: 1, backgroundColor: "#000" },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scanTarget: {
+    width: 250,
+    height: 250,
+    borderWidth: 2,
+    borderColor: "#4285F4",
+    backgroundColor: "transparent",
+    borderRadius: 20,
+    marginBottom: 50,
+  },
+  closeCameraButton: { position: "absolute", bottom: 50, alignItems: "center" },
 });
