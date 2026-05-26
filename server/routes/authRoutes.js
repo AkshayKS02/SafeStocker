@@ -57,7 +57,7 @@ router.get("/google/mobile/callback",
     passport.authenticate("google-mobile", { session: false }, (err, user) => {
       if (err || !user) {
         console.error("Mobile Google OAuth failed:", err?.message);
-        return res.status(401).send("Google sign-in failed.");
+        return res.redirect(`safestocker://login?error=${encodeURIComponent(err?.message || "auth_failed")}`);
       }
       req.user = user;
       next();
