@@ -11,6 +11,7 @@ import barcodeRoutes from "./routes/barcodeRoutes.js";
 import itemRoutes from "./routes/itemRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
 import invoiceRoutes from "./routes/invoiceRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import auth from "./middleware/auth.js";
 
@@ -41,6 +42,7 @@ app.use("/auth", authRoutes);
 
 // Protected routes
 app.use("/barcode", auth, barcodeRoutes);
+app.use("/categories", auth, categoryRoutes);
 app.use("/items", auth, itemRoutes);
 app.use("/stock", auth, stockRoutes);
 app.use("/invoice", auth, invoiceRoutes);
