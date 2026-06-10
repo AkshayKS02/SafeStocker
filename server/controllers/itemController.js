@@ -12,6 +12,7 @@ export async function getAllItems(req, res) {
         i."Barcode",
         i."Source",
         i."Price",
+        i."CategoryID",
         c."CategoryName"
       FROM items i
       LEFT JOIN category c ON i."CategoryID" = c."CategoryID"

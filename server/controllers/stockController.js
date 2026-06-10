@@ -1,6 +1,5 @@
 import db from "../config/db.js";
 
-// ➕ ADD STOCK
 export async function addStock(req, res) {
   const ShopID = req.user?.ShopID;
   const { ItemID, SupplierID, Quantity, ManufactureDate, ExpiryDate } = req.body;
@@ -9,15 +8,13 @@ export async function addStock(req, res) {
 
   try {
     const result = await db.query(
-      `INSERT INTO stock 
+      `INSERT INTO stock
       ("ShopID","ItemID","SupplierID","Quantity","ManufactureDate","ExpiryDate")
       VALUES ($1,$2,$3,$4,$5,$6)
       RETURNING "StockID"`,
       [ShopID, ItemID, SupplierID || null, Quantity, ManufactureDate, ExpiryDate]
     );
-
     res.json({ success: true, StockID: result.rows[0].StockID });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to add stock" });
@@ -39,16 +36,16 @@ export async function getStockByShop(req, res) {
         s."ExpiryDate",
         i."ItemName",
         i."Barcode",
-        i."Price"
+        i."Price",
+        c."CategoryName"
       FROM stock s
       JOIN items i ON s."ItemID" = i."ItemID"
+      LEFT JOIN category c ON i."CategoryID" = c."CategoryID"
       WHERE s."ShopID" = $1 AND s."Quantity" > 0
       ORDER BY s."ExpiryDate" ASC`,
       [ShopID]
     );
-
     res.json(result.rows);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch stock" });
@@ -64,20 +61,41 @@ export async function updateStockQuantity(req, res) {
 
   try {
     await db.query(
-      `UPDATE stock
-       SET "Quantity" = $1
-       WHERE "StockID" = $2 AND "ShopID" = $3`,
+      `UPDATE stock SET "Quantity" = $1 WHERE "StockID" = $2 AND "ShopID" = $3`,
       [Quantity, stockID, ShopID]
     );
-
     res.json({ success: true });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Update failed" });
   }
 }
 
+// General removal — zeros out any stock batch regardless of expiry
+export async function removeStock(req, res) {
+  const ShopID = req.user?.ShopID;
+  const { stockID } = req.params;
+
+  if (!ShopID) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    const result = await db.query(
+      `UPDATE stock SET "Quantity" = 0
+       WHERE "StockID" = $1 AND "ShopID" = $2
+       RETURNING "StockID"`,
+      [stockID, ShopID]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Stock not found" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Remove failed" });
+  }
+}
+
+// Expired-stock removal — validates expiry and records a loss entry
 export async function deleteExpiredStock(req, res) {
   const ShopID = req.user?.ShopID;
   const { stockID } = req.params;
@@ -90,7 +108,7 @@ export async function deleteExpiredStock(req, res) {
     await client.query("BEGIN");
 
     const result = await client.query(
-      `SELECT 
+      `SELECT
         s."Quantity",
         s."ExpiryDate",
         s."ItemID",
@@ -107,7 +125,6 @@ export async function deleteExpiredStock(req, res) {
     }
 
     const stock = result.rows[0];
-
     const today = new Date();
     const expiry = new Date(stock.ExpiryDate);
 
@@ -123,29 +140,24 @@ export async function deleteExpiredStock(req, res) {
 
     const lossAmount = stock.Quantity * stock.Price;
 
-    // insert loss
     await client.query(
-      `INSERT INTO losses 
-      ("StockID","ItemID","QuantityLost","LossAmount","ShopID")
-      VALUES ($1,$2,$3,$4,$5)`,
+      `INSERT INTO losses ("StockID","ItemID","QuantityLost","LossAmount","ShopID")
+       VALUES ($1,$2,$3,$4,$5)`,
       [stockID, stock.ItemID, stock.Quantity, lossAmount, ShopID]
     );
 
-    // zero stock
     await client.query(
       `UPDATE stock SET "Quantity" = 0 WHERE "StockID" = $1`,
       [stockID]
     );
 
     await client.query("COMMIT");
-
     res.json({ success: true, lossAmount });
 
   } catch (err) {
     await client.query("ROLLBACK");
     console.error(err);
     res.status(500).json({ error: "Failed to process expired stock" });
-
   } finally {
     client.release();
   }
