@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -6,372 +6,267 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import API from "@/app/services/api";
 
-interface DashboardStats {
+const { width } = Dimensions.get("window");
+
+interface Overview {
   totalProducts: number;
   totalStockUnits: number;
   todaysSales: number;
   nearExpiry: number;
-  recentOrders: Array<{ id: string; price: number }>;
-  biggestRevenueDays: Array<{ rank: number; date: string; price: number }>;
-  graphRevenue: Array<{ label: number; value: number }>;
-  graphLoss: Array<{ label: number; value: number }>;
 }
 
-interface StatCardProps {
-  title: string;
-  value: string;
-  accentColor: string;
+interface RecentOrder {
+  id: string;
+  amount: number;
+  date: string;
 }
 
-function StatCard({ title, value, accentColor }: StatCardProps) {
+interface RevenueDay {
+  rank: number;
+  date: string;
+  amount: number;
+}
+
+interface GraphPoint { label: number; value: number }
+
+const FILTERS = ["Hours", "Days", "Months"] as const;
+type Filter = typeof FILTERS[number];
+
+const FILTER_TYPE: Record<Filter, string> = {
+  Hours: "hours",
+  Days: "days",
+  Months: "months",
+};
+
+function StatCard({ title, value, icon, accent }: {
+  title: string; value: string; icon: string; accent: string;
+}) {
   return (
-    <View style={styles.statCard}>
-      <View style={[styles.statAccent, { backgroundColor: accentColor }]} />
-      <View style={styles.statContent}>
-        <Text style={styles.statTitle}>{title}</Text>
-        <Text style={styles.statValue}>{value}</Text>
-      </View>
+    <View style={[styles.statCard, { borderLeftColor: accent }]}>
+      <Ionicons name={icon as any} size={22} color={accent} style={{ marginBottom: 6 }} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statTitle}>{title}</Text>
     </View>
   );
 }
 
 export default function DashboardScreen() {
-  const [activeFilter, setActiveFilter] = useState("Months");
-  const [isLoading, setIsLoading] = useState(false);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalProducts: 0,
-    totalStockUnits: 0,
-    todaysSales: 0,
-    nearExpiry: 0,
-    recentOrders: [],
-    biggestRevenueDays: [],
-    graphRevenue: [],
-    graphLoss: [],
+  const [filter, setFilter] = useState<Filter>("Months");
+  const [overviewLoading, setOverviewLoading] = useState(true);
+  const [graphLoading, setGraphLoading] = useState(false);
+
+  const [overview, setOverview] = useState<Overview>({
+    totalProducts: 0, totalStockUnits: 0, todaysSales: 0, nearExpiry: 0,
   });
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [revenueDays, setRevenueDays] = useState<RevenueDay[]>([]);
+  const [graphRevenue, setGraphRevenue] = useState<GraphPoint[]>([]);
+  const [graphLoss, setGraphLoss] = useState<GraphPoint[]>([]);
 
-  const filterTypeMap: Record<string, string> = {
-    Hours: "hours",
-    Days: "days",
-    Months: "months",
-  };
-
+  // Fetch overview + orders once on mount
   useEffect(() => {
-    const fetchStats = async () => {
+    const load = async () => {
+      setOverviewLoading(true);
       try {
-        setIsLoading(true);
-        const graphType = filterTypeMap[activeFilter];
-        const [overviewRes, ordersRes, revenueDaysRes, graphRes] = await Promise.all([
+        const [ovRes, ordRes, rdRes] = await Promise.all([
           API.get("/dashboard/overview"),
           API.get("/dashboard/orders"),
           API.get("/dashboard/biggest-days"),
-          API.get(`/dashboard/graph?type=${graphType}`),
         ]);
-
-        const overview = overviewRes.data || {};
-        const graphData = graphRes.data || {};
-        setStats({
-          totalProducts: Number(overview.totalProducts) || 0,
-          totalStockUnits: Number(overview.totalStockUnits) || 0,
-          todaysSales: Number(overview.todaysSales) || 0,
-          nearExpiry: Number(overview.nearExpiry) || 0,
-          recentOrders: Array.isArray(ordersRes.data)
-            ? ordersRes.data.map((order: any) => ({
-                id: String(order.ReceiptID),
-                price: Number(order.TotalAmount) || 0,
-              }))
-            : [],
-          biggestRevenueDays: Array.isArray(revenueDaysRes.data)
-            ? revenueDaysRes.data.map((item: any, index: number) => ({
-                rank: index + 1,
-                date: item.day ? new Date(item.day).toLocaleDateString() : "-",
-                price: Number(item.revenue) || 0,
-              }))
-            : [],
-          graphRevenue: Array.isArray(graphData.revenue) ? graphData.revenue : [],
-          graphLoss: Array.isArray(graphData.loss) ? graphData.loss : [],
+        const ov = ovRes.data || {};
+        setOverview({
+          totalProducts: Number(ov.totalProducts) || 0,
+          totalStockUnits: Number(ov.totalStockUnits) || 0,
+          todaysSales: Number(ov.todaysSales) || 0,
+          nearExpiry: Number(ov.nearExpiry) || 0,
         });
-      } catch (err) {
-        console.error("Failed to fetch stats:", err);
-        setStats({
-          totalProducts: 0,
-          totalStockUnits: 0,
-          todaysSales: 0,
-          nearExpiry: 0,
-          recentOrders: [],
-          biggestRevenueDays: [],
-          graphRevenue: [],
-          graphLoss: [],
-        });
+        setRecentOrders(
+          Array.isArray(ordRes.data)
+            ? ordRes.data.map((o: any) => ({
+                id: String(o.ReceiptID),
+                amount: Number(o.TotalAmount) || 0,
+                date: o.BillDate ? new Date(o.BillDate).toLocaleDateString() : "-",
+              }))
+            : []
+        );
+        setRevenueDays(
+          Array.isArray(rdRes.data)
+            ? rdRes.data.map((d: any, i: number) => ({
+                rank: i + 1,
+                date: d.day ? new Date(d.day).toLocaleDateString() : "-",
+                amount: Number(d.revenue) || 0,
+              }))
+            : []
+        );
+      } catch (e) {
+        console.error("[Dashboard] overview fetch failed:", e);
       } finally {
-        setIsLoading(false);
+        setOverviewLoading(false);
       }
     };
+    load();
+  }, []);
 
-    fetchStats();
-  }, [activeFilter]);
+  // Fetch graph on filter change
+  const fetchGraph = useCallback(async (f: Filter) => {
+    setGraphLoading(true);
+    try {
+      const res = await API.get(`/dashboard/graph?type=${FILTER_TYPE[f]}`);
+      const data = res.data || {};
+      setGraphRevenue(Array.isArray(data.revenue) ? data.revenue : []);
+      setGraphLoss(Array.isArray(data.loss) ? data.loss : []);
+    } catch (e) {
+      console.error("[Dashboard] graph fetch failed:", e);
+    } finally {
+      setGraphLoading(false);
+    }
+  }, []);
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.loadingContainer}>
-          <Text>Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  useEffect(() => { fetchGraph(filter); }, [filter, fetchGraph]);
+
+  const maxRevenue = Math.max(...graphRevenue.map((p) => p.value), 1);
+  const CHART_H = 120;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.filtersContainer}>
-          {["Hours", "Days", "Months"].map((filter) => (
-            <TouchableOpacity
-              key={filter}
-              style={[
-                styles.filterPill,
-                activeFilter === filter && styles.activeFilterPill,
-              ]}
-              onPress={() => setActiveFilter(filter)}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === filter && styles.activeFilterText,
-                ]}
-              >
-                {filter}
-              </Text>
-            </TouchableOpacity>
-          ))}
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+
+        {/* Stats grid */}
+        <View style={styles.statsGrid}>
+          <StatCard title="Products"    value={String(overview.totalProducts)}    icon="cube-outline"       accent="#4CAF50" />
+          <StatCard title="Stock Units" value={String(overview.totalStockUnits)}  icon="layers-outline"     accent="#4285F4" />
+          <StatCard title="Today's Sales" value={`₹${overview.todaysSales}`}      icon="cash-outline"       accent="#8B5CF6" />
+          <StatCard title="Near Expiry" value={String(overview.nearExpiry)}       icon="warning-outline"    accent="#EF4444" />
         </View>
 
-        <View style={styles.chartCard}>
-          {stats.graphRevenue.length === 0 && stats.graphLoss.length === 0 ? (
-            <Text style={{ color: "#999", textAlign: "center", paddingVertical: 20 }}>
-              No graph data for this period
-            </Text>
+        {/* Revenue graph */}
+        <View style={styles.chartSection}>
+          <View style={styles.chartHeader}>
+            <Text style={styles.sectionTitle}>Revenue</Text>
+            <View style={styles.filterRow}>
+              {FILTERS.map((f) => (
+                <TouchableOpacity
+                  key={f}
+                  style={[styles.filterPill, filter === f && styles.filterPillActive]}
+                  onPress={() => setFilter(f)}
+                >
+                  <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {graphLoading ? (
+            <Text style={styles.loadingText}>Loading graph...</Text>
+          ) : graphRevenue.length === 0 ? (
+            <Text style={styles.emptyText}>No data for this period</Text>
           ) : (
-            stats.graphRevenue.map((point, i) => (
-              <View key={i} style={styles.chartRow}>
-                <Text style={styles.yAxisText}>{point.label}</Text>
-                <View style={[styles.gridLine, { flex: 1 }]}>
-                  <View
-                    style={{
-                      height: 8,
-                      width: `${Math.min((point.value / Math.max(...stats.graphRevenue.map(p => p.value), 1)) * 100, 100)}%`,
-                      backgroundColor: "#4285F4",
-                      borderRadius: 4,
-                    }}
-                  />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.chart}>
+                {graphRevenue.map((pt, i) => {
+                  const barH = Math.max(4, (pt.value / maxRevenue) * CHART_H);
+                  return (
+                    <View key={i} style={styles.barWrapper}>
+                      <Text style={styles.barValue}>₹{Math.round(pt.value)}</Text>
+                      <View style={[styles.bar, { height: barH }]} />
+                      <Text style={styles.barLabel}>{pt.label}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Recent orders */}
+        <Text style={styles.sectionTitle}>Recent Orders</Text>
+        <View style={styles.listCard}>
+          {recentOrders.length === 0 ? (
+            <Text style={styles.emptyText}>No orders yet</Text>
+          ) : (
+            recentOrders.slice(0, 5).map((o, i, arr) => (
+              <View key={i} style={[styles.listRow, i < arr.length - 1 && styles.listRowBorder]}>
+                <View>
+                  <Text style={styles.listMain}>Receipt #{o.id}</Text>
+                  <Text style={styles.listSub}>{o.date}</Text>
                 </View>
-                <Text style={[styles.yAxisText, { textAlign: "right" }]}>₹{Number(point.value).toFixed(0)}</Text>
+                <Text style={styles.listAmount}>₹{o.amount.toFixed(2)}</Text>
               </View>
             ))
           )}
         </View>
 
-        <View style={styles.gridContainer}>
-          <View style={styles.leftColumn}>
-            <StatCard
-              title="Total Products"
-              value={stats.totalProducts.toString()}
-              accentColor="#4CAF50"
-            />
-            <StatCard
-              title="Total Stock Units"
-              value={stats.totalStockUnits.toString()}
-              accentColor="#4285F4"
-            />
-            <StatCard
-              title="Today's Sales"
-              value={`₹${stats.todaysSales}`}
-              accentColor="#8B5CF6"
-            />
-            <StatCard
-              title="Near Expiry"
-              value={stats.nearExpiry.toString()}
-              accentColor="#EF4444"
-            />
-          </View>
-
-          <View style={styles.rightColumn}>
-            <View style={styles.listCard}>
-              <Text style={styles.listCardTitle}>Recent Orders</Text>
-              {stats.recentOrders.map((order, index) => (
-                <View key={index} style={styles.listItemRow}>
-                  <Text style={styles.listItemMain}>{order.id}</Text>
-                  <View style={styles.pricePill}>
-                    <Text style={styles.pricePillText}>₹ {order.price}</Text>
-                  </View>
+        {/* Biggest revenue days */}
+        <Text style={styles.sectionTitle}>Top Revenue Days</Text>
+        <View style={styles.listCard}>
+          {revenueDays.length === 0 ? (
+            <Text style={styles.emptyText}>No data this month</Text>
+          ) : (
+            revenueDays.slice(0, 5).map((d, i, arr) => (
+              <View key={i} style={[styles.listRow, i < arr.length - 1 && styles.listRowBorder]}>
+                <View style={styles.rankBadge}>
+                  <Text style={styles.rankText}>#{d.rank}</Text>
                 </View>
-              ))}
-            </View>
-
-            <View style={styles.listCard}>
-              <Text style={styles.listCardTitle}>Biggest Revenue Days</Text>
-              {stats.biggestRevenueDays.map((item, index) => (
-                <View key={index} style={styles.listItemRow}>
-                  <Text style={styles.listRankText}>#{item.rank}</Text>
-                  <Text style={styles.listItemMain}>{item.date}</Text>
-                  <View style={styles.pricePill}>
-                    <Text style={styles.pricePillText}>₹ {item.price}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
+                <Text style={[styles.listMain, { flex: 1, marginLeft: 10 }]}>{d.date}</Text>
+                <Text style={styles.listAmount}>₹{d.amount.toFixed(2)}</Text>
+              </View>
+            ))
+          )}
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#EEF3F4",
-  },
-  container: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  filtersContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginBottom: 24,
-    gap: 8,
-  },
-  filterPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#4285F4",
-    backgroundColor: "transparent",
-  },
-  activeFilterPill: {
-    backgroundColor: "#E8F0FE",
-  },
-  filterText: {
-    color: "#4285F4",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  activeFilterText: {
-    fontWeight: "700",
-  },
-  chartCard: {
-    marginBottom: 24,
-    position: "relative",
-  },
-  chartRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  yAxisText: {
-    width: 30,
-    fontSize: 12,
-    color: "#666",
-  },
-  gridLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#D1D9D9",
-  },
-  gridContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  leftColumn: {
-    flex: 1,
-    gap: 12,
-  },
-  rightColumn: {
-    flex: 1.2,
-    gap: 12,
-  },
+  safe: { flex: 1, backgroundColor: "#F8F9FA" },
+  scroll: { padding: 16, paddingBottom: 40 },
+  statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 20 },
   statCard: {
-    backgroundColor: "#EAF0F0",
-    borderRadius: 12,
-    flexDirection: "row",
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#D1D9D9",
-  },
-  statAccent: {
-    width: 6,
-    height: "100%",
-  },
-  statContent: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
     flex: 1,
+    minWidth: (width - 52) / 2,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    borderLeftWidth: 4,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
-  statTitle: {
-    fontSize: 13,
-    color: "#5F6368",
-    marginBottom: 6,
-    fontWeight: "500",
+  statValue: { fontSize: 22, fontWeight: "700", color: "#111", marginBottom: 2 },
+  statTitle: { fontSize: 12, color: "#6B7280", fontWeight: "500" },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#111", marginBottom: 10 },
+  chartSection: { backgroundColor: "#fff", borderRadius: 14, padding: 14, marginBottom: 20, elevation: 2 },
+  chartHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  filterRow: { flexDirection: "row", gap: 6 },
+  filterPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: "#4285F4" },
+  filterPillActive: { backgroundColor: "#4285F4" },
+  filterText: { fontSize: 12, color: "#4285F4", fontWeight: "500" },
+  filterTextActive: { color: "#fff" },
+  chart: { flexDirection: "row", alignItems: "flex-end", gap: 8, height: 160, paddingBottom: 24 },
+  barWrapper: { alignItems: "center", width: 36 },
+  bar: { width: 24, backgroundColor: "#4285F4", borderRadius: 4 },
+  barValue: { fontSize: 9, color: "#6B7280", marginBottom: 4, textAlign: "center" },
+  barLabel: { fontSize: 10, color: "#6B7280", marginTop: 4 },
+  listCard: { backgroundColor: "#fff", borderRadius: 14, padding: 14, marginBottom: 20, elevation: 2 },
+  listRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10 },
+  listRowBorder: { borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
+  listMain: { fontSize: 14, fontWeight: "600", color: "#111" },
+  listSub: { fontSize: 12, color: "#9CA3AF", marginTop: 2 },
+  listAmount: { fontSize: 14, fontWeight: "700", color: "#4285F4" },
+  rankBadge: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: "#EEF3FF",
+    alignItems: "center", justifyContent: "center",
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-  },
-  listCard: {
-    backgroundColor: "#EAF0F0",
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#D1D9D9",
-  },
-  listCardTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#5F6368",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  listItemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  listRankText: {
-    fontSize: 12,
-    color: "#5F6368",
-    marginRight: 6,
-    fontWeight: "600",
-  },
-  listItemMain: {
-    fontSize: 13,
-    color: "#333",
-    fontWeight: "600",
-    flex: 1,
-  },
-  pricePill: {
-    backgroundColor: "#F8F9FA",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-  },
-  pricePillText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#333",
-  },
+  rankText: { fontSize: 12, fontWeight: "700", color: "#4285F4" },
+  loadingText: { color: "#9CA3AF", textAlign: "center", paddingVertical: 20 },
+  emptyText: { color: "#9CA3AF", textAlign: "center", paddingVertical: 16, fontSize: 13 },
 });

@@ -160,6 +160,17 @@ export default function LoginScreen() {
           <Ionicons name="logo-google" size={20} color="#444" style={{ marginRight: 10 }} />
           <Text style={styles.googleButtonText}>Continue with Google</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.signUpLink}
+          onPress={() => router.push('/auth/signup')}
+          disabled={loading}
+        >
+          <Text style={styles.signUpLinkText}>
+            Don't have an account?{' '}
+            <Text style={styles.signUpLinkBold}>Sign Up</Text>
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -219,6 +230,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   googleButtonText: { color: '#444', fontSize: 16, fontWeight: '600' },
+  signUpLink: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  signUpLinkText: {
+    color: '#888',
+    fontSize: 15,
+  },
+  signUpLinkBold: {
+    color: '#4B7BFF',
+    fontWeight: '700',
+  },
   disabled: {
     opacity: 0.6,
   },
