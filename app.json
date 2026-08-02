@@ -24,8 +24,15 @@
       "intentFilters": [
         {
           "action": "VIEW",
-          "data": [{ "scheme": "safestocker" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "safestocker"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -58,6 +65,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ae51ff8a-ac7c-4520-bca4-956ab13ca6e9"
+      }
     }
   }
 }
